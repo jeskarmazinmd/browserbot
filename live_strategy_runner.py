@@ -17,6 +17,7 @@ from strategies.registry import (
     refresh_flash_entry,
     validate_flash_entry,
 )
+from regime_logger import log_regime, latest_regime
 
 RUN_MODE = os.environ.get("RUN_MODE", "LIVE")
 REPLAY_TAPE_PATH = os.environ.get("REPLAY_TAPE_PATH")
@@ -1480,6 +1481,8 @@ def main():
                 print("No tape yet.", flush=True)
                 time.sleep(0 if RUN_MODE == "REPLAY" else POLL_SECONDS)
                 continue
+
+            current_regime = log_regime(df)
 
             prices_now = latest_prices(df)
             if RUN_MODE == "LIVE":
