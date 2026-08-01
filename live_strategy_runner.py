@@ -8,6 +8,10 @@ from schwab_clients import SchwabTradeClient
 from bot_output import write_bot_output, append_bot_event
 from quote_source import LiveQuoteSource
 
+
+RUN_MODE = os.environ.get("RUN_MODE", "LIVE")
+RUN_ID = os.environ.get("RUN_ID", "live")
+
 TAPE_DIR = "/data/tapes"
 STATE_FILE = "/data/positions.json"
 TRIGGER_OUTCOMES_FILE = "/data/trigger_trade_outcomes.jsonl"
