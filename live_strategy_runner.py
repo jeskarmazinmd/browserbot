@@ -1937,6 +1937,14 @@ def main():
                 # Strict full-detail ledger: record every threshold-passing signal,
                 # independent of whether we later attempt an order.
                 for e in events:
+                    try:
+                        e.update(_universe_metadata(
+                            e.get("symbol"),
+                            e.get("timestamp")
+                        ))
+                    except Exception:
+                        pass
+
                     append_strategy_event(
                         e.get("strategy_id", STRATEGY_A),
                         "SIGNAL",
