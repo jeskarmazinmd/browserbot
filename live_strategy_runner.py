@@ -10,6 +10,7 @@ from quote_source import LiveQuoteSource
 
 
 RUN_MODE = os.environ.get("RUN_MODE", "LIVE")
+REPLAY_TAPE_PATH = os.environ.get("REPLAY_TAPE_PATH")
 RUN_ID = os.environ.get("RUN_ID", "live")
 
 TAPE_DIR = "/data/tapes"
@@ -679,7 +680,15 @@ def read_data():
 
 
 
-quote_source = LiveQuoteSource(read_data)
+if RUN_MODE == "REPLAY":
+    from replay_quote_source import ReplayQuoteSource
+
+    if not REPLAY_TAPE_PATH:
+        raise RuntimeError("REPLAY_TAPE_PATH required in REPLAY mode")
+
+    quote_source = ReplayQuoteSource(REPLAY_TAPE_PATH)
+else:
+    quote_source = LiveQuoteSource(read_data)
 
 
 def set_quote_source(source):
