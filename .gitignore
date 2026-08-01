@@ -8,3 +8,4 @@ schwabtradekey.txt
 .schwab.env
 .env
 *.zip
+__pycache__/
