@@ -2547,13 +2547,21 @@ def main():
                     )
 
                     try:
-                        resp = trader.place_entry_trigger_oco_order(
-                            sym,
-                            qty=QTY,
-                            buy_limit_price=buy_limit_price,
-                            target_price=e["target_price"],
-                            stop_price=e["stop_price"],
-                        )
+                        if RUN_MODE == "LIVE":
+                            resp = trader.place_entry_trigger_oco_order(
+                                sym,
+                                qty=QTY,
+                                buy_limit_price=buy_limit_price,
+                                target_price=e["target_price"],
+                                stop_price=e["stop_price"],
+                            )
+                        else:
+                            resp = {
+                                "ok": True,
+                                "replay": True,
+                                "order_id": None,
+                                "message": "Replay mode - simulated entry",
+                            }
                         print(f"ENTRY_TRIGGER_OCO_RESPONSE {sym}: {resp}", flush=True)
                         append_bot_event(
                             "ENTRY_TRIGGER_OCO_RESPONSE",
