@@ -3172,7 +3172,7 @@ def universe_performance_lines(today):
 
     buckets = {}
 
-    for label, path in SIGNAL_SERIES.items():
+    for label, path in _paper_series_definitions():
         if not path.exists():
             continue
 
