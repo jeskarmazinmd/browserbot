@@ -1067,6 +1067,7 @@ def manage_exits(trader, positions, prices_now):
                         fill = trader.get_order_fill_summary(entry_order_id)
                         if fill.get("ok") and fill.get("average_price"):
                             pos["actual_entry_price"] = float(fill["average_price"])
+                            pos["entry_fill_regime"] = latest_regime()
                             pos["entry_fill_time"] = fill.get("fill_time") or now_utc.isoformat()
                             pos["filled_qty"] = float(fill.get("filled_quantity") or pos.get("qty") or 0)
                             pos.setdefault("highest_price_since_fill", pos["actual_entry_price"])
@@ -1105,6 +1106,7 @@ def manage_exits(trader, positions, prices_now):
             fill = trader.get_order_fill_summary(pos["entry_order_id"])
             if fill.get("ok") and fill.get("average_price"):
                 pos["actual_entry_price"] = float(fill["average_price"])
+                pos["entry_fill_regime"] = latest_regime()
                 pos["entry_fill_time"] = fill.get("fill_time") or now_utc.isoformat()
                 pos["filled_qty"] = float(fill.get("filled_quantity") or actual_qty)
                 pos["highest_price_since_fill"] = pos["actual_entry_price"]
