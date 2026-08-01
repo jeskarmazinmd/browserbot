@@ -238,7 +238,11 @@ def strategy_accepts_flash(strategy_id, event):
 
 
 def is_regular_market_hours_et():
-    now = datetime.now(ZoneInfo("America/New_York"))
+    if RUN_MODE == "REPLAY":
+        now = quote_source.now().astimezone(ZoneInfo("America/New_York"))
+    else:
+        now = datetime.now(ZoneInfo("America/New_York"))
+
     if now.weekday() >= 5:
         return False
     start = now.replace(hour=9, minute=30, second=0, microsecond=0)
