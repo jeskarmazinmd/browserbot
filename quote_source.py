@@ -16,6 +16,9 @@ class LiveQuoteSource(QuoteSource):
             return self._reader()
         return read_data()
 
+    def now(self):
+        return datetime.now(timezone.utc)
+
 
 # Auto-generated from live_strategy_runner.py
 

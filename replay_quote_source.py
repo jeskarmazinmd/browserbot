@@ -36,3 +36,6 @@ class ReplayQuoteSource:
         self._data = df
 
         return df
+
+    def now(self):
+        return self.read_data()["timestamp"].max()

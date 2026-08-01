@@ -2036,7 +2036,7 @@ def main():
             if RUN_MODE == "LIVE":
                 manage_exits(trader, positions, prices_now)
 
-            now_utc = datetime.now(timezone.utc)
+            now_utc = quote_source.now()
             market_day = now_utc.astimezone(ZoneInfo("America/New_York")).date().isoformat()
             if market_day != near_miss_logged_day:
                 near_miss_logged.clear()
