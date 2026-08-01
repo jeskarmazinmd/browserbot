@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 from schwab_clients import SchwabTradeClient
 from bot_output import write_bot_output, append_bot_event
+from quote_source import LiveQuoteSource
 
 TAPE_DIR = "/data/tapes"
 STATE_FILE = "/data/positions.json"
@@ -671,6 +672,10 @@ def read_data():
     except Exception as e:
         print(f"incremental tape read error: {type(e).__name__}: {e}", flush=True)
         return _TAPE_CACHE
+
+
+
+quote_source = LiveQuoteSource(read_data)
 
 def fit_log_slope_pct_per_hour(prices):
     prices = prices.dropna()
@@ -2012,7 +2017,7 @@ def main():
                 except Exception as e:
                     print(f"TRADING_TOKEN_REFRESH error: {type(e).__name__}: {e}", flush=True)
 
-            df = read_data()
+            df = quote_source.read_data()
             if df is None or df.empty:
                 print("No tape yet.", flush=True)
                 time.sleep(POLL_SECONDS)
