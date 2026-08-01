@@ -1656,6 +1656,7 @@ def main():
                             "SIGNAL",
                             symbol=sym,
                             signal=independent,
+                            signal_regime=latest_regime(),
                             thresholds={
                                 "INDEPENDENT_FORWARD_START_UTC": INDEPENDENT_FORWARD_START_UTC,
                                 "INDEPENDENT_COOLDOWN_MINUTES": INDEPENDENT_COOLDOWN_MINUTES,
@@ -1953,6 +1954,7 @@ def main():
                         "SIGNAL",
                         symbol=e.get("symbol"),
                         signal=e,
+                        signal_regime=latest_regime(),
                         thresholds={
                             "FLASH_DROP_PCT": STRATEGY_CONFIGS[e.get("strategy_id", STRATEGY_A)]["flash_drop_pct"],
                             "MAX_FLASH_DROP_PCT": STRATEGY_CONFIGS[e.get("strategy_id", STRATEGY_A)].get("max_flash_drop_pct", MAX_FLASH_DROP_PCT),
@@ -2060,6 +2062,7 @@ def main():
                         positions[sym] = {
                             "qty": QTY,
                             "entry_price": e["entry_price"],
+                            "order_submission_regime": latest_regime(),
                             "flash_start_price": e["flash_start_price"],
                             "flash_drop_pct": e["flash_drop_pct"],
                             "pre_return_pct": e["pre_return_pct"],

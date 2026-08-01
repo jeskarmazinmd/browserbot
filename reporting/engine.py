@@ -630,6 +630,8 @@ def signal_paper_outcome_lines(signal_events, max_items=5, strategy_id="A", outc
                 "timestamp": e.get("timestamp"),
                 "symbol": sym,
 
+                "paper_entry_regime": e.get("signal_regime"),
+
                 "entry": float(entry),
                 "target": float(target),
                 "stop": float(stop),
