@@ -1,0 +1,9 @@
+"""Self-contained metadata and rules for strategy J2."""
+STRATEGY_ID = 'J2'
+DESCRIPTION = 'Strategy B post-entry failure-management variant'
+FAMILY = 'J'
+PAPER_ONLY = True
+CONFIG = {'stop_loss_fraction': 0.005, 'checkpoint_seconds': None, 'checkpoint_max_return_pct': None}
+
+def metadata():
+    return {"strategy_id": STRATEGY_ID, "description": DESCRIPTION, "family": FAMILY, "paper_only": PAPER_ONLY, "config": dict(CONFIG)}

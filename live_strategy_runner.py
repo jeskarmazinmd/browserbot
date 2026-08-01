@@ -7,36 +7,15 @@ import pandas as pd
 from schwab_clients import SchwabTradeClient
 from bot_output import write_bot_output, append_bot_event
 from quote_source import LiveQuoteSource
-from strategies.strategy_a import (
-    STRATEGY_ID as STRATEGY_A,
-    CONFIG as STRATEGY_A_CONFIG,
-    accepts_flash as strategy_a_accepts_flash,
-    refresh_event_for_entry as refresh_strategy_a_event_for_entry,
-    validate_confirmed_entry as validate_strategy_a_confirmed_entry,
+from types import SimpleNamespace
+from strategies.registry import (
+    evaluate_all as evaluate_registered_strategies,
+    FLASH_STRATEGY_MODULES,
+    flash_strategy_configs,
+    flash_accepts,
+    refresh_flash_entry,
+    validate_flash_entry,
 )
-from strategies.strategy_b import (
-    STRATEGY_ID as STRATEGY_B,
-    CONFIG as STRATEGY_B_CONFIG,
-    accepts_flash as strategy_b_accepts_flash,
-    refresh_event_for_entry as refresh_strategy_b_event_for_entry,
-    validate_confirmed_entry as validate_strategy_b_confirmed_entry,
-)
-from strategies.strategy_d import (
-    STRATEGY_ID as STRATEGY_D,
-    CONFIG as STRATEGY_D_CONFIG,
-    accepts_flash as strategy_d_accepts_flash,
-    refresh_event_for_entry as refresh_strategy_d_event_for_entry,
-    validate_confirmed_entry as validate_strategy_d_confirmed_entry,
-)
-from strategies.strategy_h import (
-    STRATEGY_ID as STRATEGY_H,
-    CONFIG as STRATEGY_H_CONFIG,
-    accepts_flash as strategy_h_accepts_flash,
-    refresh_event_for_entry as refresh_strategy_h_event_for_entry,
-    validate_confirmed_entry as validate_strategy_h_confirmed_entry,
-)
-from strategies.strategy_tf1 import evaluate as evaluate_strategy_tf1
-
 
 RUN_MODE = os.environ.get("RUN_MODE", "LIVE")
 REPLAY_TAPE_PATH = os.environ.get("REPLAY_TAPE_PATH")
@@ -59,12 +38,6 @@ MIN_PRE_CRASH_SLOPE_PCT_PER_HOUR = 0.50
 MIN_PRE_CRASH_RETURN_PCT = 0.25
 FLASH_DROP_PCT = 1.0
 # Strategy H aliases retained for reporting/near-miss code. Rules live in strategy_h.py.
-STRATEGY_H_MIN_FLASH_DROP_PCT = STRATEGY_H_CONFIG["flash_drop_pct"]
-STRATEGY_H_MAX_FLASH_DROP_PCT = STRATEGY_H_CONFIG["max_flash_drop_pct"]
-STRATEGY_H_MIN_PRE_R2 = STRATEGY_H_CONFIG["min_pre_r2"]
-STRATEGY_H_MAX_PRE_SLOPE_PCT_PER_HOUR = STRATEGY_H_CONFIG["max_pre_slope_pct_per_hour"]
-STRATEGY_H_STOP_LOSS_FRACTION_BELOW_ENTRY = STRATEGY_H_CONFIG["stop_loss_fraction"]
-STRATEGY_H_MIN_REMAINING_UPSIDE_PCT = STRATEGY_H_CONFIG["min_remaining_upside_pct"]
 NEAR_MISS_SCORE_CUTOFF = 0.25
 MAX_FLASH_DROP_PCT = 12.0
 MIN_FLASH_DOLLAR_VOLUME_3M = 100_000
@@ -79,8 +52,6 @@ ENTRY_CUTOFF_MINUTE_ET = 30
 QTY = 1
 BUY_LIMIT_BUFFER_PCT = 0.002
 REBOUND_CONFIRMATION_PCT = 0.001  # Strategy A: 0.10% rebound
-STRATEGY_B_REBOUND_CONFIRMATION_PCT = 0.002  # Strategy B: 0.20% rebound
-STRATEGY_B_STOP_LOSS_FRACTION_BELOW_ENTRY = 0.02
 MIN_REMAINING_UPSIDE_PCT = 0.20
 PENDING_REBOUND_TIMEOUT_SECONDS = 600  # Allow up to 10 minutes for a flat base/rebound
 ENTRY_TIMEOUT_SECONDS = 60
@@ -95,108 +66,20 @@ MAX_QUOTE_AGE_SECONDS = 300
 
 attempted = set()
 
-STRATEGY_CONFIGS = {
-    STRATEGY_A: dict(STRATEGY_A_CONFIG),
-    STRATEGY_B: dict(STRATEGY_B_CONFIG),
-    STRATEGY_D: dict(STRATEGY_D_CONFIG),
-    STRATEGY_H: dict(STRATEGY_H_CONFIG),
-}
+STRATEGY_CONFIGS = flash_strategy_configs()
+STRATEGY_A = "A"
+STRATEGY_B = "B"
+STRATEGY_D = "D"
+STRATEGY_H = "H"
 
-# Independent strategy research pack. These are native paper signals and do not
-# depend on Strategy A or its flash-drop/rebound event.
+# Independent strategy orchestration settings. Individual strategy rules and
+# thresholds live exclusively in strategies/strategy_*.py.
 INDEPENDENT_FORWARD_START_UTC = "2026-07-31T13:30:00+00:00"
-INDEPENDENT_STRATEGY_IDS = ("TF1", "BO1", "OR1", "RS1", "RS2", "RS3", "VE1", "VR1", "M1", "M2", "M3", "MC1", "TL1", "AV1", "TD1", "SH1", "CV1", "HL1", "VT1", "PD1", "EMA1", "EMA2", "EMA3", "SMA1", "VWEMA1")
 INDEPENDENT_COOLDOWN_MINUTES = 30
 INDEPENDENT_MIN_PRICE = 1.00
 INDEPENDENT_MAX_PRICE = 1000.00
 UNIVERSE_MANIFEST_DIR = DATA_ROOT
 _UNIVERSE_MANIFEST_CACHE = {"path": None, "mtime_ns": None, "symbols": {}}
-
-# First-pass thresholds intentionally remain simple and frozen prospectively.
-
-BO1_LOOKBACK_MINUTES = 10
-BO1_MAX_RANGE_PCT = 0.75
-BO1_BREAK_BUFFER_PCT = 0.10
-BO1_MIN_VOLUME_RATIO = 1.50
-
-OR1_RANGE_END_MINUTE_ET = 9 * 60 + 45
-OR1_ENTRY_END_MINUTE_ET = 10 * 60 + 15
-OR1_BREAK_BUFFER_PCT = 0.10
-OR1_MIN_RANGE_PCT = 0.20
-OR1_MAX_RANGE_PCT = 2.50
-
-RS1_MIN_RETURN_30M_PCT = 0.75
-RS1_MIN_EXCESS_VS_SPY_PCT = 0.75
-RS1_MIN_R2 = 0.50
-
-VE1_COMPRESSION_MINUTES = 15
-VE1_MAX_COMPRESSION_RANGE_PCT = 0.60
-VE1_BREAK_BUFFER_PCT = 0.10
-VE1_MIN_VOLUME_RATIO = 1.50
-
-VR1_MIN_DEPTH_BELOW_VWAP_PCT = 0.40
-VR1_HOLD_MINUTES = 2
-
-# New native forward-paper research pack. Frozen before the 2026-08-03 session.
-NEW_RESEARCH_FORWARD_START_UTC = "2026-08-03T13:30:00+00:00"
-MC1_MIN_RETURN_15M_PCT = 0.80
-MC1_MIN_RETURN_5M_PCT = 0.25
-MC1_MIN_R2_30M = 0.55
-MC1_MAX_DISTANCE_FROM_10M_HIGH_PCT = 0.35
-TL1_MIN_R2_30M = 0.45
-TL1_MIN_PRIOR_GAP_BELOW_TREND_PCT = 0.25
-AV1_MIN_DRAWDOWN_PCT = 0.40
-AV1_VOLATILITY_MULTIPLIER = 2.0
-AV1_MIN_REBOUND_2M_PCT = 0.10
-TD1_START_MINUTE_ET = 10 * 60
-TD1_END_MINUTE_ET = 11 * 60 + 30
-TD1_MIN_RETURN_30M_PCT = 0.60
-TD1_MIN_EXCESS_VS_SPY_PCT = 0.50
-SH1_MIN_DECLINE_20M_PCT = 1.00
-SH1_MIN_FLATTENING_RATIO = 0.50
-CV1_MIN_SLOPE_IMPROVEMENT_PCT_PER_HOUR = 0.80
-CV1_MIN_REBOUND_FROM_LOW_PCT = 0.25
-HL1_MIN_HIGHER_LOW_PCT = 0.15
-HL1_BREAK_BUFFER_PCT = 0.10
-VT1_MIN_R2_45M = 0.45
-VT1_MAX_CONFLUENCE_DISTANCE_PCT = 0.20
-VT1_MIN_REBOUND_2M_PCT = 0.10
-PD1_MIN_ONE_MINUTE_DROP_PCT = 1.00
-PD1_MIN_REBOUND_FROM_LOW_PCT = 0.40
-
-# Moving-average research family. MA1 (200 EMA reclaim) is intentionally
-# deferred because the live cache currently retains only 75 minutes.
-EMA_RESEARCH_FORWARD_START_UTC = "2026-08-03T13:30:00+00:00"
-EMA1_FAST_SPAN = 9
-EMA1_SLOW_SPAN = 21
-EMA1_MIN_VOLUME_RATIO = 1.20
-EMA2_SPAN = 20
-EMA2_MAX_PULLBACK_DISTANCE_PCT = 0.35
-EMA2_MIN_BOUNCE_2M_PCT = 0.10
-EMA3_FAST_SPAN = 9
-EMA3_MID_SPAN = 21
-EMA3_SLOW_SPAN = 50
-EMA3_ALIGNMENT_MINUTES = 5
-EMA3_BREAKOUT_LOOKBACK_MINUTES = 10
-EMA3_BREAK_BUFFER_PCT = 0.05
-SMA1_FAST_WINDOW = 20
-SMA1_SLOW_WINDOW = 50
-SMA1_CONFIRM_MINUTES = 2
-VWEMA1_EMA_SPAN = 20
-VWEMA1_MIN_RETURN_15M_PCT = 0.30
-VWEMA1_MIN_PRICE_ABOVE_VWAP_PCT = 0.05
-
-# M1-M3: slower, independent mean-reversion research. A qualifying decline must
-# be distributed across the lookback, make its low before the latest two minutes,
-# stabilize, and begin rebounding. All signals are paper-only.
-MEDIUM_REVERSAL_CONFIGS = {
-    "M1": {"lookback_minutes": 15, "min_decline_pct": 1.50, "min_rebound_from_low_pct": 0.25, "min_rebound_2m_pct": 0.10, "target_pct": 0.75, "stop_pct": 0.75},
-    "M2": {"lookback_minutes": 30, "min_decline_pct": 2.25, "min_rebound_from_low_pct": 0.30, "min_rebound_2m_pct": 0.12, "target_pct": 1.00, "stop_pct": 1.00},
-    "M3": {"lookback_minutes": 60, "min_decline_pct": 3.25, "min_rebound_from_low_pct": 0.40, "min_rebound_2m_pct": 0.15, "target_pct": 1.25, "stop_pct": 1.25},
-}
-MEDIUM_REVERSAL_MIN_LOW_AGE_MINUTES = 2
-MEDIUM_REVERSAL_MAX_LOW_AGE_MINUTES = 10
-MEDIUM_REVERSAL_MAX_SINGLE_MINUTE_SHARE = 0.75
 
 def append_strategy_event(strategy_id, event_type, **payload):
     append_bot_event(event_type, strategy_id=strategy_id, **payload)
@@ -208,35 +91,8 @@ def append_ab_paper_event(event_type, **payload):
 
 
 def strategy_accepts_flash(strategy_id, event):
-    """Apply strategy-specific admission filters to one detected flash."""
-    if strategy_id == STRATEGY_A:
-        return strategy_a_accepts_flash(event, MAX_FLASH_DROP_PCT)
-    if strategy_id == STRATEGY_B:
-        return strategy_b_accepts_flash(event, MAX_FLASH_DROP_PCT)
-    if strategy_id == STRATEGY_D:
-        return strategy_d_accepts_flash(event, MAX_FLASH_DROP_PCT)
-    if strategy_id == STRATEGY_H:
-        return strategy_h_accepts_flash(event, MAX_FLASH_DROP_PCT)
-
-    cfg = STRATEGY_CONFIGS[strategy_id]
-    drop = float(event.get("flash_drop_pct", 0) or 0)
-    if drop < float(cfg["flash_drop_pct"]):
-        return False
-    if drop > float(cfg.get("max_flash_drop_pct", MAX_FLASH_DROP_PCT)):
-        return False
-
-    min_r2 = cfg.get("min_pre_r2")
-    if min_r2 is not None:
-        r2 = float(event.get("pre_r2", float("nan")) or float("nan"))
-        if math.isnan(r2) or r2 < float(min_r2):
-            return False
-
-    max_slope = cfg.get("max_pre_slope_pct_per_hour")
-    if max_slope is not None:
-        slope = float(event.get("pre_slope_pct_per_hour", float("nan")) or float("nan"))
-        if math.isnan(slope) or slope > float(max_slope):
-            return False
-    return True
+    """Delegate flash admission to the registered strategy module."""
+    return flash_accepts(strategy_id, event, MAX_FLASH_DROP_PCT)
 
 
 def is_regular_market_hours_et():
@@ -1048,73 +904,14 @@ def detect_latest_flash(sym, g, min_flash_drop_pct=FLASH_DROP_PCT):
     }
 
 def refresh_event_for_entry(event, current_price, strategy_id):
-    """Build a confirmed-entry snapshot while preserving the original target."""
-    if strategy_id == STRATEGY_A:
-        return refresh_strategy_a_event_for_entry(event, current_price)
-    if strategy_id == STRATEGY_B:
-        return refresh_strategy_b_event_for_entry(event, current_price)
-    if strategy_id == STRATEGY_D:
-        return refresh_strategy_d_event_for_entry(event, current_price)
-    if strategy_id == STRATEGY_H:
-        return refresh_strategy_h_event_for_entry(event, current_price)
+    """Delegate confirmed-entry construction to the strategy module."""
+    return refresh_flash_entry(strategy_id, event, current_price)
 
-    refreshed = dict(event)
-    cfg = STRATEGY_CONFIGS[strategy_id]
-    entry = float(current_price)
-    flash_start = float(refreshed["flash_start_price"])
-    original_target = float(refreshed["target_price"])
-    original_drop_pct = float(refreshed["flash_drop_pct"])
-
-    remaining_upside_pct = ((original_target / entry) - 1.0) * 100.0
-    refreshed.update({
-        "strategy_id": strategy_id,
-        "entry_price": entry,
-        "original_flash_drop_pct": original_drop_pct,
-        "original_target_price": original_target,
-        "remaining_upside_pct": remaining_upside_pct,
-        "target_price": original_target,
-        "stop_price": entry * (1 - cfg["stop_loss_fraction"]),
-        "rebound_confirmation_pct": cfg["rebound_confirmation_pct"] * 100,
-    })
-    return refreshed
 
 def validate_confirmed_entry(event):
+    """Delegate confirmed-entry validation to the strategy module."""
     strategy_id = str(event.get("strategy_id") or STRATEGY_A)
-    if strategy_id == STRATEGY_A:
-        return validate_strategy_a_confirmed_entry(
-            event,
-            MIN_REMAINING_UPSIDE_PCT,
-        )
-    if strategy_id == STRATEGY_B:
-        return validate_strategy_b_confirmed_entry(
-            event,
-            MIN_REMAINING_UPSIDE_PCT,
-        )
-    if strategy_id == STRATEGY_D:
-        return validate_strategy_d_confirmed_entry(
-            event,
-            MIN_REMAINING_UPSIDE_PCT,
-        )
-    if strategy_id == STRATEGY_H:
-        return validate_strategy_h_confirmed_entry(event)
-
-    entry = float(event.get("entry_price", 0) or 0)
-    target = float(event.get("target_price", 0) or 0)
-    original_drop = float(event.get("original_flash_drop_pct", event.get("flash_drop_pct", 0)) or 0)
-    remaining = float(event.get("remaining_upside_pct", -999) or -999)
-    strategy_id = str(event.get("strategy_id") or STRATEGY_A)
-    min_remaining = float(
-        STRATEGY_CONFIGS.get(strategy_id, {}).get(
-            "min_remaining_upside_pct", MIN_REMAINING_UPSIDE_PCT
-        )
-    )
-    if original_drop <= 0:
-        return False, "invalid_original_drop"
-    if target <= entry:
-        return False, "target_reached_before_entry"
-    if remaining < min_remaining:
-        return False, "insufficient_remaining_upside"
-    return True, None
+    return validate_flash_entry(strategy_id, event, MIN_REMAINING_UPSIDE_PCT)
 
 
 def is_eod_exit_time():
