@@ -103,7 +103,18 @@ def calculate_regime(df, timestamp=None):
         "breadth": {},
         "dispersion": {},
         "correlation": {},
+        "data_quality": {},
         "labels": {},
+    }
+
+    result["data_quality"] = {
+        "symbols_available": int(df["symbol"].nunique()),
+        "minutes_available": int(df["timestamp"].nunique()),
+        "quality": (
+            "GOOD"
+            if int(df["timestamp"].nunique()) >= 60
+            else "LIMITED"
+        ),
     }
 
 
@@ -144,9 +155,19 @@ def calculate_regime(df, timestamp=None):
             spy_prices.tail(31)
         )
 
+        if slope is None:
+            trend_label = "UNKNOWN"
+        elif slope > 0.10 and (r2 or 0) > 0.4:
+            trend_label = "UPTREND"
+        elif slope < -0.10 and (r2 or 0) > 0.4:
+            trend_label = "DOWNTREND"
+        else:
+            trend_label = "CHOP"
+
         result["trend"] = {
             "spy_slope_30m": slope,
             "spy_r2_30m": r2,
+            "classification": trend_label,
         }
 
 
@@ -214,11 +235,24 @@ def calculate_regime(df, timestamp=None):
             .dropna()
         )
 
+        vol = (
+            float(spy_returns.tail(30).std())
+            if len(spy_returns)
+            else None
+        )
+
+        if vol is None:
+            vol_label = "UNKNOWN"
+        elif vol > 0.004:
+            vol_label = "HIGH"
+        elif vol < 0.001:
+            vol_label = "LOW"
+        else:
+            vol_label = "NORMAL"
+
         result["volatility"] = {
-            "spy_30m_std": float(
-                spy_returns.tail(30).std()
-            )
-            if len(spy_returns) else None
+            "spy_30m_std": vol,
+            "classification": vol_label,
         }
 
 
@@ -246,14 +280,14 @@ def calculate_regime(df, timestamp=None):
 
     green = result["breadth"].get("green_pct_5m")
 
-    if green is not None:
-
-        if green < 25:
-            result["labels"]["breadth"] = "BROAD_SELLING"
-        elif green > 75:
-            result["labels"]["breadth"] = "BROAD_BUYING"
-        else:
-            result["labels"]["breadth"] = "MIXED"
+    if green is None:
+        result["labels"]["breadth"] = "UNKNOWN"
+    elif green < 25:
+        result["labels"]["breadth"] = "BROAD_SELLING"
+    elif green > 75:
+        result["labels"]["breadth"] = "BROAD_BUYING"
+    else:
+        result["labels"]["breadth"] = "MIXED"
 
 
     if timestamp is not None:
