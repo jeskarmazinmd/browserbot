@@ -279,8 +279,11 @@ def calculate_regime(df, timestamp=None):
 
 
     green = result["breadth"].get("green_pct_5m")
+    quality = result.get("data_quality", {}).get("quality")
 
-    if green is None:
+    if quality != "GOOD":
+        result["labels"]["breadth"] = "UNKNOWN"
+    elif green is None:
         result["labels"]["breadth"] = "UNKNOWN"
     elif green < 25:
         result["labels"]["breadth"] = "BROAD_SELLING"
