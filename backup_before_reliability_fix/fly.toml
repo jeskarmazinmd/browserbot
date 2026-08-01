@@ -1,0 +1,22 @@
+app = "schwab"
+primary_region = "lax"
+
+[build]
+
+[processes]
+  app = "sh -c 'python -u live_quote_collector.py & python -u leaderboard_writer.py & python -u live_strategy_runner.py'"
+
+[[vm]]
+  memory = "2gb"
+  cpus = 1
+
+[mounts]
+  source = "schwab_data"
+  destination = "/data"
+
+
+[http_service]
+  processes = ["app"]
+auto_stop_machines = false
+auto_start_machines = true
+min_machines_running = 1

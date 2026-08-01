@@ -1,0 +1,195 @@
+Scanning: ./trendline_scanner_v22.py
+./trendline_scanner_v22.py:39:from __future__ import annotations
+./trendline_scanner_v22.py:194:            close = df.xs("Close", level=0, axis=1).iloc[:, 0]
+./trendline_scanner_v22.py:324:    flash = s.iloc[-FLASH_WINDOW_MINUTES:]
+./trendline_scanner_v22.py:325:    pre = s.iloc[-(PRE_CRASH_TREND_MINUTES + FLASH_WINDOW_MINUTES):-FLASH_WINDOW_MINUTES]
+./trendline_scanner_v22.py:330:    pre_start = float(pre.iloc[0])
+./trendline_scanner_v22.py:331:    pre_end = float(pre.iloc[-1])
+./trendline_scanner_v22.py:332:    flash_start = float(flash.iloc[0])
+./trendline_scanner_v22.py:333:    flash_end = float(flash.iloc[-1])
+./trendline_scanner_v22.py:356:    entry_price = flash_end
+./trendline_scanner_v22.py:357:    target_price = entry_price + 0.60 * (flash_start - entry_price)
+./trendline_scanner_v22.py:358:    stop_price = entry_price * 0.95
+./trendline_scanner_v22.py:363:        "entry_price": entry_price,
+./trendline_scanner_v22.py:369:        "target_price": target_price,
+./trendline_scanner_v22.py:370:        "stop_price": stop_price,
+Scanning: ./trade_logger.py
+Scanning: ./backups_2026_05_19/trendline_scanner_v22.py
+./backups_2026_05_19/trendline_scanner_v22.py:39:from __future__ import annotations
+./backups_2026_05_19/trendline_scanner_v22.py:264:    flash = s.iloc[-FLASH_WINDOW_MINUTES:]
+./backups_2026_05_19/trendline_scanner_v22.py:265:    pre = s.iloc[-(PRE_CRASH_TREND_MINUTES + FLASH_WINDOW_MINUTES):-FLASH_WINDOW_MINUTES]
+./backups_2026_05_19/trendline_scanner_v22.py:270:    pre_start = float(pre.iloc[0])
+./backups_2026_05_19/trendline_scanner_v22.py:271:    pre_end = float(pre.iloc[-1])
+./backups_2026_05_19/trendline_scanner_v22.py:272:    flash_start = float(flash.iloc[0])
+./backups_2026_05_19/trendline_scanner_v22.py:273:    flash_end = float(flash.iloc[-1])
+./backups_2026_05_19/trendline_scanner_v22.py:296:    entry_price = flash_end
+./backups_2026_05_19/trendline_scanner_v22.py:297:    target_price = entry_price + 0.60 * (flash_start - entry_price)
+./backups_2026_05_19/trendline_scanner_v22.py:298:    stop_price = entry_price * 0.95
+./backups_2026_05_19/trendline_scanner_v22.py:303:        "entry_price": entry_price,
+./backups_2026_05_19/trendline_scanner_v22.py:309:        "target_price": target_price,
+./backups_2026_05_19/trendline_scanner_v22.py:310:        "stop_price": stop_price,
+Scanning: ./schwab_clients.py
+Scanning: ./trendline_scanner_v23.py
+./trendline_scanner_v23.py:13:Using cached intraday replay data.
+./trendline_scanner_v23.py:28:from __future__ import annotations
+./trendline_scanner_v23.py:69:            "hit_target_count": 0,
+./trendline_scanner_v23.py:70:            "hit_stop_count": 0,
+./trendline_scanner_v23.py:89:        "hit_target_count": int((df["outcome"] == "hit_target").sum()),
+./trendline_scanner_v23.py:90:        "hit_stop_count": int((df["outcome"] == "hit_stop").sum()),
+./trendline_scanner_v23.py:108:        df = df[df["strategy"] == "flash_entry_after_dip"].copy()
+./trendline_scanner_v23.py:117:        raise ValueError("No usable flash-entry rows found.")
+Scanning: ./session_risk.py
+Scanning: ./backfill_45m.py
+Scanning: ./bot_output.py
+./bot_output.py:38:        f"entry={float(e.get('entry_price', 0)):.2f} | "
+./bot_output.py:39:        f"target={float(e.get('target_price', 0)):.2f} | "
+./bot_output.py:40:        f"stop={float(e.get('stop_price', 0)):.2f}"
+Scanning: ./live_quote_collector.py
+Scanning: ./trendline_scanner_v14, 1% per trade, 14 trades per week.py
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:7:    Historical intraday replay for the ACTUAL intended strategy:
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:21:        - target = recover 60% of flash drop
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:22:        - stop = 5% below entry
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:33:    ~/Desktop/intraday_replay_YYYYMMDD_HHMMSS.csv
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:41:from __future__ import annotations
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:303:def simulate_exit(day_prices, entry_idx, entry_price, flash_start_price):
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:304:    target_price = entry_price + RECOVERY_TARGET_FRACTION * (flash_start_price - entry_price)
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:305:    stop_price = entry_price * (1 - STOP_LOSS_FRACTION_BELOW_ENTRY)
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:307:    for j in range(entry_idx + 1, len(day_prices)):
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:308:        px = float(day_prices.iloc[j])
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:311:        if px >= target_price:
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:312:            ret = ((target_price / entry_price) - 1) * 100
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:315:                "exit_price": target_price,
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:316:                "outcome": "hit_target",
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:319:                "target_price": target_price,
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:320:                "stop_price": stop_price,
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:323:        if px <= stop_price:
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:324:            ret = ((stop_price / entry_price) - 1) * 100
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:327:                "exit_price": stop_price,
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:328:                "outcome": "hit_stop",
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:331:                "target_price": target_price,
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:332:                "stop_price": stop_price,
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:335:    final_px = float(day_prices.iloc[-1])
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:337:    ret = ((final_px / entry_price) - 1) * 100
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:345:        "target_price": target_price,
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:346:        "stop_price": stop_price,
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:372:        # i is the final candle index of the flash window / entry.
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:374:            flash = day_prices.iloc[i - FLASH_WINDOW_MINUTES + 1:i + 1]
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:375:            pre = day_prices.iloc[i - FLASH_WINDOW_MINUTES - PRE_CRASH_TREND_MINUTES + 1:i - FLASH_WINDOW_MINUTES + 1]
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:380:            pre_start = float(pre.iloc[0])
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:381:            pre_end = float(pre.iloc[-1])
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:382:            flash_start = float(flash.iloc[0])
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:383:            flash_end = float(flash.iloc[-1])
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:397:            entry_price = flash_end
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:398:            entry_time = day_prices.index[i]
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:400:            exit_sim = simulate_exit(
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:402:                entry_idx=i,
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:403:                entry_price=entry_price,
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:410:                "entry_time": str(entry_time),
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:411:                "entry_price": entry_price,
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:417:                "target_price": exit_sim["target_price"],
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:418:                "stop_price": exit_sim["stop_price"],
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:511:    output_file = OUTPUT_DIR / f"intraday_replay_{timestamp}.csv"
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:530:    print(f"Total simulated P/L: ${total_pnl:,.2f}")
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:545:        "entry_time",
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:546:        "entry_price",
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:550:        "target_price",
+./trendline_scanner_v14, 1% per trade, 14 trades per week.py:551:        "stop_price",
+Scanning: ./session_analysis_v1.py
+Scanning: ./trendline_scanner_v24_fix2.py
+Scanning: ./v14_session_replay.py
+./v14_session_replay.py:3:v14_session_replay.py
+./v14_session_replay.py:19:    python3 v14_session_replay.py <trade_csv>
+./v14_session_replay.py:72:        print("Usage: python3 v14_session_replay.py <csv>")
+./v14_session_replay.py:83:        df = df[df["strategy"] == "flash_entry_after_dip"].copy()
+Scanning: ./trendline_scanner_v25_live_schwab_backup.py
+./trendline_scanner_v25_live_schwab_backup.py:39:from __future__ import annotations
+./trendline_scanner_v25_live_schwab_backup.py:194:            close = df.xs("Close", level=0, axis=1).iloc[:, 0]
+./trendline_scanner_v25_live_schwab_backup.py:324:    flash = s.iloc[-FLASH_WINDOW_MINUTES:]
+./trendline_scanner_v25_live_schwab_backup.py:325:    pre = s.iloc[-(PRE_CRASH_TREND_MINUTES + FLASH_WINDOW_MINUTES):-FLASH_WINDOW_MINUTES]
+./trendline_scanner_v25_live_schwab_backup.py:330:    pre_start = float(pre.iloc[0])
+./trendline_scanner_v25_live_schwab_backup.py:331:    pre_end = float(pre.iloc[-1])
+./trendline_scanner_v25_live_schwab_backup.py:332:    flash_start = float(flash.iloc[0])
+./trendline_scanner_v25_live_schwab_backup.py:333:    flash_end = float(flash.iloc[-1])
+./trendline_scanner_v25_live_schwab_backup.py:356:    entry_price = flash_end
+./trendline_scanner_v25_live_schwab_backup.py:357:    target_price = entry_price + 0.60 * (flash_start - entry_price)
+./trendline_scanner_v25_live_schwab_backup.py:358:    stop_price = entry_price * 0.95
+./trendline_scanner_v25_live_schwab_backup.py:363:        "entry_price": entry_price,
+./trendline_scanner_v25_live_schwab_backup.py:369:        "target_price": target_price,
+./trendline_scanner_v25_live_schwab_backup.py:370:        "stop_price": stop_price,
+Scanning: ./live_strategy_runner.py
+./live_strategy_runner.py:103:    flash = prices.iloc[-FLASH_WINDOW_MINUTES:]
+./live_strategy_runner.py:104:    pre = prices.iloc[-(PRE_CRASH_TREND_MINUTES + FLASH_WINDOW_MINUTES):-FLASH_WINDOW_MINUTES]
+./live_strategy_runner.py:109:    pre_start = float(pre.iloc[0])
+./live_strategy_runner.py:110:    pre_end = float(pre.iloc[-1])
+./live_strategy_runner.py:111:    flash_start = float(flash.iloc[0])
+./live_strategy_runner.py:112:    flash_end = float(flash.iloc[-1])
+./live_strategy_runner.py:128:    entry = flash_end
+./live_strategy_runner.py:129:    target = entry + RECOVERY_TARGET_FRACTION * (flash_start - entry)
+./live_strategy_runner.py:130:    stop = entry * (1 - STOP_LOSS_FRACTION_BELOW_ENTRY)
+./live_strategy_runner.py:134:        "entry_price": entry,
+./live_strategy_runner.py:140:        "target_price": target,
+./live_strategy_runner.py:141:        "stop_price": stop,
+./live_strategy_runner.py:152:        target = pos["target_price"]
+./live_strategy_runner.py:153:        stop = pos["stop_price"]
+./live_strategy_runner.py:155:        if px >= target:
+./live_strategy_runner.py:157:        elif px <= stop:
+./live_strategy_runner.py:162:        print(f"EXIT_ATTEMPT {reason} SELL {pos['qty']} {sym} px={px:.2f} target={target:.2f} stop={stop:.2f}", flush=True)
+./live_strategy_runner.py:213:                            flash = prices.iloc[-FLASH_WINDOW_MINUTES:]
+./live_strategy_runner.py:214:                            flash_start = float(flash.iloc[0])
+./live_strategy_runner.py:215:                            flash_end = float(flash.iloc[-1])
+./live_strategy_runner.py:217:                            pre = prices.iloc[-(PRE_CRASH_TREND_MINUTES + FLASH_WINDOW_MINUTES):-FLASH_WINDOW_MINUTES]
+./live_strategy_runner.py:218:                            pre_start = float(pre.iloc[0]) if len(pre) else 0
+./live_strategy_runner.py:219:                            pre_end = float(pre.iloc[-1]) if len(pre) else 0
+./live_strategy_runner.py:267:                        f"entry={e['entry_price']:.2f} flash_start={e['flash_start_price']:.2f} "
+./live_strategy_runner.py:268:                        f"target={e['target_price']:.2f} stop={e['stop_price']:.2f}",
+./live_strategy_runner.py:298:                        "entry_price": e["entry_price"],
+./live_strategy_runner.py:303:                        "target_price": e["target_price"],
+./live_strategy_runner.py:304:                        "stop_price": e["stop_price"],
+./live_strategy_runner.py:306:                        "entry_response": str(resp),
+Scanning: ./trendline_scanner_v24_fix.py
+Scanning: ./app.py
+Scanning: ./compare_versions.py
+Scanning: ./trendline_scanner_v24.py
+Scanning: ./trendline_scanner_v25_live_schwab.py
+./trendline_scanner_v25_live_schwab.py:39:from __future__ import annotations
+./trendline_scanner_v25_live_schwab.py:228:            close = df.xs("Close", level=0, axis=1).iloc[:, 0]
+./trendline_scanner_v25_live_schwab.py:358:    flash = s.iloc[-FLASH_WINDOW_MINUTES:]
+./trendline_scanner_v25_live_schwab.py:359:    pre = s.iloc[-(PRE_CRASH_TREND_MINUTES + FLASH_WINDOW_MINUTES):-FLASH_WINDOW_MINUTES]
+./trendline_scanner_v25_live_schwab.py:364:    pre_start = float(pre.iloc[0])
+./trendline_scanner_v25_live_schwab.py:365:    pre_end = float(pre.iloc[-1])
+./trendline_scanner_v25_live_schwab.py:366:    flash_start = float(flash.iloc[0])
+./trendline_scanner_v25_live_schwab.py:367:    flash_end = float(flash.iloc[-1])
+./trendline_scanner_v25_live_schwab.py:390:    entry_price = flash_end
+./trendline_scanner_v25_live_schwab.py:391:    target_price = entry_price + 0.60 * (flash_start - entry_price)
+./trendline_scanner_v25_live_schwab.py:392:    stop_price = entry_price * 0.95
+./trendline_scanner_v25_live_schwab.py:397:        "entry_price": entry_price,
+./trendline_scanner_v25_live_schwab.py:403:        "target_price": target_price,
+./trendline_scanner_v25_live_schwab.py:404:        "stop_price": stop_price,
+./trendline_scanner_v25_live_schwab.py:435:            close = close.iloc[:, 0]
+./trendline_scanner_v25_live_schwab.py:576:    pre = prices.iloc[:-len(recent)]
+./trendline_scanner_v25_live_schwab.py:581:    flash_start = float(recent.iloc[0])
+./trendline_scanner_v25_live_schwab.py:582:    flash_end = float(recent.iloc[-1])
+./trendline_scanner_v25_live_schwab.py:583:    pre_start = float(pre.iloc[0])
+./trendline_scanner_v25_live_schwab.py:584:    pre_end = float(pre.iloc[-1])
+./trendline_scanner_v25_live_schwab.py:597:        "entry_price": flash_end,
+./trendline_scanner_v25_live_schwab.py:601:        "target_price": flash_end + 0.60 * (flash_start - flash_end),
+./trendline_scanner_v25_live_schwab.py:602:        "stop_price": flash_end * 0.95,
+./trendline_scanner_v25_live_schwab.py:694:                    flash_start = float(recent.iloc[0])
+./trendline_scanner_v25_live_schwab.py:695:                    flash_end = float(recent.iloc[-1])
+./trendline_scanner_v25_live_schwab.py:721:            print(f"ALERT {a['symbol']} drop={a['flash_drop_pct']:.2f}% entry={a['entry_price']:.2f}")
+Scanning: ./run_experiment.py
+Scanning: ./trendline_scanner_v22_before_incremental.py
+./trendline_scanner_v22_before_incremental.py:39:from __future__ import annotations
+./trendline_scanner_v22_before_incremental.py:194:            close = df.xs("Close", level=0, axis=1).iloc[:, 0]
+./trendline_scanner_v22_before_incremental.py:324:    flash = s.iloc[-FLASH_WINDOW_MINUTES:]
+./trendline_scanner_v22_before_incremental.py:325:    pre = s.iloc[-(PRE_CRASH_TREND_MINUTES + FLASH_WINDOW_MINUTES):-FLASH_WINDOW_MINUTES]
+./trendline_scanner_v22_before_incremental.py:330:    pre_start = float(pre.iloc[0])
+./trendline_scanner_v22_before_incremental.py:331:    pre_end = float(pre.iloc[-1])
+./trendline_scanner_v22_before_incremental.py:332:    flash_start = float(flash.iloc[0])
+./trendline_scanner_v22_before_incremental.py:333:    flash_end = float(flash.iloc[-1])
+./trendline_scanner_v22_before_incremental.py:356:    entry_price = flash_end
+./trendline_scanner_v22_before_incremental.py:357:    target_price = entry_price + 0.60 * (flash_start - entry_price)
+./trendline_scanner_v22_before_incremental.py:358:    stop_price = entry_price * 0.95
+./trendline_scanner_v22_before_incremental.py:363:        "entry_price": entry_price,
+./trendline_scanner_v22_before_incremental.py:369:        "target_price": target_price,
+./trendline_scanner_v22_before_incremental.py:370:        "stop_price": stop_price,

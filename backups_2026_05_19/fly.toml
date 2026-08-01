@@ -1,0 +1,11 @@
+app = "schwab"
+primary_region = "lax"
+
+[build]
+
+[processes]
+  app = "python -u trendline_scanner_v22.py"
+
+[[vm]]
+  memory = "1gb"
+  cpus = 1

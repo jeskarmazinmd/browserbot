@@ -1,0 +1,13 @@
+scannerenv
+trendline_cache
+trendline_intraday_cache
+*.csv
+!1Mvolumesymbols.csv
+schwabkey.txt
+
+# Schwab auth tokens - never bake into image
+schwab_token.json
+schwab_trade_token.json
+schwab_token_old_access_only.json
+schwabkey.txt
+schwabtradekey.txt

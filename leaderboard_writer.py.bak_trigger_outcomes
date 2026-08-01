@@ -1,0 +1,401 @@
+from pathlib import Path
+from datetime import datetime, timezone
+from collections import deque
+import json
+import time
+import shutil
+
+SUMMARY_TXT = Path("/data/bot_output.txt")
+HISTORY_JSONL = Path("/data/bot_history.jsonl")
+EVENTS_JSONL = Path("/data/bot_events.jsonl")
+
+POLL_SECONDS = 30
+MAX_HISTORY_ROWS = 5000
+
+def fmt_near(e):
+    return (
+        f"{e.get('symbol')} | score={float(e.get('miss_score', 999)):.2f} | "
+        f"drop={float(e.get('flash_drop_pct', 0)):.2f}% | "
+        f"gap={float(e.get('gap', 0)):.2f}% | "
+        f"pre_ret={float(e.get('pre_return_pct', 0)):.2f}% | "
+        f"pre_slope={float(e.get('pre_slope_pct_per_hour', 0)):.2f}%/hr | "
+        f"r2={float(e.get('pre_r2', 0)):.2f} | "
+        f"fails={e.get('failed', 'unknown')} | "
+        f"price={float(e.get('price', 0)):.2f}"
+    )
+
+def load_recent_rows():
+    if not HISTORY_JSONL.exists():
+        return []
+    rows = deque(maxlen=MAX_HISTORY_ROWS)
+    with HISTORY_JSONL.open() as f:
+        for raw in f:
+            raw = raw.strip()
+            if raw:
+                try:
+                    rows.append(json.loads(raw))
+                except Exception:
+                    pass
+    return list(rows)
+
+def load_recent_events():
+    if not EVENTS_JSONL.exists():
+        return []
+    rows = deque(maxlen=MAX_HISTORY_ROWS)
+    with EVENTS_JSONL.open() as f:
+        for raw in f:
+            raw = raw.strip()
+            if raw:
+                try:
+                    rows.append(json.loads(raw))
+                except Exception:
+                    pass
+    return list(rows)
+
+
+def summarize_signal_event(e):
+    sig = e.get("signal", {}) or {}
+    ts = e.get("timestamp", "?")
+    sym = e.get("symbol") or sig.get("symbol", "?")
+    return (
+        f"{ts} | {sym} | "
+        f"drop={float(sig.get('flash_drop_pct', 0)):.2f}% "
+        f"pre_ret={float(sig.get('pre_return_pct', 0)):.2f}% "
+        f"pre_slope={float(sig.get('pre_slope_pct_per_hour', 0)):.2f}%/hr "
+        f"entry={float(sig.get('entry_price', 0)):.2f} "
+        f"target={float(sig.get('target_price', 0)):.2f} "
+        f"stop={float(sig.get('stop_price', 0)):.2f}"
+    )
+
+
+def summarize_trigger_event(e):
+    sig = e.get("signal", {}) or {}
+    return (
+        f"{e.get('timestamp')} | {e.get('symbol')} | "
+        f"buy_limit={float(e.get('buy_limit_price', 0)):.2f} | "
+        f"entry={float(sig.get('entry_price', 0)):.2f} | "
+        f"target={float(sig.get('target_price', 0)):.2f} | "
+        f"stop={float(sig.get('stop_price', 0)):.2f} | "
+        f"drop={float(sig.get('flash_drop_pct', 0)):.2f}% | "
+        f"pre_ret={float(sig.get('pre_return_pct', 0)):.2f}% | "
+        f"pre_slope={float(sig.get('pre_slope_pct_per_hour', 0)):.2f}%/hr"
+    )
+
+def summarize_execution_event(e):
+    et = e.get("event_type", "UNKNOWN")
+    sym = e.get("symbol", "?")
+    qty = e.get("qty", "?")
+    ts = e.get("timestamp", "?")
+    if et in ("BUY_ATTEMPT", "SELL_ATTEMPT"):
+        return f"{ts} | {et} | {sym} qty={qty}"
+    if et in ("BUY_RESPONSE", "SELL_RESPONSE"):
+        return f"{ts} | {et} | {sym} qty={qty} response={e.get('response')}"
+    if et in ("BUY_ERROR", "SELL_ERROR"):
+        return f"{ts} | {et} | {sym} qty={qty} error={e.get('exception_type')}: {e.get('error')}"
+    return f"{ts} | {et} | {sym} qty={qty}"
+
+
+def storage_health_lines():
+    try:
+        usage = shutil.disk_usage("/data")
+        total = usage.total
+        used = usage.used
+        free = usage.free
+        pct = (used / total * 100) if total else 0
+
+        def fmt(n):
+            for unit in ["B", "K", "M", "G", "T"]:
+                if n < 1024:
+                    return f"{n:.0f}{unit}"
+                n /= 1024
+            return f"{n:.0f}P"
+
+        return [
+            "STORAGE HEALTH",
+            f"data_used: {fmt(used)} / {fmt(total)}",
+            f"data_available: {fmt(free)}",
+            f"data_use_percent: {pct:.1f}%",
+        ]
+    except Exception as e:
+        return ["STORAGE HEALTH", f"storage_error: {e}"]
+
+def _one_token_health_lines(label, token_path):
+    token_path = Path(token_path)
+    if not token_path.exists():
+        return [label, f"token_file: {token_path} MISSING", "auth_status: BROKEN"]
+
+    try:
+        token_data = json.loads(token_path.read_text())
+        token = token_data.get("token", {}) if isinstance(token_data.get("token"), dict) else {}
+
+        created = float(token_data.get("creation_timestamp", 0) or 0)
+        expires = float(token.get("expires_at", 0) or token_data.get("expires_at", 0) or 0)
+        has_access_token = bool(token.get("access_token") or token_data.get("access_token"))
+        has_refresh_token = bool(token.get("refresh_token") or token_data.get("refresh_token"))
+        account_present = bool(token_data.get("account_id") or token_data.get("account_hash"))
+        now = time.time()
+
+        minutes_left = (expires - now) / 60 if expires else -999999
+        access_status = "EXPIRED" if minutes_left <= 0 else ("WARNING" if minutes_left < 10 else "OK")
+
+        if has_refresh_token:
+            auth_status = "REFRESHABLE" if access_status != "EXPIRED" else "ACCESS_EXPIRED_BUT_REFRESH_TOKEN_PRESENT"
+        else:
+            auth_status = "ACCESS_ONLY_EXPIRED_NEEDS_MANUAL_REGEN" if access_status == "EXPIRED" else "ACCESS_ONLY_OK"
+
+        lines = [
+            label,
+            f"token_file: {token_path}",
+            f"token_file_modified_utc: {datetime.fromtimestamp(token_path.stat().st_mtime, timezone.utc).isoformat()}",
+            f"token_created_utc: {datetime.fromtimestamp(created, timezone.utc).isoformat() if created else 'unknown'}",
+            f"access_token_expires_utc: {datetime.fromtimestamp(expires, timezone.utc).isoformat() if expires else 'unknown'}",
+            f"access_token_minutes_left: {minutes_left:.1f}",
+            f"has_access_token: {has_access_token}",
+            f"has_refresh_token: {has_refresh_token}",
+            f"account_present: {account_present}",
+            f"access_status: {access_status}",
+            f"auth_status: {auth_status}",
+            f"auto_refresh: {'YES_VIA_SCHWAB_PY' if has_refresh_token else 'NO_REFRESH_TOKEN'}",
+            f"refresh_note: {'access token refreshes automatically on next authenticated SDK request' if has_refresh_token else 'manual token regeneration required when access expires'}",
+        ]
+
+        if created:
+            lines += [
+                f"manual_reauth_due_utc: {datetime.fromtimestamp(created + 7*24*3600, timezone.utc).isoformat()}",
+                f"manual_reauth_time_left: {((created + 7*24*3600) - now)/86400:.2f} days",
+            ]
+
+        return lines
+
+    except Exception as e:
+        return [label, f"token_parse_error: {e}", "auth_status: BROKEN"]
+
+
+def token_health_lines():
+    market = _one_token_health_lines("SCHWAB MARKET DATA HEALTH", "/data/schwab_token.json")
+    trading = _one_token_health_lines("SCHWAB TRADING HEALTH", "/data/schwab_trade_token.json")
+
+    def status(lines):
+        joined = "\n".join(lines)
+        if "access_status: OK" in joined or "access_status: WARNING" in joined:
+            return "OK"
+        if "auth_status: ACCESS_EXPIRED_BUT_REFRESH_TOKEN_PRESENT" in joined:
+            return "REFRESHABLE"
+        return "BROKEN"
+
+    capabilities = [
+        "BOT CAPABILITIES",
+        f"quote_collection: {status(market)}",
+        "signal_generation: OK",
+        f"order_placement: {status(trading)}",
+    ]
+
+    return market + [""] + trading + [""] + capabilities
+
+def main():
+    print("leaderboard_writer.py starting lightweight mode", flush=True)
+
+    while True:
+        try:
+            rows = load_recent_rows()
+            events = load_recent_events()
+            latest = rows[-1] if rows else None
+            today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+            today_rows = [r for r in rows if r.get("date") == today]
+            today_events = [e for e in events if str(e.get("timestamp", "")).startswith(today)]
+            signal_events_today = [e for e in today_events if e.get("event_type") == "SIGNAL"]
+            trigger_events_today = [e for e in today_events if e.get("event_type") == "ENTRY_TRIGGER_OCO_ATTEMPT"]
+            execution_events_today = [e for e in today_events if e.get("event_type") in ("BUY_ATTEMPT", "BUY_RESPONSE", "BUY_ERROR", "SELL_ATTEMPT", "SELL_RESPONSE", "SELL_ERROR")]
+
+            top_today = []
+            triggers_today = 0
+            for r in today_rows:
+                triggers_today = max(triggers_today, int(r.get("total_triggers_today", 0) or 0))
+                for e in r.get("latest_nearest", []) or []:
+                    x = dict(e)
+                    x["seen_at"] = r.get("timestamp")
+                    top_today.append(x)
+
+            top_today = sorted(top_today, key=lambda e: float(e.get("miss_score", 999)))[:5]
+
+            by_day = {}
+            for r in rows:
+                d = r.get("date", "unknown")
+                by_day.setdefault(d, {"best": None, "triggers": 0})
+                by_day[d]["triggers"] = max(by_day[d]["triggers"], int(r.get("total_triggers_today", 0) or 0))
+                for e in r.get("latest_nearest", []) or []:
+                    if by_day[d]["best"] is None or float(e.get("miss_score", 999)) < float(by_day[d]["best"].get("miss_score", 999)):
+                        by_day[d]["best"] = dict(e)
+
+            lines = [
+                "BOT OUTPUT",
+                f"Last update: {datetime.now(timezone.utc).isoformat()}",
+                f"Status: {latest.get('status', 'unknown') if latest else 'unknown'}",
+                "",
+                *token_health_lines(),
+                "",
+                *storage_health_lines(),
+                "",
+                "ACTIVE THRESHOLDS",
+                "flash_drop >= 2.00%",
+                "pre_return >= 0.25%",
+                "pre_slope >= 0.50%/hr",
+                "max_flash_drop <= 12.00%",
+                "",
+                "LATEST NEAREST MISSES",
+            ]
+
+            if latest and latest.get("latest_nearest"):
+                for e in latest["latest_nearest"][:5]:
+                    lines.append(fmt_near(e))
+            else:
+                lines.append("None")
+
+            lines += ["", "TOP 5 NEAREST MISSES TODAY"]
+            if top_today:
+                for e in top_today:
+                    lines.append(f"{fmt_near(e)} | seen={e.get('seen_at')}")
+            else:
+                lines.append("None")
+
+            lines += ["", "TRIGGERS TODAY"]
+            if latest and latest.get("latest_triggers"):
+                for e in latest["latest_triggers"][:10]:
+                    lines.append(str(e))
+            else:
+                lines.append("None")
+            lines.append(f"Total triggers today: {triggers_today}")
+
+            lines += ["", "TRIGGER TRADE LEDGER TODAY"]
+            if trigger_events_today:
+                for e in trigger_events_today[-50:]:
+                    lines.append(summarize_trigger_event(e))
+            else:
+                lines.append("None")
+
+            lines += ["", "FULL SIGNAL LEDGER TODAY"]
+            if signal_events_today:
+                for e in signal_events_today[-20:]:
+                    lines.append(summarize_signal_event(e))
+            else:
+                lines.append("None")
+
+            near_miss_events_today = [e for e in today_events if e.get("event_type") == "NEAR_MISS"]
+            lines += ["", "NEAR MISS EVENTS TODAY"]
+            if near_miss_events_today:
+                for e in near_miss_events_today[-10:]:
+                    c = e.get("candidate", {}) or {}
+                    lines.append(
+                        f"{e.get('timestamp')} | {e.get('symbol')} | "
+                        f"score={float(c.get('miss_score', 999)):.2f} | "
+                        f"drop={float(c.get('flash_drop_pct', 0)):.2f}% | "
+                        f"gap={float(c.get('gap', 0)):.2f}% | "
+                        f"pre_ret={float(c.get('pre_return_pct', 0)):.2f}% | "
+                        f"pre_slope={float(c.get('pre_slope_pct_per_hour', 0)):.2f}%/hr | "
+                        f"fails={c.get('failed', 'unknown')} | "
+                        f"price={float(c.get('price', 0)):.2f}"
+                    )
+                lines.append(f"Total near-miss events today: {len(near_miss_events_today)}")
+            else:
+                lines.append("None")
+
+            signal_by_day = {}
+            for e in events:
+                if e.get("event_type") != "SIGNAL":
+                    continue
+                ts = str(e.get("timestamp", ""))
+                d = ts[:10] if len(ts) >= 10 else "unknown"
+                signal_by_day.setdefault(d, []).append(e)
+
+            lines += ["", "MULTI-DAY SIGNAL LEDGER"]
+            if signal_by_day:
+                for d in sorted(signal_by_day.keys())[-10:]:
+                    lines.append(f"{d} | signals={len(signal_by_day[d])}")
+                    for e in signal_by_day[d][-5:]:
+                        lines.append("  " + summarize_signal_event(e))
+            else:
+                lines.append("No signal events yet.")
+
+            lines += ["", "ORDER / EXECUTION EVENTS TODAY"]
+            if execution_events_today:
+                for e in execution_events_today[-20:]:
+                    lines.append(summarize_execution_event(e))
+            else:
+                lines.append("None")
+
+            exec_by_day = {}
+            for e in events:
+                ts = str(e.get("timestamp", ""))
+                d = ts[:10] if len(ts) >= 10 else "unknown"
+                et = e.get("event_type")
+                exec_by_day.setdefault(d, {"buy_attempts": 0, "buy_responses": 0, "buy_errors": 0, "sell_attempts": 0, "sell_responses": 0, "sell_errors": 0})
+                if et == "BUY_ATTEMPT":
+                    exec_by_day[d]["buy_attempts"] += 1
+                elif et == "BUY_RESPONSE":
+                    exec_by_day[d]["buy_responses"] += 1
+                elif et == "BUY_ERROR":
+                    exec_by_day[d]["buy_errors"] += 1
+                elif et == "SELL_ATTEMPT":
+                    exec_by_day[d]["sell_attempts"] += 1
+                elif et == "SELL_RESPONSE":
+                    exec_by_day[d]["sell_responses"] += 1
+                elif et == "SELL_ERROR":
+                    exec_by_day[d]["sell_errors"] += 1
+
+            lines += ["", "MULTI-DAY EXECUTION SUMMARY"]
+            if exec_by_day:
+                for d in sorted(exec_by_day.keys())[-10:]:
+                    x = exec_by_day[d]
+                    lines.append(
+                        f"{d} | buy_attempts={x['buy_attempts']} buy_responses={x['buy_responses']} "
+                        f"buy_errors={x['buy_errors']} sell_attempts={x['sell_attempts']} "
+                        f"sell_responses={x['sell_responses']} sell_errors={x['sell_errors']}"
+                    )
+            else:
+                lines.append("No execution events yet.")
+
+
+            trigger_by_day = {}
+            for e in events:
+                if e.get("event_type") != "ENTRY_TRIGGER_OCO_ATTEMPT":
+                    continue
+                d = str(e.get("timestamp", ""))[:10]
+                trigger_by_day.setdefault(d, []).append(e)
+
+            lines += ["", "MULTI-DAY TRIGGER LEDGER"]
+            if trigger_by_day:
+                for d in sorted(trigger_by_day.keys())[-10:]:
+                    lines.append(f"{d} | triggers={len(trigger_by_day[d])}")
+                    for e in trigger_by_day[d][-20:]:
+                        lines.append("  " + summarize_trigger_event(e))
+            else:
+                lines.append("No trigger events yet.")
+
+            lines += ["", "MULTI-DAY SUMMARY"]
+            if by_day:
+                for d in sorted(by_day.keys())[-10:]:
+                    b = by_day[d]["best"]
+                    if b:
+                        lines.append(
+                            f"{d} | best={b.get('symbol')} score={float(b.get('miss_score', 999)):.2f} "
+                            f"drop={float(b.get('flash_drop_pct', 0)):.2f}% "
+                            f"gap={float(b.get('gap', 0)):.2f}% | "
+                            f"pre_ret={float(b.get('pre_return_pct', 0)):.2f}% "
+                            f"pre_slope={float(b.get('pre_slope_pct_per_hour', 0)):.2f}%/hr "
+                            f"fails={b.get('failed', 'unknown')} | triggers={by_day[d]['triggers']}"
+                        )
+                    else:
+                        lines.append(f"{d} | no nearest data | triggers={by_day[d]['triggers']}")
+            else:
+                lines.append("No history yet.")
+
+            SUMMARY_TXT.write_text("\n".join(lines) + "\n")
+
+        except Exception as e:
+            print(f"leaderboard error: {type(e).__name__}: {e}", flush=True)
+
+        time.sleep(POLL_SECONDS)
+
+if __name__ == "__main__":
+    main()

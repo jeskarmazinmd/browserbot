@@ -1,0 +1,22 @@
+BOT OUTPUT
+Last update: 2026-08-01T10:29:00+00:00
+Status: running
+
+BOT CAPABILITIES
+quote_collection: OK
+signal_generation: OK
+order_placement: OK
+
+STORAGE HEALTH
+data_used: 568M / 974M
+data_available: 339M
+data_use_percent: 58.4%
+
+CPU HEALTH
+cpu_percent: 14.2
+load_average: 0.32
+
+CURRENT PAPER P/L SUMMARY — US MARKET DATE 2026-07-31
+A signal: current_total_P/L=+12.98 | closed=4 (+12.98) | open_marked=0 (+0.00) | open_unavailable=0 | trades=4
+E signal: current_total_P/L=+26.01 | closed=8 (+26.01) | open_marked=0 (+0.00) | open_unavailable=0 | trades=8
+RS1 signal: current_total_P/L=-4.30 | closed=11 (-4.30) | open_marked=0 (+0.00) | open_unavailable=0 | trades=11

@@ -1,0 +1,23 @@
+app = "schwab"
+primary_region = "lax"
+
+[build]
+
+[processes]
+  app = "python -u supervisor.py"
+
+[[vm]]
+  memory = "2gb"
+  cpus = 1
+
+[mounts]
+  source = "schwab_data"
+  destination = "/data"
+
+
+[http_service]
+  internal_port = 8080
+  processes = ["app"]
+auto_stop_machines = false
+auto_start_machines = true
+min_machines_running = 1

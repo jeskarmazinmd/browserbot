@@ -1,0 +1,42 @@
+# Python virtual environments
+venv/
+dashboard-venv/
+
+# Git
+.git/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Runtime / generated files
+cache/
+runtime/
+bot_events*
+*.log
+
+# Research output
+trendline_cache/
+trendline_intraday_cache/
+
+# CSVs (except required symbol list)
+*.csv
+!1Mvolumesymbols.csv
+
+# macOS
+.DS_Store
+
+# Screenshots
+*.png
+
+# Archives
+*.zip
+
+# Secrets
+schwab_token.json
+schwab_trade_token.json
+schwab_token_old_access_only.json
+schwabkey.txt
+schwabtradekey.txt
+.schwab.env
+.env
