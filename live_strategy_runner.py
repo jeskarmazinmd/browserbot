@@ -677,6 +677,11 @@ def read_data():
 
 quote_source = LiveQuoteSource(read_data)
 
+
+def set_quote_source(source):
+    global quote_source
+    quote_source = source
+
 def fit_log_slope_pct_per_hour(prices):
     prices = prices.dropna()
     prices = prices[prices > 0]
