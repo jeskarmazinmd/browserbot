@@ -17,7 +17,7 @@ from trendline_scanner_v25_live_schwab import (
 
 DATA_DIR = Path("/data/tapes")
 SAVE_TAPES = True
-MAX_TAPE_MB = 50
+MAX_TAPE_MB = 200
 MAX_TAPE_ROWS = 900000
 
 # Overall tape retention limits.
@@ -28,8 +28,8 @@ MAINTENANCE_SECONDS = 60
 LOCAL_DATA_DIR = Path("data/tapes")
 POLL_SECONDS = 1
 TOKEN_TOUCH_SECONDS = 600
-ELIGIBILITY_STATUS_PATH = Path("/data/eligibility_status.json")
-ELIGIBILITY_REFRESH_SCRIPT = Path("/app/refresh_eligible_symbols.py")
+UNIVERSE_STATUS_PATH = Path("/data/research_universe_status.json")
+UNIVERSE_REFRESH_SCRIPT = Path("/app/refresh_eligible_symbols.py")
 
 def tape_path():
     today = datetime.now(timezone.utc).strftime("%Y%m%d")
@@ -37,10 +37,10 @@ def tape_path():
     base.mkdir(parents=True, exist_ok=True)
     return base / f"quotes_{today}.csv"
 
-def _write_eligibility_status(cache_path, symbol_count, used_fallback):
-    """Atomically record the exact eligibility universe used by the collector."""
+def _write_universe_status(cache_path, symbol_count, used_fallback):
+    """Atomically record the exact research universe used by the collector."""
     now = datetime.now(timezone.utc)
-    match = re.search(r"eligible_symbols_(\d{8})\.csv$", cache_path.name)
+    match = re.search(r"(?:research_universe|eligible_symbols)_(\d{8})\.csv$", cache_path.name)
     cache_date = None
     age_days = None
 
@@ -64,37 +64,40 @@ def _write_eligibility_status(cache_path, symbol_count, used_fallback):
         "status": "CURRENT" if current else "STALE",
     }
 
-    ELIGIBILITY_STATUS_PATH.parent.mkdir(parents=True, exist_ok=True)
-    tmp = ELIGIBILITY_STATUS_PATH.with_suffix(".json.tmp")
+    UNIVERSE_STATUS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    tmp = UNIVERSE_STATUS_PATH.with_suffix(".json.tmp")
     tmp.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
-    tmp.replace(ELIGIBILITY_STATUS_PATH)
+    tmp.replace(UNIVERSE_STATUS_PATH)
 
 
-def refresh_eligibility_cache():
+def refresh_research_universe():
     """Run the one-shot builder. Used at UTC date rollover while markets are closed."""
-    if not ELIGIBILITY_REFRESH_SCRIPT.exists():
-        print(f"[warn] eligibility refresh script missing: {ELIGIBILITY_REFRESH_SCRIPT}", flush=True)
+    if not UNIVERSE_REFRESH_SCRIPT.exists():
+        print(f"[warn] research-universe refresh script missing: {UNIVERSE_REFRESH_SCRIPT}", flush=True)
         return False
     try:
         completed = subprocess.run(
-            [os.sys.executable, "-u", str(ELIGIBILITY_REFRESH_SCRIPT)],
+            [os.sys.executable, "-u", str(UNIVERSE_REFRESH_SCRIPT)],
             cwd="/app",
             env=os.environ.copy(),
             check=False,
         )
         if completed.returncode != 0:
-            print(f"[warn] eligibility refresh exited {completed.returncode}", flush=True)
+            print(f"[warn] research-universe refresh exited {completed.returncode}", flush=True)
             return False
         return True
     except Exception as exc:
-        print(f"[warn] eligibility refresh failed: {type(exc).__name__}: {exc}", flush=True)
+        print(f"[warn] research-universe refresh failed: {type(exc).__name__}: {exc}", flush=True)
         return False
 
 
 def load_symbols():
-    # Prefer today's eligible cache on Fly, but visibly record any fallback.
+    """Load today's broad research universe, with compatibility fallback."""
     today = datetime.now(timezone.utc).strftime("%Y%m%d")
     preferred = [
+        Path("/data") / f"research_universe_{today}.csv",
+        Path(f"research_universe_{today}.csv"),
+        Path("/app") / f"research_universe_{today}.csv",
         Path("/data") / f"eligible_symbols_{today}.csv",
         Path(f"eligible_symbols_{today}.csv"),
         Path("/app") / f"eligible_symbols_{today}.csv",
@@ -106,6 +109,7 @@ def load_symbols():
     if p is None:
         candidates = []
         for base in [Path("/data"), Path("/app"), Path(".")]:
+            candidates.extend(base.glob("research_universe_*.csv"))
             candidates.extend(base.glob("eligible_symbols_*.csv"))
 
         candidates = sorted(
@@ -116,24 +120,32 @@ def load_symbols():
 
         if not candidates:
             raise FileNotFoundError(
-                "No eligible cache found for today and no fallback eligible_symbols_*.csv found"
+                "No research_universe or eligible_symbols cache found"
             )
 
         p = candidates[0]
         used_fallback = True
-        print(f"[warn] today's eligible cache missing; using fallback: {p}", flush=True)
+        print(f"[warn] today's research universe missing; using fallback: {p}", flush=True)
 
     import pandas as pd
     cached = pd.read_csv(p)
     if "symbol" not in cached.columns:
-        raise RuntimeError(f"Eligibility cache has no symbol column: {p}")
+        raise RuntimeError(f"Research-universe cache has no symbol column: {p}")
 
-    symbols = cached["symbol"].dropna().astype(str).str.strip().tolist()
+    symbols = (
+        cached["symbol"]
+        .dropna()
+        .astype(str)
+        .str.upper()
+        .str.strip()
+        .drop_duplicates()
+        .tolist()
+    )
     symbols = [symbol for symbol in symbols if symbol]
     if not symbols:
-        raise RuntimeError(f"Eligibility cache contains zero symbols: {p}")
+        raise RuntimeError(f"Research-universe cache contains zero symbols: {p}")
 
-    _write_eligibility_status(p, len(symbols), used_fallback)
+    _write_universe_status(p, len(symbols), used_fallback)
     return symbols
 
 
@@ -295,8 +307,8 @@ def main():
             old_path = path
             path = current_path
 
-            # Build and reload the new UTC day's eligibility universe.
-            refresh_eligibility_cache()
+            # Build and reload the new UTC day's research universe.
+            refresh_research_universe()
             symbols = load_symbols()
 
             print(

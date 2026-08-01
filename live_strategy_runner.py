@@ -8,6 +8,7 @@ from schwab_clients import SchwabTradeClient
 from bot_output import write_bot_output, append_bot_event
 from quote_source import LiveQuoteSource
 from types import SimpleNamespace
+from strategies.generic_registry import evaluate_all as evaluate_generic_strategies
 from strategies.registry import (
     evaluate_all as evaluate_registered_strategies,
     FLASH_STRATEGY_MODULES,
@@ -1318,6 +1319,7 @@ def _universe_metadata(symbol, timestamp):
             "universe_memberships": meta.get("universe_memberships", []),
             "sampling_tier": meta.get("sampling_tier", "UNKNOWN"),
             "dynamic_promoted": bool(meta.get("dynamic_promoted", False)),
+            "legacy_eligible": bool(meta.get("legacy_eligible", False)),
         }
     except Exception:
         return {"primary_universe": "UNKNOWN", "universe_memberships": [], "sampling_tier": "UNKNOWN", "dynamic_promoted": False}
@@ -1393,6 +1395,9 @@ def detect_independent_signals(sym, g, spy_30m_return_pct=None):
         confirm_recent_volume_ratio=_confirm_recent_volume_ratio,
     )
     signals, errors = evaluate_registered_strategies(context)
+    generic_signals, generic_errors = evaluate_generic_strategies(context)
+    signals.extend(generic_signals)
+    errors.extend(generic_errors)
     for strategy_id, exc in errors:
         print(f"STRATEGY_EVALUATION_ERROR {strategy_id}: {type(exc).__name__}: {exc}", flush=True)
         append_strategy_event(strategy_id, "STRATEGY_EVALUATION_ERROR", error=f"{type(exc).__name__}: {exc}")

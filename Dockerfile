@@ -24,8 +24,10 @@ COPY live_strategy_runner.py .
 COPY quote_source.py .
 COPY supervisor.py .
 COPY refresh_eligible_symbols.py .
+COPY universe_tags.py .
 
 COPY strategies /app/strategies
+COPY detectors /app/detectors
 COPY reporting /app/reporting
 COPY schwab_bot_dashboard /app/schwab_bot_dashboard
 
