@@ -1,0 +1,1 @@
+"""Modular trading-strategy implementations."""

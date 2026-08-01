@@ -7,6 +7,35 @@ import pandas as pd
 from schwab_clients import SchwabTradeClient
 from bot_output import write_bot_output, append_bot_event
 from quote_source import LiveQuoteSource
+from strategies.strategy_a import (
+    STRATEGY_ID as STRATEGY_A,
+    CONFIG as STRATEGY_A_CONFIG,
+    accepts_flash as strategy_a_accepts_flash,
+    refresh_event_for_entry as refresh_strategy_a_event_for_entry,
+    validate_confirmed_entry as validate_strategy_a_confirmed_entry,
+)
+from strategies.strategy_b import (
+    STRATEGY_ID as STRATEGY_B,
+    CONFIG as STRATEGY_B_CONFIG,
+    accepts_flash as strategy_b_accepts_flash,
+    refresh_event_for_entry as refresh_strategy_b_event_for_entry,
+    validate_confirmed_entry as validate_strategy_b_confirmed_entry,
+)
+from strategies.strategy_d import (
+    STRATEGY_ID as STRATEGY_D,
+    CONFIG as STRATEGY_D_CONFIG,
+    accepts_flash as strategy_d_accepts_flash,
+    refresh_event_for_entry as refresh_strategy_d_event_for_entry,
+    validate_confirmed_entry as validate_strategy_d_confirmed_entry,
+)
+from strategies.strategy_h import (
+    STRATEGY_ID as STRATEGY_H,
+    CONFIG as STRATEGY_H_CONFIG,
+    accepts_flash as strategy_h_accepts_flash,
+    refresh_event_for_entry as refresh_strategy_h_event_for_entry,
+    validate_confirmed_entry as validate_strategy_h_confirmed_entry,
+)
+from strategies.strategy_tf1 import evaluate as evaluate_strategy_tf1
 
 
 RUN_MODE = os.environ.get("RUN_MODE", "LIVE")
@@ -29,14 +58,13 @@ FLASH_WINDOW_MINUTES = 3
 MIN_PRE_CRASH_SLOPE_PCT_PER_HOUR = 0.50
 MIN_PRE_CRASH_RETURN_PCT = 0.25
 FLASH_DROP_PCT = 1.0
-STRATEGY_D_FLASH_DROP_PCT = 0.9
-# Strategy H: broad, filtered rebound setup derived from A signals + near misses.
-STRATEGY_H_MIN_FLASH_DROP_PCT = 0.60
-STRATEGY_H_MAX_FLASH_DROP_PCT = 2.50
-STRATEGY_H_MIN_PRE_R2 = 0.40
-STRATEGY_H_MAX_PRE_SLOPE_PCT_PER_HOUR = 12.0
-STRATEGY_H_STOP_LOSS_FRACTION_BELOW_ENTRY = 0.04
-STRATEGY_H_MIN_REMAINING_UPSIDE_PCT = 0.10
+# Strategy H aliases retained for reporting/near-miss code. Rules live in strategy_h.py.
+STRATEGY_H_MIN_FLASH_DROP_PCT = STRATEGY_H_CONFIG["flash_drop_pct"]
+STRATEGY_H_MAX_FLASH_DROP_PCT = STRATEGY_H_CONFIG["max_flash_drop_pct"]
+STRATEGY_H_MIN_PRE_R2 = STRATEGY_H_CONFIG["min_pre_r2"]
+STRATEGY_H_MAX_PRE_SLOPE_PCT_PER_HOUR = STRATEGY_H_CONFIG["max_pre_slope_pct_per_hour"]
+STRATEGY_H_STOP_LOSS_FRACTION_BELOW_ENTRY = STRATEGY_H_CONFIG["stop_loss_fraction"]
+STRATEGY_H_MIN_REMAINING_UPSIDE_PCT = STRATEGY_H_CONFIG["min_remaining_upside_pct"]
 NEAR_MISS_SCORE_CUTOFF = 0.25
 MAX_FLASH_DROP_PCT = 12.0
 MIN_FLASH_DOLLAR_VOLUME_3M = 100_000
@@ -53,8 +81,6 @@ BUY_LIMIT_BUFFER_PCT = 0.002
 REBOUND_CONFIRMATION_PCT = 0.001  # Strategy A: 0.10% rebound
 STRATEGY_B_REBOUND_CONFIRMATION_PCT = 0.002  # Strategy B: 0.20% rebound
 STRATEGY_B_STOP_LOSS_FRACTION_BELOW_ENTRY = 0.02
-STRATEGY_D_REBOUND_CONFIRMATION_PCT = STRATEGY_B_REBOUND_CONFIRMATION_PCT
-STRATEGY_D_STOP_LOSS_FRACTION_BELOW_ENTRY = STRATEGY_B_STOP_LOSS_FRACTION_BELOW_ENTRY
 MIN_REMAINING_UPSIDE_PCT = 0.20
 PENDING_REBOUND_TIMEOUT_SECONDS = 600  # Allow up to 10 minutes for a flat base/rebound
 ENTRY_TIMEOUT_SECONDS = 60
@@ -69,39 +95,11 @@ MAX_QUOTE_AGE_SECONDS = 300
 
 attempted = set()
 
-STRATEGY_A = "A"
-STRATEGY_B = "B"
-STRATEGY_D = "D"
-STRATEGY_H = "H"
 STRATEGY_CONFIGS = {
-    STRATEGY_A: {
-        "flash_drop_pct": FLASH_DROP_PCT,
-        "rebound_confirmation_pct": REBOUND_CONFIRMATION_PCT,
-        "stop_loss_fraction": STOP_LOSS_FRACTION_BELOW_ENTRY,
-        "live_order_placement": True,
-    },
-    STRATEGY_B: {
-        "flash_drop_pct": FLASH_DROP_PCT,
-        "rebound_confirmation_pct": STRATEGY_B_REBOUND_CONFIRMATION_PCT,
-        "stop_loss_fraction": STRATEGY_B_STOP_LOSS_FRACTION_BELOW_ENTRY,
-        "live_order_placement": False,
-    },
-    STRATEGY_D: {
-        "flash_drop_pct": STRATEGY_D_FLASH_DROP_PCT,
-        "rebound_confirmation_pct": STRATEGY_D_REBOUND_CONFIRMATION_PCT,
-        "stop_loss_fraction": STRATEGY_D_STOP_LOSS_FRACTION_BELOW_ENTRY,
-        "live_order_placement": False,
-    },
-    STRATEGY_H: {
-        "flash_drop_pct": STRATEGY_H_MIN_FLASH_DROP_PCT,
-        "max_flash_drop_pct": STRATEGY_H_MAX_FLASH_DROP_PCT,
-        "min_pre_r2": STRATEGY_H_MIN_PRE_R2,
-        "max_pre_slope_pct_per_hour": STRATEGY_H_MAX_PRE_SLOPE_PCT_PER_HOUR,
-        "rebound_confirmation_pct": REBOUND_CONFIRMATION_PCT,
-        "stop_loss_fraction": STRATEGY_H_STOP_LOSS_FRACTION_BELOW_ENTRY,
-        "min_remaining_upside_pct": STRATEGY_H_MIN_REMAINING_UPSIDE_PCT,
-        "live_order_placement": False,
-    },
+    STRATEGY_A: dict(STRATEGY_A_CONFIG),
+    STRATEGY_B: dict(STRATEGY_B_CONFIG),
+    STRATEGY_D: dict(STRATEGY_D_CONFIG),
+    STRATEGY_H: dict(STRATEGY_H_CONFIG),
 }
 
 # Independent strategy research pack. These are native paper signals and do not
@@ -115,11 +113,6 @@ UNIVERSE_MANIFEST_DIR = DATA_ROOT
 _UNIVERSE_MANIFEST_CACHE = {"path": None, "mtime_ns": None, "symbols": {}}
 
 # First-pass thresholds intentionally remain simple and frozen prospectively.
-TF1_MIN_RETURN_30M_PCT = 0.75
-TF1_MIN_R2 = 0.60
-TF1_PULLBACK_MIN_PCT = 0.25
-TF1_PULLBACK_MAX_PCT = 0.75
-TF1_REBOUND_2M_PCT = 0.10
 
 BO1_LOOKBACK_MINUTES = 10
 BO1_MAX_RANGE_PCT = 0.75
@@ -216,6 +209,15 @@ def append_ab_paper_event(event_type, **payload):
 
 def strategy_accepts_flash(strategy_id, event):
     """Apply strategy-specific admission filters to one detected flash."""
+    if strategy_id == STRATEGY_A:
+        return strategy_a_accepts_flash(event, MAX_FLASH_DROP_PCT)
+    if strategy_id == STRATEGY_B:
+        return strategy_b_accepts_flash(event, MAX_FLASH_DROP_PCT)
+    if strategy_id == STRATEGY_D:
+        return strategy_d_accepts_flash(event, MAX_FLASH_DROP_PCT)
+    if strategy_id == STRATEGY_H:
+        return strategy_h_accepts_flash(event, MAX_FLASH_DROP_PCT)
+
     cfg = STRATEGY_CONFIGS[strategy_id]
     drop = float(event.get("flash_drop_pct", 0) or 0)
     if drop < float(cfg["flash_drop_pct"]):
@@ -1047,6 +1049,15 @@ def detect_latest_flash(sym, g, min_flash_drop_pct=FLASH_DROP_PCT):
 
 def refresh_event_for_entry(event, current_price, strategy_id):
     """Build a confirmed-entry snapshot while preserving the original target."""
+    if strategy_id == STRATEGY_A:
+        return refresh_strategy_a_event_for_entry(event, current_price)
+    if strategy_id == STRATEGY_B:
+        return refresh_strategy_b_event_for_entry(event, current_price)
+    if strategy_id == STRATEGY_D:
+        return refresh_strategy_d_event_for_entry(event, current_price)
+    if strategy_id == STRATEGY_H:
+        return refresh_strategy_h_event_for_entry(event, current_price)
+
     refreshed = dict(event)
     cfg = STRATEGY_CONFIGS[strategy_id]
     entry = float(current_price)
@@ -1068,6 +1079,25 @@ def refresh_event_for_entry(event, current_price, strategy_id):
     return refreshed
 
 def validate_confirmed_entry(event):
+    strategy_id = str(event.get("strategy_id") or STRATEGY_A)
+    if strategy_id == STRATEGY_A:
+        return validate_strategy_a_confirmed_entry(
+            event,
+            MIN_REMAINING_UPSIDE_PCT,
+        )
+    if strategy_id == STRATEGY_B:
+        return validate_strategy_b_confirmed_entry(
+            event,
+            MIN_REMAINING_UPSIDE_PCT,
+        )
+    if strategy_id == STRATEGY_D:
+        return validate_strategy_d_confirmed_entry(
+            event,
+            MIN_REMAINING_UPSIDE_PCT,
+        )
+    if strategy_id == STRATEGY_H:
+        return validate_strategy_h_confirmed_entry(event)
+
     entry = float(event.get("entry_price", 0) or 0)
     target = float(event.get("target_price", 0) or 0)
     original_drop = float(event.get("original_flash_drop_pct", event.get("flash_drop_pct", 0)) or 0)
@@ -1533,11 +1563,7 @@ def _confirm_recent_volume_ratio(symbol, lookback_minutes=30):
 
 
 def detect_independent_signals(sym, g, spy_30m_return_pct=None):
-    """Generate native paper signals for six unrelated intraday strategy families.
-
-    All calculations use only data at or before the emitted timestamp. The event
-    timestamp is the latest completed minute, making repeated scans idempotent.
-    """
+    """Evaluate each enabled independent strategy module in isolation."""
     work = _series_at_least(g, 18)
     if work is None:
         return []
@@ -1550,436 +1576,22 @@ def detect_independent_signals(sym, g, spy_30m_return_pct=None):
     et = pd.Timestamp(ts).tz_convert(ZoneInfo("America/New_York"))
     minute_et = et.hour * 60 + et.minute
     prices = work["price"].astype(float)
-    signals = []
-
-    # Shared trend measures.
     last30 = prices.tail(31)
     ret30 = _simple_return_pct(last30.iloc[0], last30.iloc[-1]) if len(last30) >= 21 else math.nan
     slope30, r2_30 = fit_log_slope_pct_per_hour(last30) if len(last30) >= 21 else (math.nan, math.nan)
 
-    # TF1: strong orderly trend, shallow pullback from recent high, then renewed rise.
-    if len(prices) >= 31 and not math.isnan(ret30) and not math.isnan(r2_30):
-        recent_high = float(prices.tail(10).max())
-        pullback_pct = (recent_high / px - 1.0) * 100.0 if px > 0 else math.nan
-        rebound2 = _simple_return_pct(prices.iloc[-3], prices.iloc[-1])
-        if (
-            ret30 >= TF1_MIN_RETURN_30M_PCT
-            and slope30 > 0
-            and r2_30 >= TF1_MIN_R2
-            and TF1_PULLBACK_MIN_PCT <= pullback_pct <= TF1_PULLBACK_MAX_PCT
-            and rebound2 >= TF1_REBOUND_2M_PCT
-        ):
-            signals.append(_independent_signal(
-                "TF1", sym, ts, px, 0.75, 0.60, "trend_pullback",
-                return_30m_pct=ret30, slope_30m_pct_per_hour=slope30,
-                r2_30m=r2_30, pullback_from_10m_high_pct=pullback_pct,
-                rebound_2m_pct=rebound2,
-            ))
-
-    # BO1: break above a narrow prior 10-minute range. Minute volume is not in
-    # the quote tape, so volume confirmation is added later from Schwab candles.
-    if len(prices) >= BO1_LOOKBACK_MINUTES + 2:
-        prior = prices.iloc[-(BO1_LOOKBACK_MINUTES + 1):-1]
-        prior_high = float(prior.max()); prior_low = float(prior.min())
-        range_pct = (prior_high / prior_low - 1.0) * 100.0 if prior_low > 0 else math.nan
-        breakout_pct = (px / prior_high - 1.0) * 100.0 if prior_high > 0 else math.nan
-        if range_pct <= BO1_MAX_RANGE_PCT and breakout_pct >= BO1_BREAK_BUFFER_PCT:
-            signals.append(_independent_signal(
-                "BO1", sym, ts, px, 1.00, 0.75, "consolidation_breakout",
-                prior_range_high=prior_high, prior_range_low=prior_low,
-                prior_range_pct=range_pct, breakout_pct=breakout_pct,
-            ))
-
-    # OR1: opening-range breakout, deliberately limited to 09:45-10:15 ET so
-    # the 50-minute rolling cache always contains the complete opening range.
-    if OR1_RANGE_END_MINUTE_ET <= minute_et <= OR1_ENTRY_END_MINUTE_ET:
-        opening = work[
-            (work["timestamp"].dt.tz_convert(ZoneInfo("America/New_York")).dt.hour == 9)
-            & (work["timestamp"].dt.tz_convert(ZoneInfo("America/New_York")).dt.minute >= 30)
-            & (work["timestamp"].dt.tz_convert(ZoneInfo("America/New_York")).dt.minute < 45)
-        ]
-        if len(opening) >= 10:
-            or_high = float(opening["price"].max()); or_low = float(opening["price"].min())
-            or_range_pct = (or_high / or_low - 1.0) * 100.0 if or_low > 0 else math.nan
-            break_pct = (px / or_high - 1.0) * 100.0 if or_high > 0 else math.nan
-            if OR1_MIN_RANGE_PCT <= or_range_pct <= OR1_MAX_RANGE_PCT and break_pct >= OR1_BREAK_BUFFER_PCT:
-                stop_pct = max(0.50, min(1.00, or_range_pct * 0.50))
-                target_pct = max(0.75, min(1.50, or_range_pct))
-                signals.append(_independent_signal(
-                    "OR1", sym, ts, px, target_pct, stop_pct, "opening_range_breakout",
-                    opening_range_high=or_high, opening_range_low=or_low,
-                    opening_range_pct=or_range_pct, breakout_pct=break_pct,
-                ))
-
-    # RS1: positive 30-minute trend and substantial excess return over SPY.
-    if len(prices) >= 31 and spy_30m_return_pct is not None and not math.isnan(ret30):
-        excess = ret30 - float(spy_30m_return_pct)
-        if ret30 >= RS1_MIN_RETURN_30M_PCT and excess >= RS1_MIN_EXCESS_VS_SPY_PCT and r2_30 >= RS1_MIN_R2:
-            signals.append(_independent_signal(
-                "RS1", sym, ts, px, 0.90, 0.65, "relative_strength",
-                return_30m_pct=ret30, spy_return_30m_pct=float(spy_30m_return_pct),
-                excess_return_30m_pct=excess, r2_30m=r2_30,
-            ))
-
-    # RS2: same RS1 entry research stream with an alternate exit hypothesis.
-    # Paper-only variant; it does not add a scanner or extra quote collection.
-    if len(prices) >= 31 and spy_30m_return_pct is not None and not math.isnan(ret30):
-        excess = ret30 - float(spy_30m_return_pct)
-        if ret30 >= RS1_MIN_RETURN_30M_PCT and excess >= RS1_MIN_EXCESS_VS_SPY_PCT and r2_30 >= RS1_MIN_R2:
-            signals.append(_independent_signal(
-                "RS2", sym, ts, px, 0.90, 0.65, "relative_strength_exit_variant",
-                parent_strategy="RS1",
-                exit_model="50pct_rs1_exit_50pct_60m_hold",
-                return_30m_pct=ret30, spy_return_30m_pct=float(spy_30m_return_pct),
-                excess_return_30m_pct=excess, r2_30m=r2_30,
-            ))
-
-    # VE1: break from a compressed 15-minute range.
-    if len(prices) >= VE1_COMPRESSION_MINUTES + 2:
-        compressed = prices.iloc[-(VE1_COMPRESSION_MINUTES + 1):-1]
-        c_high = float(compressed.max()); c_low = float(compressed.min())
-        c_range_pct = (c_high / c_low - 1.0) * 100.0 if c_low > 0 else math.nan
-        expansion_pct = (px / c_high - 1.0) * 100.0 if c_high > 0 else math.nan
-        if c_range_pct <= VE1_MAX_COMPRESSION_RANGE_PCT and expansion_pct >= VE1_BREAK_BUFFER_PCT:
-            target_pct = max(0.60, min(1.20, c_range_pct * 1.5))
-            signals.append(_independent_signal(
-                "VE1", sym, ts, px, target_pct, 0.60, "volatility_expansion",
-                compression_range_high=c_high, compression_range_low=c_low,
-                compression_range_pct=c_range_pct, expansion_pct=expansion_pct,
-            ))
-
-    # RS3: same relative-strength entry, but a tighter prospective payoff
-    # geometry than RS1. This is an exit-refinement experiment, not a claim
-    # that the thresholds are already optimal.
-    if len(prices) >= 31 and spy_30m_return_pct is not None and not math.isnan(ret30):
-        excess = ret30 - float(spy_30m_return_pct)
-        if ret30 >= RS1_MIN_RETURN_30M_PCT and excess >= RS1_MIN_EXCESS_VS_SPY_PCT and r2_30 >= RS1_MIN_R2:
-            signals.append(_independent_signal(
-                "RS3", sym, ts, px, 0.60, 0.45, "relative_strength_tighter_exit",
-                parent_strategy="RS1", exit_model="tighter_target_and_stop",
-                return_30m_pct=ret30, spy_return_30m_pct=float(spy_30m_return_pct),
-                excess_return_30m_pct=excess, r2_30m=r2_30,
-                forward_start_utc=NEW_RESEARCH_FORWARD_START_UTC,
-            ))
-
-    # MC1: continuation near the recent high after aligned 5m/15m momentum.
-    if len(prices) >= 31:
-        ret15 = _simple_return_pct(prices.iloc[-16], prices.iloc[-1])
-        ret5 = _simple_return_pct(prices.iloc[-6], prices.iloc[-1])
-        high10 = float(prices.tail(10).max())
-        distance_high = (high10 / px - 1.0) * 100.0 if px > 0 else math.nan
-        if (ret15 >= MC1_MIN_RETURN_15M_PCT and ret5 >= MC1_MIN_RETURN_5M_PCT
-                and r2_30 >= MC1_MIN_R2_30M
-                and distance_high <= MC1_MAX_DISTANCE_FROM_10M_HIGH_PCT):
-            signals.append(_independent_signal(
-                "MC1", sym, ts, px, 0.80, 0.55, "momentum_continuation",
-                return_15m_pct=ret15, return_5m_pct=ret5, r2_30m=r2_30,
-                distance_from_10m_high_pct=distance_high,
-                forward_start_utc=NEW_RESEARCH_FORWARD_START_UTC,
-            ))
-
-    # TL1: reclaim of an upward 30m regression line after a temporary dip.
-    if len(prices) >= 31:
-        y = np.log(prices.tail(31).to_numpy(dtype=float))
-        x = np.arange(len(y), dtype=float)
-        slope, intercept = np.polyfit(x, y, 1)
-        trend = np.exp(intercept + slope * x)
-        prior_gap = (trend[-2] / float(prices.iloc[-2]) - 1.0) * 100.0
-        crossed = float(prices.iloc[-2]) < trend[-2] and px >= trend[-1]
-        if slope > 0 and r2_30 >= TL1_MIN_R2_30M and prior_gap >= TL1_MIN_PRIOR_GAP_BELOW_TREND_PCT and crossed:
-            signals.append(_independent_signal(
-                "TL1", sym, ts, px, 0.75, 0.50, "uptrend_line_reclaim",
-                r2_30m=r2_30, slope_30m_pct_per_hour=slope30,
-                prior_gap_below_trendline_pct=prior_gap,
-                trendline_price_now=float(trend[-1]),
-                forward_start_utc=NEW_RESEARCH_FORWARD_START_UTC,
-            ))
-
-    # AV1: volatility-adaptive pullback and rebound. Thresholds scale with the
-    # symbol's own recent one-minute variation rather than one fixed drop size.
-    if len(prices) >= 31:
-        returns_1m = prices.tail(31).pct_change().dropna() * 100.0
-        sigma = float(returns_1m.std(ddof=0)) if len(returns_1m) >= 10 else math.nan
-        high15 = float(prices.tail(16).max())
-        low5 = float(prices.tail(6).min())
-        drawdown = (high15 / low5 - 1.0) * 100.0 if low5 > 0 else math.nan
-        rebound2 = _simple_return_pct(prices.iloc[-3], prices.iloc[-1])
-        required_drawdown = max(AV1_MIN_DRAWDOWN_PCT, AV1_VOLATILITY_MULTIPLIER * sigma) if not math.isnan(sigma) else math.inf
-        required_rebound = max(AV1_MIN_REBOUND_2M_PCT, 0.5 * sigma) if not math.isnan(sigma) else math.inf
-        if slope30 > 0 and drawdown >= required_drawdown and rebound2 >= required_rebound:
-            signals.append(_independent_signal(
-                "AV1", sym, ts, px, 0.75, 0.60, "volatility_adaptive_rebound",
-                recent_sigma_1m_pct=sigma, drawdown_15m_to_5m_low_pct=drawdown,
-                required_drawdown_pct=required_drawdown, rebound_2m_pct=rebound2,
-                required_rebound_pct=required_rebound,
-                forward_start_utc=NEW_RESEARCH_FORWARD_START_UTC,
-            ))
-
-    # TD1: a deliberately time-bounded relative-strength continuation test.
-    if (TD1_START_MINUTE_ET <= minute_et <= TD1_END_MINUTE_ET
-            and len(prices) >= 31 and spy_30m_return_pct is not None):
-        excess = ret30 - float(spy_30m_return_pct)
-        ret5 = _simple_return_pct(prices.iloc[-6], prices.iloc[-1])
-        if ret30 >= TD1_MIN_RETURN_30M_PCT and excess >= TD1_MIN_EXCESS_VS_SPY_PCT and ret5 > 0:
-            signals.append(_independent_signal(
-                "TD1", sym, ts, px, 0.75, 0.55, "time_of_day_relative_strength",
-                minute_et=minute_et, return_30m_pct=ret30,
-                spy_return_30m_pct=float(spy_30m_return_pct), excess_return_30m_pct=excess,
-                return_5m_pct=ret5, forward_start_utc=NEW_RESEARCH_FORWARD_START_UTC,
-            ))
-
-    # SH1: decline-shape filter. The second half must be materially less weak
-    # than the first half, followed by a positive three-minute turn.
-    if len(prices) >= 21:
-        w = prices.tail(21).reset_index(drop=True)
-        decline20 = (float(w.iloc[0]) / float(w.min()) - 1.0) * 100.0
-        first_half = _simple_return_pct(w.iloc[0], w.iloc[10])
-        second_half = _simple_return_pct(w.iloc[10], w.iloc[-1])
-        rebound3 = _simple_return_pct(w.iloc[-4], w.iloc[-1])
-        flattening = abs(second_half) / abs(first_half) if first_half < 0 else math.inf
-        if decline20 >= SH1_MIN_DECLINE_20M_PCT and first_half < 0 and flattening <= SH1_MIN_FLATTENING_RATIO and rebound3 > 0:
-            signals.append(_independent_signal(
-                "SH1", sym, ts, px, 0.70, 0.60, "decline_shape_flattening",
-                decline_20m_pct=decline20, first_half_return_pct=first_half,
-                second_half_return_pct=second_half, flattening_ratio=flattening,
-                rebound_3m_pct=rebound3, forward_start_utc=NEW_RESEARCH_FORWARD_START_UTC,
-            ))
-
-    # CV1: curvature/deceleration. Compare early and late regression slopes.
-    if len(prices) >= 21:
-        early_slope, early_r2 = fit_log_slope_pct_per_hour(prices.iloc[-21:-10])
-        late_slope, late_r2 = fit_log_slope_pct_per_hour(prices.tail(11))
-        low20 = float(prices.tail(21).min())
-        rebound_low = (px / low20 - 1.0) * 100.0 if low20 > 0 else math.nan
-        improvement = late_slope - early_slope
-        if early_slope < 0 and improvement >= CV1_MIN_SLOPE_IMPROVEMENT_PCT_PER_HOUR and rebound_low >= CV1_MIN_REBOUND_FROM_LOW_PCT:
-            signals.append(_independent_signal(
-                "CV1", sym, ts, px, 0.70, 0.55, "selloff_curvature_reversal",
-                early_slope_pct_per_hour=early_slope, late_slope_pct_per_hour=late_slope,
-                slope_improvement_pct_per_hour=improvement, early_r2=early_r2,
-                late_r2=late_r2, rebound_from_20m_low_pct=rebound_low,
-                forward_start_utc=NEW_RESEARCH_FORWARD_START_UTC,
-            ))
-
-    # HL1: two distinct swing lows, with the second higher than the first, then
-    # a break above the intervening swing high.
-    if len(prices) >= 21:
-        w = prices.tail(21).reset_index(drop=True)
-        local_lows = [i for i in range(1, len(w)-1) if w.iloc[i] <= w.iloc[i-1] and w.iloc[i] < w.iloc[i+1]]
-        if len(local_lows) >= 2:
-            i1, i2 = local_lows[-2], local_lows[-1]
-            if i2 - i1 >= 3:
-                low1, low2 = float(w.iloc[i1]), float(w.iloc[i2])
-                higher_low_pct = (low2 / low1 - 1.0) * 100.0 if low1 > 0 else math.nan
-                intervening_high = float(w.iloc[i1:i2+1].max())
-                break_pct = (px / intervening_high - 1.0) * 100.0 if intervening_high > 0 else math.nan
-                if higher_low_pct >= HL1_MIN_HIGHER_LOW_PCT and break_pct >= HL1_BREAK_BUFFER_PCT:
-                    signals.append(_independent_signal(
-                        "HL1", sym, ts, px, 0.80, 0.55, "higher_low_breakout",
-                        first_low=low1, second_low=low2, higher_low_pct=higher_low_pct,
-                        intervening_high=intervening_high, breakout_pct=break_pct,
-                        forward_start_utc=NEW_RESEARCH_FORWARD_START_UTC,
-                    ))
-
-    # VT1: positive 45m trend with price simultaneously near its fitted trend
-    # and rolling mean, followed by a short rebound.
-    if len(prices) >= 46:
-        w45 = prices.tail(46)
-        slope45, r2_45 = fit_log_slope_pct_per_hour(w45)
-        y45 = np.log(w45.to_numpy(dtype=float)); x45 = np.arange(len(y45), dtype=float)
-        s45, i45 = np.polyfit(x45, y45, 1)
-        trend_now = float(np.exp(i45 + s45 * x45[-1]))
-        mean30 = float(prices.tail(30).mean())
-        trend_dist = abs(px / trend_now - 1.0) * 100.0
-        mean_dist = abs(px / mean30 - 1.0) * 100.0
-        rebound2 = _simple_return_pct(prices.iloc[-3], prices.iloc[-1])
-        if (slope45 > 0 and r2_45 >= VT1_MIN_R2_45M
-                and trend_dist <= VT1_MAX_CONFLUENCE_DISTANCE_PCT
-                and mean_dist <= VT1_MAX_CONFLUENCE_DISTANCE_PCT
-                and rebound2 >= VT1_MIN_REBOUND_2M_PCT):
-            signals.append(_independent_signal(
-                "VT1", sym, ts, px, 0.80, 0.55, "trendline_mean_confluence",
-                slope_45m_pct_per_hour=slope45, r2_45m=r2_45,
-                trendline_price=trend_now, rolling_mean_30m=mean30,
-                distance_to_trendline_pct=trend_dist, distance_to_mean_pct=mean_dist,
-                rebound_2m_pct=rebound2, forward_start_utc=NEW_RESEARCH_FORWARD_START_UTC,
-            ))
-
-    # PD1: explicitly isolate a sharp one-minute panic drop followed by a
-    # measurable snapback, distinct from the orderly-decline strategies.
-    if len(prices) >= 12:
-        w = prices.tail(12).reset_index(drop=True)
-        minute_returns = w.pct_change().dropna() * 100.0
-        worst_pos = int(minute_returns.idxmin())
-        worst_drop = -float(minute_returns.loc[worst_pos])
-        low_after = float(w.iloc[worst_pos:].min())
-        low_pos = int(w.iloc[worst_pos:].idxmin())
-        low_age = (len(w) - 1) - low_pos
-        rebound_low = (px / low_after - 1.0) * 100.0 if low_after > 0 else math.nan
-        rebound2 = _simple_return_pct(w.iloc[-3], w.iloc[-1])
-        if (worst_drop >= PD1_MIN_ONE_MINUTE_DROP_PCT and 2 <= low_age <= 8
-                and rebound_low >= PD1_MIN_REBOUND_FROM_LOW_PCT and rebound2 > 0):
-            signals.append(_independent_signal(
-                "PD1", sym, ts, px, 0.85, 0.70, "panic_drop_snapback",
-                worst_one_minute_drop_pct=worst_drop, low_age_minutes=low_age,
-                rebound_from_low_pct=rebound_low, rebound_2m_pct=rebound2,
-                forward_start_utc=NEW_RESEARCH_FORWARD_START_UTC,
-            ))
-
-    # M1-M3: slower selloff exhaustion followed by initial recovery. These
-    # strategies are independent of the 3-minute flash detector.
-    for strategy_id, cfg in MEDIUM_REVERSAL_CONFIGS.items():
-        lookback = int(cfg["lookback_minutes"])
-        if len(prices) < lookback + 1:
-            continue
-        window = prices.tail(lookback + 1).reset_index(drop=True)
-        start_price = float(window.iloc[0])
-        low_price = float(window.min())
-        low_index = int(window.idxmin())
-        decline_pct = (start_price / low_price - 1.0) * 100.0 if low_price > 0 else math.nan
-        low_age_minutes = (len(window) - 1) - low_index
-        rebound_from_low_pct = (px / low_price - 1.0) * 100.0 if low_price > 0 else math.nan
-        rebound_2m_pct = _simple_return_pct(window.iloc[-3], window.iloc[-1]) if len(window) >= 3 else math.nan
-        one_minute_declines = -(window.pct_change().dropna() * 100.0)
-        largest_one_minute_decline_pct = max(0.0, float(one_minute_declines.max())) if not one_minute_declines.empty else 0.0
-        largest_minute_share = largest_one_minute_decline_pct / decline_pct if decline_pct > 0 else math.inf
-        prior_minute_above_low = float(window.iloc[-2]) > low_price
-        if (
-            decline_pct >= float(cfg["min_decline_pct"])
-            and MEDIUM_REVERSAL_MIN_LOW_AGE_MINUTES <= low_age_minutes <= MEDIUM_REVERSAL_MAX_LOW_AGE_MINUTES
-            and rebound_from_low_pct >= float(cfg["min_rebound_from_low_pct"])
-            and rebound_2m_pct >= float(cfg["min_rebound_2m_pct"])
-            and prior_minute_above_low
-            and largest_minute_share <= MEDIUM_REVERSAL_MAX_SINGLE_MINUTE_SHARE
-        ):
-            signals.append(_independent_signal(
-                strategy_id, sym, ts, px, cfg["target_pct"], cfg["stop_pct"],
-                f"medium_reversal_{lookback}m",
-                lookback_minutes=lookback, decline_from_window_start_to_low_pct=decline_pct,
-                window_start_price=start_price, window_low_price=low_price,
-                low_age_minutes=low_age_minutes, rebound_from_low_pct=rebound_from_low_pct,
-                rebound_2m_pct=rebound_2m_pct,
-                largest_one_minute_decline_pct=largest_one_minute_decline_pct,
-                largest_minute_share_of_decline=largest_minute_share,
-            ))
-
-    # VR1: price was meaningfully below a rolling 30-minute VWAP proxy (the
-    # minute-price mean available in the tape), then crossed and held above it.
-    # The exact proxy is clearly labelled rather than misrepresented as volume VWAP.
-    if len(prices) >= 31:
-        rolling = prices.tail(31)
-        proxy = float(rolling.iloc[:-2].mean())
-        historical_low = float(rolling.iloc[:-2].min())
-        depth_pct = (proxy / historical_low - 1.0) * 100.0 if historical_low > 0 else math.nan
-        held_above = float(rolling.iloc[-2]) >= proxy and float(rolling.iloc[-1]) >= proxy
-        crossed = float(rolling.iloc[-3]) < proxy <= float(rolling.iloc[-2])
-        if depth_pct >= VR1_MIN_DEPTH_BELOW_VWAP_PCT and crossed and held_above:
-            signals.append(_independent_signal(
-                "VR1", sym, ts, px, 0.75, 0.45, "rolling_mean_reclaim_proxy",
-                rolling_mean_30m=proxy, prior_depth_below_proxy_pct=depth_pct,
-                confirmation_minutes=VR1_HOLD_MINUTES,
-            ))
-
-
-    # EMA1: fresh 9/21 bullish EMA crossover, confirmed by rising minute volume.
-    if len(prices) >= EMA1_SLOW_SPAN + 3:
-        fast = _ema(prices, EMA1_FAST_SPAN)
-        slow = _ema(prices, EMA1_SLOW_SPAN)
-        crossed_now = float(fast.iloc[-2]) <= float(slow.iloc[-2]) and float(fast.iloc[-1]) > float(slow.iloc[-1])
-        if crossed_now:
-            volume_ratio = _confirm_recent_volume_ratio(sym)
-            if volume_ratio is not None and volume_ratio >= EMA1_MIN_VOLUME_RATIO:
-                signals.append(_independent_signal(
-                    "EMA1", sym, ts, px, 0.75, 0.55, "ema_9_21_bullish_crossover",
-                    ema_9=float(fast.iloc[-1]), ema_21=float(slow.iloc[-1]),
-                    prior_ema_9=float(fast.iloc[-2]), prior_ema_21=float(slow.iloc[-2]),
-                    latest_volume_ratio=volume_ratio,
-                    minimum_volume_ratio=EMA1_MIN_VOLUME_RATIO,
-                    forward_start_utc=EMA_RESEARCH_FORWARD_START_UTC,
-                ))
-
-    # EMA2: price pulls back close to a rising 20 EMA, then turns upward.
-    if len(prices) >= EMA2_SPAN + 4:
-        ema20 = _ema(prices, EMA2_SPAN)
-        ema_rising = float(ema20.iloc[-1]) > float(ema20.iloc[-4])
-        prior_distance = abs(float(prices.iloc[-2]) / float(ema20.iloc[-2]) - 1.0) * 100.0
-        bounce2 = _simple_return_pct(prices.iloc[-3], prices.iloc[-1])
-        reclaimed = float(prices.iloc[-2]) <= float(ema20.iloc[-2]) and px > float(ema20.iloc[-1])
-        if (
-            ema_rising
-            and prior_distance <= EMA2_MAX_PULLBACK_DISTANCE_PCT
-            and bounce2 >= EMA2_MIN_BOUNCE_2M_PCT
-            and reclaimed
-        ):
-            signals.append(_independent_signal(
-                "EMA2", sym, ts, px, 0.75, 0.50, "rising_ema20_pullback_bounce",
-                ema_20=float(ema20.iloc[-1]),
-                ema_20_change_3m_pct=_simple_return_pct(ema20.iloc[-4], ema20.iloc[-1]),
-                prior_distance_from_ema_pct=prior_distance,
-                rebound_2m_pct=bounce2,
-                forward_start_utc=EMA_RESEARCH_FORWARD_START_UTC,
-            ))
-
-    # EMA3: sustained 9 > 21 > 50 alignment followed by a recent-high breakout.
-    if len(prices) >= EMA3_SLOW_SPAN + EMA3_ALIGNMENT_MINUTES + 2:
-        ema9 = _ema(prices, EMA3_FAST_SPAN)
-        ema21 = _ema(prices, EMA3_MID_SPAN)
-        ema50 = _ema(prices, EMA3_SLOW_SPAN)
-        aligned = (
-            (ema9.tail(EMA3_ALIGNMENT_MINUTES) > ema21.tail(EMA3_ALIGNMENT_MINUTES)).all()
-            and (ema21.tail(EMA3_ALIGNMENT_MINUTES) > ema50.tail(EMA3_ALIGNMENT_MINUTES)).all()
-        )
-        prior_high = float(prices.iloc[-(EMA3_BREAKOUT_LOOKBACK_MINUTES + 1):-1].max())
-        breakout_pct = (px / prior_high - 1.0) * 100.0 if prior_high > 0 else math.nan
-        if aligned and breakout_pct >= EMA3_BREAK_BUFFER_PCT:
-            signals.append(_independent_signal(
-                "EMA3", sym, ts, px, 0.90, 0.60, "ema_alignment_breakout",
-                ema_9=float(ema9.iloc[-1]), ema_21=float(ema21.iloc[-1]), ema_50=float(ema50.iloc[-1]),
-                alignment_minutes=EMA3_ALIGNMENT_MINUTES,
-                prior_high=prior_high, breakout_pct=breakout_pct,
-                forward_start_utc=EMA_RESEARCH_FORWARD_START_UTC,
-            ))
-
-    # SMA1: 20 SMA crosses above 50 SMA and remains above for two completed minutes.
-    if len(prices) >= SMA1_SLOW_WINDOW + SMA1_CONFIRM_MINUTES + 1:
-        sma20 = prices.rolling(SMA1_FAST_WINDOW).mean()
-        sma50 = prices.rolling(SMA1_SLOW_WINDOW).mean()
-        confirmed = (
-            float(sma20.iloc[-3]) <= float(sma50.iloc[-3])
-            and float(sma20.iloc[-2]) > float(sma50.iloc[-2])
-            and float(sma20.iloc[-1]) > float(sma50.iloc[-1])
-        )
-        if confirmed:
-            signals.append(_independent_signal(
-                "SMA1", sym, ts, px, 0.85, 0.60, "sma_20_50_bullish_crossover",
-                sma_20=float(sma20.iloc[-1]), sma_50=float(sma50.iloc[-1]),
-                confirmation_minutes=SMA1_CONFIRM_MINUTES,
-                forward_start_utc=EMA_RESEARCH_FORWARD_START_UTC,
-            ))
-
-    # VWEMA1: price above a rolling VWAP proxy and 20 EMA with positive momentum.
-    # The quote tape has no volume, so the rolling mean is explicitly labelled a
-    # price-mean proxy rather than true VWAP.
-    if len(prices) >= 31:
-        ema20 = _ema(prices, VWEMA1_EMA_SPAN)
-        vwap_proxy = float(prices.tail(30).mean())
-        above_proxy_pct = (px / vwap_proxy - 1.0) * 100.0 if vwap_proxy > 0 else math.nan
-        ret15 = _simple_return_pct(prices.iloc[-16], prices.iloc[-1])
-        if (
-            px > float(ema20.iloc[-1])
-            and above_proxy_pct >= VWEMA1_MIN_PRICE_ABOVE_VWAP_PCT
-            and ret15 >= VWEMA1_MIN_RETURN_15M_PCT
-            and float(ema20.iloc[-1]) > float(ema20.iloc[-4])
-        ):
-            signals.append(_independent_signal(
-                "VWEMA1", sym, ts, px, 0.80, 0.55, "price_above_mean_proxy_and_ema20",
-                ema_20=float(ema20.iloc[-1]), rolling_price_mean_30m=vwap_proxy,
-                distance_above_price_mean_pct=above_proxy_pct,
-                return_15m_pct=ret15,
-                proxy_note="rolling price mean; not true volume-weighted VWAP",
-                forward_start_utc=EMA_RESEARCH_FORWARD_START_UTC,
-            ))
-
+    context = SimpleNamespace(
+        symbol=sym, work=work, timestamp=ts, current_price=px, minute_et=minute_et,
+        prices=prices, return_30m_pct=ret30, slope_30m_pct_per_hour=slope30,
+        r2_30m=r2_30, spy_30m_return_pct=spy_30m_return_pct,
+        signal_factory=_independent_signal, simple_return_pct=_simple_return_pct,
+        fit_log_slope_pct_per_hour=fit_log_slope_pct_per_hour, ema=_ema,
+        confirm_recent_volume_ratio=_confirm_recent_volume_ratio,
+    )
+    signals, errors = evaluate_registered_strategies(context)
+    for strategy_id, exc in errors:
+        print(f"STRATEGY_EVALUATION_ERROR {strategy_id}: {type(exc).__name__}: {exc}", flush=True)
+        append_strategy_event(strategy_id, "STRATEGY_EVALUATION_ERROR", error=f"{type(exc).__name__}: {exc}")
     return signals
 
 
