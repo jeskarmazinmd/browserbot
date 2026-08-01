@@ -1967,7 +1967,7 @@ def main():
     print("🚀 V15 FLASH-DIP RUNNER ONLINE — A LIVE + B/D/H PAPER", flush=True)
     print(f"PRE={PRE_CRASH_TREND_MINUTES}m FLASH={FLASH_WINDOW_MINUTES}m DROP={FLASH_DROP_PCT}-{MAX_FLASH_DROP_PCT}% TARGET={RECOVERY_TARGET_FRACTION} STOP={STOP_LOSS_FRACTION_BELOW_ENTRY}", flush=True)
 
-    trader = make_trader()
+    trader = make_trader() if RUN_MODE == "LIVE" else None
     last_trading_token_touch = 0
     last_market_token_touch = 0
     positions = load_positions()
@@ -2033,7 +2033,8 @@ def main():
                 continue
 
             prices_now = latest_prices(df)
-            manage_exits(trader, positions, prices_now)
+            if RUN_MODE == "LIVE":
+                manage_exits(trader, positions, prices_now)
 
             now_utc = datetime.now(timezone.utc)
             market_day = now_utc.astimezone(ZoneInfo("America/New_York")).date().isoformat()
