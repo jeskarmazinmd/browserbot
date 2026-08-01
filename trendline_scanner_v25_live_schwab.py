@@ -40,6 +40,7 @@ from __future__ import annotations
 
 import math
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, time as dtime
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -737,30 +738,49 @@ def extract_last_price(payload):
     return None
 
 
-def fetch_schwab_quotes(client, symbols):
+def fetch_quote_batch(batch):
     prices = {}
-    for batch in chunk_list(symbols, QUOTE_BATCH_SIZE):
-        try:
+
+    client = get_schwab_client()
+
+    try:
+        resp = client.get_quotes(batch)
+
+        if resp.status_code == 401:
+            print("  Schwab quote batch status: 401; rebuilding client and retrying once", flush=True)
+            client = get_schwab_client()
             resp = client.get_quotes(batch)
 
-            if resp.status_code == 401:
-                print("  Schwab quote batch status: 401; rebuilding client and retrying once", flush=True)
-                client = get_schwab_client()
-                resp = client.get_quotes(batch)
+        if resp.status_code != 200:
+            print(f"  Schwab quote batch status: {resp.status_code}", flush=True)
+            return prices
 
-            if resp.status_code != 200:
-                print(f"  Schwab quote batch status: {resp.status_code}", flush=True)
-                continue
-
-            data = resp.json()
-        except Exception as e:
-            print(f"  Schwab quote batch failed: {e}", flush=True)
-            continue
+        data = resp.json()
 
         for symbol, payload in data.items():
             px = extract_last_price(payload)
             if px is not None:
                 prices[symbol.upper()] = px
+
+    except Exception as e:
+        print(f"  Schwab quote batch failed: {e}", flush=True)
+
+    return prices
+
+
+def fetch_schwab_quotes(client, symbols):
+    prices = {}
+
+    batches = list(chunk_list(symbols, 500))
+
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        futures = [
+            executor.submit(fetch_quote_batch, batch)
+            for batch in batches
+        ]
+
+        for future in as_completed(futures):
+            prices.update(future.result())
 
     return prices
 
