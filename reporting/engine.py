@@ -3166,6 +3166,79 @@ def _paper_day_records(path, day):
             _PAPER_DAY_RECORD_CACHE.pop(old_key, None)
     return records
 
+
+def universe_performance_lines(today):
+    """Summarize closed paper outcomes by universe membership."""
+
+    buckets = {}
+
+    for label, path in SIGNAL_SERIES.items():
+        if not path.exists():
+            continue
+
+        try:
+            rows = path.read_text().splitlines()
+        except Exception:
+            continue
+
+        for line in rows:
+            try:
+                rec = json.loads(line)
+            except Exception:
+                continue
+
+            if rec.get("date") != today:
+                continue
+
+            tags = rec.get("universe_memberships", [])
+            if not isinstance(tags, list):
+                continue
+
+            pnl = float(rec.get("pnl_usd", 0) or 0)
+
+            for tag in tags:
+                key = (label, tag)
+
+                if key not in buckets:
+                    buckets[key] = {
+                        "trades": 0,
+                        "wins": 0,
+                        "pnl": 0.0,
+                    }
+
+                buckets[key]["trades"] += 1
+                buckets[key]["pnl"] += pnl
+
+                if pnl > 0:
+                    buckets[key]["wins"] += 1
+
+    if not buckets:
+        return [
+            "",
+            "UNIVERSE PERFORMANCE BREAKDOWN",
+            "No tagged outcomes yet.",
+        ]
+
+    lines = [
+        "",
+        "UNIVERSE PERFORMANCE BREAKDOWN",
+        "",
+    ]
+
+    for (strategy, tag), data in sorted(buckets.items()):
+        trades = data["trades"]
+        win_rate = (data["wins"] / trades * 100) if trades else 0
+
+        lines.append(
+            f"{strategy} | {tag} | "
+            f"trades={trades} "
+            f"win_rate={win_rate:.1f}% "
+            f"P/L_on_$1000={data['pnl']:+.2f}"
+        )
+
+    return lines
+
+
 def _paper_pnl_stats(path, today):
     """Summarize today's closed and currently marked open paper P/L."""
     stats = {
@@ -3465,6 +3538,9 @@ def current_pnl_summary_lines(today):
         )
     else:
         lines.append("No paper outcomes recorded today.")
+
+    lines.extend(universe_performance_lines(today))
+
     return lines
 
 
