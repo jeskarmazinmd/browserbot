@@ -25,6 +25,7 @@ COPY quote_source.py .
 COPY supervisor.py .
 COPY refresh_eligible_symbols.py .
 COPY universe_tags.py .
+COPY regime_detector.py .
 
 COPY strategies /app/strategies
 COPY detectors /app/detectors
