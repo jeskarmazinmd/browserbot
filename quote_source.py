@@ -8,7 +8,12 @@ class QuoteSource(ABC):
 
 
 class LiveQuoteSource(QuoteSource):
+    def __init__(self, reader=None):
+        self._reader = reader
+
     def read_data(self):
+        if self._reader is not None:
+            return self._reader()
         return read_data()
 
 
