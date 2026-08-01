@@ -333,14 +333,20 @@ def main():
 
         ts = datetime.now(timezone.utc).isoformat()
 
+        fetch_start = time.perf_counter()
         prices = fetch_schwab_quotes(client, symbols)
+        fetch_elapsed = time.perf_counter() - fetch_start
+
+        write_start = time.perf_counter()
         append_quotes(path, ts, prices)
+        write_elapsed = time.perf_counter() - write_start
 
         elapsed = time.perf_counter() - start
         print(
             f"[{datetime.now().strftime('%H:%M:%S')}] "
             f"collector cycle {cycle} | quotes={len(prices)}/{len(symbols)} | "
-            f"elapsed={elapsed:.2f}s | file={path}",
+            f"fetch={fetch_elapsed:.2f}s | write={write_elapsed:.2f}s | "
+            f"total={elapsed:.2f}s | file={path}",
             flush=True,
         )
 
