@@ -72,6 +72,13 @@ STRATEGY_B = "B"
 STRATEGY_D = "D"
 STRATEGY_H = "H"
 
+# Strategy H near-miss aliases derived from the module-owned configuration.
+# These preserve the existing near-miss calculations without duplicating rules.
+STRATEGY_H_MIN_FLASH_DROP_PCT = STRATEGY_CONFIGS[STRATEGY_H]["flash_drop_pct"]
+STRATEGY_H_MAX_FLASH_DROP_PCT = STRATEGY_CONFIGS[STRATEGY_H]["max_flash_drop_pct"]
+STRATEGY_H_MIN_PRE_R2 = STRATEGY_CONFIGS[STRATEGY_H]["min_pre_r2"]
+STRATEGY_H_MAX_PRE_SLOPE_PCT_PER_HOUR = STRATEGY_CONFIGS[STRATEGY_H]["max_pre_slope_pct_per_hour"]
+
 # Independent strategy orchestration settings. Individual strategy rules and
 # thresholds live exclusively in strategies/strategy_*.py.
 INDEPENDENT_FORWARD_START_UTC = "2026-07-31T13:30:00+00:00"
@@ -1466,7 +1473,7 @@ def main():
 
             if df is None or df.empty:
                 print("No tape yet.", flush=True)
-                time.sleep(POLL_SECONDS)
+                time.sleep(0 if RUN_MODE == "REPLAY" else POLL_SECONDS)
                 continue
 
             prices_now = latest_prices(df)
@@ -1484,7 +1491,15 @@ def main():
             # and manage_exits() above still handles the 15:55 ET flattening.
             if not is_regular_market_hours_et():
                 write_bot_output(status="outside_rth", triggers=[], nearest=[])
-                time.sleep(POLL_SECONDS)
+
+                if RUN_MODE == "REPLAY" and quote_source.finished:
+                    print(
+                        f"REPLAY_COMPLETE clock={quote_source.now()}",
+                        flush=True,
+                    )
+                    break
+
+                time.sleep(0 if RUN_MODE == "REPLAY" else POLL_SECONDS)
                 continue
 
             # Fill forward outcomes for tracked near misses.
@@ -2101,7 +2116,14 @@ def main():
         except Exception as e:
             print("runner error:", type(e).__name__, e, flush=True)
 
-        time.sleep(POLL_SECONDS)
+        if RUN_MODE == "REPLAY" and quote_source.finished:
+            print(
+                f"REPLAY_COMPLETE clock={quote_source.now()}",
+                flush=True,
+            )
+            break
+
+        time.sleep(0 if RUN_MODE == "REPLAY" else POLL_SECONDS)
 
 if __name__ == "__main__":
     main()
