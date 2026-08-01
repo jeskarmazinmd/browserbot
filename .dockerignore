@@ -40,3 +40,56 @@ schwabkey.txt
 schwabtradekey.txt
 .schwab.env
 .env
+.venv/
+venv/
+scannerenv/
+dashboard-venv/
+__pycache__/
+*.pyc
+replay/
+*.log
+*.zip
+*.bak
+
+# Local virtual environments
+.venv/
+venv/
+scannerenv/
+dashboard-venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Git and editor metadata
+.git/
+.DS_Store
+
+# Generated replay/test output
+replay/
+manual_review/
+*.log
+
+# Archives and backups
+*.zip
+*.bak
+*.backup*
+backup*/
+backups*/
+live_strategy_runner.before_strategy_a_refactor.py
+
+# Local datasets not needed in the image
+quotes_*.csv
+fake_quotes.csv
+fake_flash_dip_test.csv
+intraday_replay_*.csv
+replay_symbols_*.csv.gz
+signal_paper_outcomes_*.jsonl
+
+# Screenshots and local research output
+Screenshot*
+experiments/
+trendline_cache/
+trendline_intraday_cache/
+cache/
+runtime/
