@@ -738,10 +738,8 @@ def extract_last_price(payload):
     return None
 
 
-def fetch_quote_batch(batch):
+def fetch_quote_batch(client, batch):
     prices = {}
-
-    client = get_schwab_client()
 
     try:
         resp = client.get_quotes(batch)
@@ -775,7 +773,7 @@ def fetch_schwab_quotes(client, symbols):
 
     with ThreadPoolExecutor(max_workers=5) as executor:
         futures = [
-            executor.submit(fetch_quote_batch, batch)
+            executor.submit(fetch_quote_batch, client, batch)
             for batch in batches
         ]
 
