@@ -25,5 +25,8 @@ COPY quote_source.py .
 COPY supervisor.py .
 COPY refresh_eligible_symbols.py .
 
-CMD ["python", "-u", "supervisor.py"]
+COPY strategies /app/strategies
+COPY reporting /app/reporting
 COPY schwab_bot_dashboard /app/schwab_bot_dashboard
+
+CMD ["python", "-u", "supervisor.py"]
