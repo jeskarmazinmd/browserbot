@@ -8,7 +8,20 @@ import time
 import shutil
 import heapq
 
-SUMMARY_TXT = Path("/data/bot_output.txt")
+RUN_MODE = os.environ.get("RUN_MODE", "LIVE")
+RUN_ID = os.environ.get("RUN_ID", "live")
+
+if RUN_MODE == "REPLAY":
+    OUTPUT_ROOT = Path(f"/data/replay/{RUN_ID}")
+else:
+    OUTPUT_ROOT = Path("/data")
+
+OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
+
+def output_path(filename):
+    return OUTPUT_ROOT / filename
+
+SUMMARY_TXT = output_path("bot_output.txt")
 ELIGIBILITY_STATUS_PATH = Path("/data/eligibility_status.json")
 AUTH_HEALTH_LOG = Path("/data/auth_health_log.jsonl")
 SIGNAL_PAPER_OUTCOMES_JSONL = Path("/data/signal_paper_outcomes_rebound_v1.jsonl")
@@ -83,12 +96,12 @@ NEAR_MISS_PAPER_C4_JSONL = Path("/data/near_miss_paper_outcomes_strategy_c4_nega
 NEAR_MISS_PAPER_G_JSONL = Path("/data/near_miss_paper_outcomes_strategy_g_c4_stop_1_5_v1.jsonl")
 NEAR_MISS_PAPER_B_JSONL = Path("/data/near_miss_paper_outcomes_strategy_b_rebound_v1.jsonl")
 NEAR_MISS_PAPER_D_JSONL = Path("/data/near_miss_paper_outcomes_strategy_d_090_rebound_v1.jsonl")
-HISTORY_JSONL = Path("/data/bot_history.jsonl")
-EVENTS_JSONL = Path("/data/bot_events.jsonl")
-TRIGGER_OUTCOMES_JSONL = Path("/data/trigger_trade_outcomes.jsonl")
-DAILY_PNL_HISTORY_JSON = Path("/data/daily_pnl_history.json")
-DAILY_LIVE_DEPLOYMENT_HISTORY_JSON = Path("/data/daily_live_deployment_history.json")
-DAILY_MARKET_BEHAVIOR_HISTORY_JSON = Path("/data/daily_market_behavior_history.json")
+HISTORY_JSONL = output_path("bot_history.jsonl")
+EVENTS_JSONL = output_path("bot_events.jsonl")
+TRIGGER_OUTCOMES_JSONL = output_path("trigger_trade_outcomes.jsonl")
+DAILY_PNL_HISTORY_JSON = output_path("daily_pnl_history.json")
+DAILY_LIVE_DEPLOYMENT_HISTORY_JSON = output_path("daily_live_deployment_history.json")
+DAILY_MARKET_BEHAVIOR_HISTORY_JSON = output_path("daily_market_behavior_history.json")
 
 POLL_SECONDS = 30
 MAX_HISTORY_ROWS = 5000
