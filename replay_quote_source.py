@@ -1,16 +1,19 @@
 from pathlib import Path
+from datetime import timedelta
+import os
 import pandas as pd
 
 
 class ReplayQuoteSource:
-    def __init__(self, tape_path):
+    def __init__(self, tape_path, step_seconds=None):
         self.tape_path = Path(tape_path)
+        if step_seconds is None:
+            step_seconds = int(os.environ.get("REPLAY_SPEED", "60"))
+        self.step = timedelta(seconds=step_seconds)
         self._data = None
+        self._cursor_time = None
 
-    def read_data(self):
-        if self._data is not None:
-            return self._data
-
+    def _load(self):
         df = pd.read_csv(
             self.tape_path,
             names=["timestamp", "symbol", "price"],
@@ -33,9 +36,23 @@ class ReplayQuoteSource:
             subset=["timestamp", "symbol", "price"]
         )
 
-        self._data = df
+        df = df.sort_values("timestamp")
 
-        return df
+        self._data = df
+        self._cursor_time = df["timestamp"].min()
+
+    def read_data(self):
+        if self._data is None:
+            self._load()
+        else:
+            self._cursor_time += self.step
+
+        return self._data[
+            self._data["timestamp"] <= self._cursor_time
+        ]
 
     def now(self):
-        return self.read_data()["timestamp"].max()
+        if self._cursor_time is None:
+            self._load()
+
+        return self._cursor_time

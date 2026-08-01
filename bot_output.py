@@ -1,9 +1,20 @@
 from pathlib import Path
 from datetime import datetime, timezone
 import json
+import os
 
-HISTORY_JSONL = Path("/data/bot_history.jsonl")
-EVENTS_JSONL = Path("/data/bot_events.jsonl")
+RUN_MODE = os.environ.get("RUN_MODE", "LIVE")
+RUN_ID = os.environ.get("RUN_ID", "live")
+
+if RUN_MODE == "REPLAY":
+    OUTPUT_ROOT = Path("./replay") / RUN_ID
+else:
+    OUTPUT_ROOT = Path("/data")
+
+OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
+
+HISTORY_JSONL = OUTPUT_ROOT / "bot_history.jsonl"
+EVENTS_JSONL = OUTPUT_ROOT / "bot_events.jsonl"
 
 def write_bot_output(status="running", triggers=None, nearest=None, note=None):
     triggers = triggers or []

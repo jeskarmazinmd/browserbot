@@ -13,9 +13,16 @@ RUN_MODE = os.environ.get("RUN_MODE", "LIVE")
 REPLAY_TAPE_PATH = os.environ.get("REPLAY_TAPE_PATH")
 RUN_ID = os.environ.get("RUN_ID", "live")
 
-TAPE_DIR = "/data/tapes"
-STATE_FILE = "/data/positions.json"
-TRIGGER_OUTCOMES_FILE = "/data/trigger_trade_outcomes.jsonl"
+if RUN_MODE == "REPLAY":
+    DATA_ROOT = Path("./replay") / RUN_ID
+else:
+    DATA_ROOT = Path("/data")
+
+DATA_ROOT.mkdir(parents=True, exist_ok=True)
+
+TAPE_DIR = str(DATA_ROOT / "tapes")
+STATE_FILE = str(DATA_ROOT / "positions.json")
+TRIGGER_OUTCOMES_FILE = str(DATA_ROOT / "trigger_trade_outcomes.jsonl")
 
 PRE_CRASH_TREND_MINUTES = 30
 FLASH_WINDOW_MINUTES = 3
@@ -104,7 +111,7 @@ INDEPENDENT_STRATEGY_IDS = ("TF1", "BO1", "OR1", "RS1", "RS2", "RS3", "VE1", "VR
 INDEPENDENT_COOLDOWN_MINUTES = 30
 INDEPENDENT_MIN_PRICE = 1.00
 INDEPENDENT_MAX_PRICE = 1000.00
-UNIVERSE_MANIFEST_DIR = Path("/data")
+UNIVERSE_MANIFEST_DIR = DATA_ROOT
 _UNIVERSE_MANIFEST_CACHE = {"path": None, "mtime_ns": None, "symbols": {}}
 
 # First-pass thresholds intentionally remain simple and frozen prospectively.
@@ -2001,41 +2008,49 @@ def main():
         try:
             now_ts = time.time()
 
-            market_token_path = "/data/schwab_token.json"
-            market_min_left = token_minutes_left(market_token_path)
+            if RUN_MODE == "LIVE":
+                market_token_path = "/data/schwab_token.json"
+                market_min_left = token_minutes_left(market_token_path)
 
-            if market_min_left < 20 and now_ts - last_market_token_touch >= 60:
-                last_market_token_touch = now_ts
-                try:
-                    from schwab.auth import client_from_token_file
-                    market_client = client_from_token_file(
-                        market_token_path,
-                        os.environ["SCHWAB_MARKET_APP_KEY"],
-                        os.environ["SCHWAB_MARKET_SECRET"],
-                    )
-                    r = market_client.get_quotes(["VOO"])
-                    print(f"MARKET_TOKEN_REFRESH status={getattr(r, 'status_code', 'NA')} before_min_left={market_min_left:.1f}", flush=True)
-                except Exception as e:
-                    print(f"MARKET_TOKEN_REFRESH error: {type(e).__name__}: {e}", flush=True)
+                if market_min_left < 20 and now_ts - last_market_token_touch >= 60:
+                    last_market_token_touch = now_ts
+                    try:
+                        from schwab.auth import client_from_token_file
+                        market_client = client_from_token_file(
+                            market_token_path,
+                            os.environ["SCHWAB_MARKET_APP_KEY"],
+                            os.environ["SCHWAB_MARKET_SECRET"],
+                        )
+                        r = market_client.get_quotes(["VOO"])
+                        print(f"MARKET_TOKEN_REFRESH status={getattr(r, 'status_code', 'NA')} before_min_left={market_min_left:.1f}", flush=True)
+                    except Exception as e:
+                        print(f"MARKET_TOKEN_REFRESH error: {type(e).__name__}: {e}", flush=True)
 
-            trade_token_path = "/data/schwab_trade_token.json"
-            trade_min_left = token_minutes_left(trade_token_path)
+                trade_token_path = "/data/schwab_trade_token.json"
+                trade_min_left = token_minutes_left(trade_token_path)
 
-            if trade_min_left < 20 and now_ts - last_trading_token_touch >= 60:
-                last_trading_token_touch = now_ts
-                try:
-                    after_min_left = explicit_refresh_schwab_token(
-                        trade_token_path,
-                        os.environ["SCHWAB_TRADING_APP_KEY"],
-                        os.environ["SCHWAB_TRADING_SECRET"],
-                    )
-                    refreshed = make_trader()
-                    trader = refreshed
-                    print(f"TRADING_TOKEN_REFRESH OK before_min_left={trade_min_left:.1f} after_min_left={after_min_left:.1f}", flush=True)
-                except Exception as e:
-                    print(f"TRADING_TOKEN_REFRESH error: {type(e).__name__}: {e}", flush=True)
+                if trade_min_left < 20 and now_ts - last_trading_token_touch >= 60:
+                    last_trading_token_touch = now_ts
+                    try:
+                        after_min_left = explicit_refresh_schwab_token(
+                            trade_token_path,
+                            os.environ["SCHWAB_TRADING_APP_KEY"],
+                            os.environ["SCHWAB_TRADING_SECRET"],
+                        )
+                        refreshed = make_trader()
+                        trader = refreshed
+                        print(f"TRADING_TOKEN_REFRESH OK before_min_left={trade_min_left:.1f} after_min_left={after_min_left:.1f}", flush=True)
+                    except Exception as e:
+                        print(f"TRADING_TOKEN_REFRESH error: {type(e).__name__}: {e}", flush=True)
 
             df = quote_source.read_data()
+
+            if RUN_MODE == "REPLAY":
+                print(
+                    f"REPLAY_CLOCK {quote_source.now()} rows={len(df)}",
+                    flush=True,
+                )
+
             if df is None or df.empty:
                 print("No tape yet.", flush=True)
                 time.sleep(POLL_SECONDS)
