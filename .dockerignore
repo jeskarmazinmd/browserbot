@@ -93,3 +93,6 @@ trendline_cache/
 trendline_intraday_cache/
 cache/
 runtime/
+
+# Archived local material is not part of production
+archive_unused/
