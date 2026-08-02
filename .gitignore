@@ -11,3 +11,8 @@ __pycache__/
 
 manual_review/
 replay/
+
+# local secrets
+.schwab.env
+schwabkey.txt
+schwabtradekey.txt
