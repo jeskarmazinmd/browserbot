@@ -389,7 +389,16 @@ def latest_tape():
     return files[-1] if files else None
 
 def allow_new_entries_now():
-    now_et = datetime.now(timezone.utc).astimezone(ZoneInfo("America/New_York"))
+    """Use the replay clock in replay mode and wall time in live mode."""
+    if RUN_MODE == "REPLAY":
+        now_et = quote_source.now().astimezone(
+            ZoneInfo("America/New_York")
+        )
+    else:
+        now_et = datetime.now(timezone.utc).astimezone(
+            ZoneInfo("America/New_York")
+        )
+
     cutoff = now_et.replace(
         hour=ENTRY_CUTOFF_HOUR_ET,
         minute=ENTRY_CUTOFF_MINUTE_ET,

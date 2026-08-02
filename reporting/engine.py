@@ -8,6 +8,7 @@ import csv
 import time
 import shutil
 import heapq
+import subprocess
 
 RUN_MODE = os.environ.get("RUN_MODE", "LIVE")
 RUN_ID = os.environ.get("RUN_ID", "live")
@@ -507,33 +508,69 @@ def _volume_suffix(obj):
     return f" | {text}" if text else ""
 
 
-def load_recent_rows():
-    if not HISTORY_JSONL.exists():
+def _load_jsonl_tail(path, max_rows):
+    """Parse only the newest complete JSONL records from a growing ledger."""
+    if not path.exists():
         return []
-    rows = deque(maxlen=MAX_HISTORY_ROWS)
-    with HISTORY_JSONL.open() as f:
-        for raw in f:
-            raw = raw.strip()
-            if raw:
-                try:
-                    rows.append(json.loads(raw))
-                except Exception:
-                    pass
-    return list(rows)
+
+    try:
+        result = subprocess.run(
+            ["tail", "-n", str(max_rows), str(path)],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except Exception:
+        return []
+
+    rows = []
+    for raw in result.stdout.splitlines():
+        raw = raw.strip()
+        if not raw:
+            continue
+        try:
+            rows.append(json.loads(raw))
+        except Exception:
+            continue
+    return rows
+
+
+def load_recent_rows():
+    return _load_jsonl_tail(HISTORY_JSONL, MAX_HISTORY_ROWS)
+
 
 def load_recent_events():
+    return _load_jsonl_tail(EVENTS_JSONL, MAX_HISTORY_ROWS)
+
+
+def load_event_views(today):
+    """Read the event ledger once for recent and today's rebound views."""
     if not EVENTS_JSONL.exists():
-        return []
-    rows = deque(maxlen=MAX_HISTORY_ROWS)
-    with EVENTS_JSONL.open() as f:
-        for raw in f:
-            raw = raw.strip()
-            if raw:
+        return [], []
+
+    recent = deque(maxlen=MAX_HISTORY_ROWS)
+    rebound_events = []
+
+    try:
+        with EVENTS_JSONL.open() as source:
+            for raw in source:
                 try:
-                    rows.append(json.loads(raw))
+                    event = json.loads(raw)
                 except Exception:
-                    pass
-    return list(rows)
+                    continue
+
+                recent.append(event)
+
+                if (
+                    event.get("event_type") in REBOUND_EVENT_TYPES
+                    and str(event.get("timestamp", "")).startswith(today)
+                    and is_rth_timestamp(event.get("timestamp"))
+                ):
+                    rebound_events.append(event)
+    except Exception:
+        return list(recent), rebound_events
+
+    return list(recent), rebound_events
 
 
 def summarize_signal_event(e):
@@ -4683,11 +4720,13 @@ def main():
             print("TIMING_STAGE2 cycle_start", flush=True)
 
             _t = time.time()
+            today = datetime.now(
+                ZoneInfo("America/New_York")
+            ).strftime("%Y-%m-%d")
             rows = load_recent_rows()
-            events = load_recent_events()
+            events, all_today_rebound_events = load_event_views(today)
             print(f"TIMING_STAGE2 load_rows_events: {time.time() - _t:.3f}s", flush=True)
             latest = rows[-1] if rows else None
-            today = datetime.now(ZoneInfo("America/New_York")).strftime("%Y-%m-%d")
 
             today_rows = [
                 r for r in rows
@@ -4703,9 +4742,18 @@ def main():
             signal_events_b_today = [e for e in today_events if e.get("event_type") == "SIGNAL" and event_strategy(e) == "B"]
             signal_events_d_today = [e for e in today_events if e.get("event_type") == "SIGNAL" and event_strategy(e) == "D"]
             signal_events_h_today = [e for e in today_events if e.get("event_type") == "SIGNAL" and event_strategy(e) == "H"]
-            rebound_events_today = [e for e in load_today_rebound_events(today) if event_strategy(e) == "A"]
-            rebound_events_b_today = [e for e in load_today_rebound_events(today) if event_strategy(e) == "B"]
-            rebound_events_d_today = [e for e in load_today_rebound_events(today) if event_strategy(e) == "D"]
+            rebound_events_today = [
+                event for event in all_today_rebound_events
+                if event_strategy(event) == "A"
+            ]
+            rebound_events_b_today = [
+                event for event in all_today_rebound_events
+                if event_strategy(event) == "B"
+            ]
+            rebound_events_d_today = [
+                event for event in all_today_rebound_events
+                if event_strategy(event) == "D"
+            ]
             _t = time.time()
             active_rebounds, rebound_outcomes, rebound_stats = rebound_lifecycle(
                 rebound_events_today
