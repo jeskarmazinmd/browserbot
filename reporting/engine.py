@@ -110,6 +110,9 @@ STRATEGY_PERFORMANCE_CSV = output_path("strategy_performance.csv")
 STRATEGY_PERFORMANCE_TABLE_TXT = output_path(
     "strategy_performance_table.txt"
 )
+# The unified 65-strategy architecture begins prospective comparison here.
+# Older ledgers are preserved for audit but excluded from allocation metrics.
+STRATEGY_PERFORMANCE_START_DATE = "2026-08-03"
 DAILY_LIVE_DEPLOYMENT_HISTORY_JSON = output_path("daily_live_deployment_history.json")
 DAILY_MARKET_BEHAVIOR_HISTORY_JSON = output_path("daily_market_behavior_history.json")
 
@@ -772,7 +775,13 @@ def _resolve_rs2_split_outcome(rec, trade_rows, entry_ts):
         })
 
 
-def signal_paper_outcome_lines(signal_events, max_items=5, strategy_id="A", outcomes_path=SIGNAL_PAPER_OUTCOMES_JSONL):
+def signal_paper_outcome_lines(
+    signal_events,
+    max_items=5,
+    strategy_id="A",
+    outcomes_path=SIGNAL_PAPER_OUTCOMES_JSONL,
+    tape_root=None,
+):
     """Paper-track every qualifying SIGNAL using its entry, target, stop and EOD exit."""
     try:
         import pandas as pd
@@ -781,6 +790,11 @@ def signal_paper_outcome_lines(signal_events, max_items=5, strategy_id="A", outc
         return [f"unavailable: import failed: {type(e).__name__}: {e}"]
 
     outcomes = load_trigger_outcomes(outcomes_path)
+    tape_root = (
+        Path("/data/tapes")
+        if tape_root is None
+        else Path(tape_root)
+    )
 
     # Defense in depth: ignore any historical SIGNAL outside RTH.
     signal_events = [
@@ -883,7 +897,9 @@ def signal_paper_outcome_lines(signal_events, max_items=5, strategy_id="A", outc
     # Read only symbols that still have open paper trades.
     wanted_by_day = {}
     for rec in outcomes.values():
-        if rec.get("status") == "closed" and rec.get("mfe_pct") is not None:
+        # Closed outcomes are immutable. Missing optional analytics such
+        # as MFE must never cause an historical exit to be recalculated.
+        if rec.get("status") == "closed":
             continue
         ts = str(rec.get("timestamp", ""))
         sym = rec.get("symbol")
@@ -892,7 +908,7 @@ def signal_paper_outcome_lines(signal_events, max_items=5, strategy_id="A", outc
 
     tape_cache = {}
     for day, wanted in wanted_by_day.items():
-        tape_path = Path("/data/tapes") / f"quotes_{day.replace('-', '')}.csv"
+        tape_path = tape_root / f"quotes_{day.replace('-', '')}.csv"
         if not tape_path.exists():
             tape_cache[day] = None
             continue
@@ -933,7 +949,9 @@ def signal_paper_outcome_lines(signal_events, max_items=5, strategy_id="A", outc
 
     # Resolve each trade at whichever occurs first: target, stop, or 15:55 ET.
     for rec in outcomes.values():
-        if rec.get("status") == "closed" and rec.get("mfe_pct") is not None:
+        # Closed outcomes are immutable. Missing optional analytics such
+        # as MFE must never cause an historical exit to be recalculated.
+        if rec.get("status") == "closed":
             continue
 
         try:
@@ -4168,11 +4186,29 @@ def _all_time_closed_stats(path):
         except Exception:
             records = {}
 
-    closed = [
-        record
-        for record in records.values()
-        if record.get("status") == "closed"
-    ]
+    closed = []
+    for record in records.values():
+        if record.get("status") != "closed":
+            continue
+
+        timestamp = (
+            record.get("detected_at")
+            or record.get("signal_time")
+            or record.get("entry_time")
+            or record.get("confirmation_time")
+            or record.get("timestamp")
+        )
+        parsed = _parse_utc_timestamp(timestamp)
+
+        if parsed is None:
+            continue
+
+        market_day = parsed.astimezone(NY_TZ).date().isoformat()
+
+        if market_day < STRATEGY_PERFORMANCE_START_DATE:
+            continue
+
+        closed.append(record)
     wins = sum(
         1
         for record in closed
@@ -4209,12 +4245,19 @@ def _write_strategy_performance_table(
     max_days=10,
 ):
     """Write a compact table intended for direct viewing with ``cat``."""
-    days = sorted(set(historical_days) | {today})[-max_days:]
+    visible_days = set(historical_days)
+    if today >= STRATEGY_PERFORMANCE_START_DATE:
+        visible_days.add(today)
+    days = sorted(visible_days)[-max_days:]
     strategy_width = 9
     day_width = 15
 
     lines = [
         "STRATEGY PERFORMANCE — $1,000 ASSIGNED TO EVERY TRADE",
+        (
+            "Prospective comparison start: "
+            f"{STRATEGY_PERFORMANCE_START_DATE}"
+        ),
         (
             "Daily cells show P/L / trades. Today's P/L includes "
             "marked-to-market open trades."
@@ -4287,7 +4330,11 @@ def _write_strategy_performance_table(
 def write_strategy_performance_csv(today):
     """Write machine-readable and human-readable strategy comparisons."""
     history = update_daily_pnl_history(today)
-    historical_days = sorted(history)
+    historical_days = [
+        day
+        for day in sorted(history)
+        if day >= STRATEGY_PERFORMANCE_START_DATE
+    ]
 
     day_columns = []
     for day in historical_days:

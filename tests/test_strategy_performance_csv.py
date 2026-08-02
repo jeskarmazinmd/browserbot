@@ -34,6 +34,12 @@ class StrategyPerformanceCSVTests(unittest.TestCase):
         else:
             os.environ["RUN_ID"] = cls.old_run_id
 
+    def test_comparison_starts_with_unified_architecture(self):
+        self.assertEqual(
+            "2026-08-03",
+            self.engine.STRATEGY_PERFORMANCE_START_DATE,
+        )
+
     def test_exactly_65_strategy_rows_and_30_snapshot_mappings(self):
         series = self.engine._strategy_signal_series_definitions()
         strategy_ids = [strategy_id for strategy_id, _ in series]
@@ -141,6 +147,11 @@ class StrategyPerformanceCSVTests(unittest.TestCase):
                     engine,
                     "DAILY_PNL_HISTORY_JSON",
                     history_path,
+                ),
+                patch.object(
+                    engine,
+                    "STRATEGY_PERFORMANCE_START_DATE",
+                    "2026-07-01",
                 ),
                 patch.object(
                     engine,
