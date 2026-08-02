@@ -31,3 +31,14 @@ def linear_trend(prices):
 def safe_ratio(numerator, denominator):
     denominator = float(denominator)
     return float(numerator) / denominator if denominator else math.nan
+
+
+def clean_price_array(values):
+    """Return finite positive prices as a compact NumPy array."""
+    if hasattr(values, "to_numpy"):
+        raw = values.to_numpy(dtype=float)
+    else:
+        raw = np.asarray(list(values), dtype=float)
+
+    raw = np.ravel(raw)
+    return raw[np.isfinite(raw) & (raw > 0)]
