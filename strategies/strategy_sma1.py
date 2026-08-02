@@ -1,50 +1,40 @@
-"""Self-contained SMA1 strategy module.
+"""Snapshot-native SMA1 using time-weighted 20m/50m moving averages."""
+from __future__ import annotations
+from collections import defaultdict, deque
+from dataclasses import dataclass, field
+from datetime import timedelta
+from engine.events import MarketSnapshot, SignalEvent
+from strategies.event_base import EventStrategy
+from .snapshot_common import Observation, make_signal, time_weighted_mean, trim_before
 
-Extracted without intentional behavior changes from live_strategy_runner.py.
-"""
-import math
-import numpy as np
-import pandas as pd
-from zoneinfo import ZoneInfo
+STRATEGY_ID="SMA1"; PAPER_ONLY=True
+SMA1_CONFIRM_MINUTES=2; SMA1_FAST_WINDOW=20; SMA1_SLOW_WINDOW=50
+EMA_RESEARCH_FORWARD_START_UTC="2026-08-03T13:30:00+00:00"
 
-STRATEGY_ID = "SMA1"
-PAPER_ONLY = True
+@dataclass
+class _State:
+    observations: deque[Observation]=field(default_factory=deque)
+    relation: deque[tuple[object,bool]]=field(default_factory=deque)
+    crossed_at: object|None=None
 
-EMA_RESEARCH_FORWARD_START_UTC = "2026-08-03T13:30:00+00:00"
-SMA1_CONFIRM_MINUTES = 2
-SMA1_FAST_WINDOW = 20
-SMA1_SLOW_WINDOW = 50
-
-def evaluate(ctx):
-    sym = ctx.symbol
-    work = ctx.work
-    ts = ctx.timestamp
-    px = ctx.current_price
-    minute_et = ctx.minute_et
-    prices = ctx.prices
-    ret30 = ctx.return_30m_pct
-    slope30 = ctx.slope_30m_pct_per_hour
-    r2_30 = ctx.r2_30m
-    spy_30m_return_pct = ctx.spy_30m_return_pct
-    signals = []
-    _independent_signal = ctx.signal_factory
-    _simple_return_pct = ctx.simple_return_pct
-    fit_log_slope_pct_per_hour = ctx.fit_log_slope_pct_per_hour
-    _ema = ctx.ema
-    _confirm_recent_volume_ratio = ctx.confirm_recent_volume_ratio
-    if len(prices) >= SMA1_SLOW_WINDOW + SMA1_CONFIRM_MINUTES + 1:
-        sma20 = prices.rolling(SMA1_FAST_WINDOW).mean()
-        sma50 = prices.rolling(SMA1_SLOW_WINDOW).mean()
-        confirmed = (
-            float(sma20.iloc[-3]) <= float(sma50.iloc[-3])
-            and float(sma20.iloc[-2]) > float(sma50.iloc[-2])
-            and float(sma20.iloc[-1]) > float(sma50.iloc[-1])
-        )
-        if confirmed:
-            signals.append(_independent_signal(
-                "SMA1", sym, ts, px, 0.85, 0.60, "sma_20_50_bullish_crossover",
-                sma_20=float(sma20.iloc[-1]), sma_50=float(sma50.iloc[-1]),
-                confirmation_minutes=SMA1_CONFIRM_MINUTES,
-                forward_start_utc=EMA_RESEARCH_FORWARD_START_UTC,
-            ))
-    return signals
+class SMA1Strategy(EventStrategy):
+    name=STRATEGY_ID
+    def __init__(self): self._state=defaultdict(_State)
+    def on_snapshot(self,snapshot:MarketSnapshot)->list[SignalEvent]:
+        out=[]
+        for symbol,q in snapshot.quotes.items():
+            s=self._state[symbol]; cur=Observation(snapshot.timestamp,float(q.price),q.total_volume)
+            s.observations.append(cur); trim_before(s.observations,snapshot.timestamp-timedelta(minutes=55))
+            fast=time_weighted_mean(s.observations,snapshot.timestamp-timedelta(minutes=20),snapshot.timestamp)
+            slow=time_weighted_mean(s.observations,snapshot.timestamp-timedelta(minutes=50),snapshot.timestamp)
+            if fast is None or slow is None: continue
+            above=fast>slow; prior=s.relation[-1][1] if s.relation else None
+            s.relation.append((snapshot.timestamp,above))
+            while s.relation and s.relation[0][0]<snapshot.timestamp-timedelta(minutes=3): s.relation.popleft()
+            if prior is False and above: s.crossed_at=snapshot.timestamp
+            if s.crossed_at is not None and snapshot.timestamp-s.crossed_at>=timedelta(minutes=SMA1_CONFIRM_MINUTES) and all(v for t,v in s.relation if t>=s.crossed_at):
+                out.append(make_signal(snapshot,STRATEGY_ID,symbol,cur.price,0.85,0.60,"sma_20_50_bullish_crossover",
+                    sma_20=fast,sma_50=slow,confirmation_minutes=SMA1_CONFIRM_MINUTES,
+                    forward_start_utc=EMA_RESEARCH_FORWARD_START_UTC,sampling_model="time_weighted_raw_snapshots"))
+                s.crossed_at=None
+        return out
