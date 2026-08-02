@@ -101,16 +101,9 @@ LEGACY_FLASH_STRATEGY_IDS = frozenset({
 # These strategies require current-cycle prices or explicitly use raw,
 # time-weighted snapshot behavior. They are not activated in the runner until
 # their retained state is compacted and complete-cycle tick delivery exists.
-TICK_STRATEGY_IDS = frozenset({
-    "EMA1",
-    "EMA2",
-    "EMA3",
-    "SMA1",
-    "VWEMA1",
-    "VE1",
-    "BO1",
-    "OR1",
-})
+# Every snapshot strategy now consumes completed-minute observations.
+# No strategy retains duplicated raw-tick history.
+TICK_STRATEGY_IDS = frozenset()
 
 REPORTING_STRATEGY_MODULES = {}
 

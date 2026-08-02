@@ -243,6 +243,35 @@ def _minute_candles(symbol, lookback_minutes=45):
     return pd.DataFrame(rows).sort_values("timestamp").drop_duplicates("timestamp", keep="last")
 
 
+def _confirm_recent_volume_ratio(symbol, lookback_minutes=30):
+    """Fetch volume only after an EMA1 price crossover exists."""
+    try:
+        candles = _minute_candles(
+            symbol,
+            lookback_minutes=max(lookback_minutes, 40),
+        )
+
+        if len(candles) < 12:
+            return None
+
+        completed = (
+            candles.iloc[:-1]
+            if len(candles) > 1
+            else candles
+        )
+        latest_volume = float(completed.iloc[-1]["volume"])
+        baseline = completed.iloc[-11:-1]["volume"].astype(float)
+        average_volume = float(baseline.mean())
+
+        if average_volume <= 0:
+            return None
+
+        return latest_volume / average_volume
+
+    except Exception:
+        return None
+
+
 def fetch_flash_volume_metrics(symbol):
     """Freeze volume conditions when the flash first qualifies."""
     snapshot_time = datetime.now(timezone.utc).isoformat()
@@ -1636,8 +1665,34 @@ def main():
             )
 
             for minute_snapshot in minute_snapshots:
+                dispatch_snapshot = minute_snapshot
+
+                if (
+                    not warming_minute_pipeline
+                    and RUN_MODE == "LIVE"
+                ):
+                    dispatch_snapshot = MarketSnapshot(
+                        timestamp=minute_snapshot.timestamp,
+                        quotes=minute_snapshot.quotes,
+                        expected_symbol_count=(
+                            minute_snapshot.expected_symbol_count
+                        ),
+                        returned_symbol_count=(
+                            minute_snapshot.returned_symbol_count
+                        ),
+                        fetch_duration_seconds=(
+                            minute_snapshot.fetch_duration_seconds
+                        ),
+                        metadata={
+                            **minute_snapshot.metadata,
+                            "confirm_recent_volume_ratio": (
+                                _confirm_recent_volume_ratio
+                            ),
+                        },
+                    )
+
                 minute_signals, minute_errors = run_minute_strategies(
-                    minute_snapshot
+                    dispatch_snapshot
                 )
                 last_minute_snapshot_timestamp = (
                     minute_snapshot.timestamp

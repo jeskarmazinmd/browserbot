@@ -1,16 +1,18 @@
-"""Snapshot-native EMA1: continuous-time 9/21 EMA bullish crossover."""
+"""Snapshot-native EMA1 using minute EMA crossover and lazy volume confirmation."""
+
 from __future__ import annotations
 
-from collections import defaultdict, deque
-from dataclasses import dataclass, field
-from datetime import timedelta
+from dataclasses import dataclass
 
 from engine.events import MarketSnapshot, SignalEvent
 from strategies.event_base import EventStrategy
-from .snapshot_common import Observation, cumulative_volume_rate, make_signal, trim_before, update_time_ema
+
+from .snapshot_common import make_signal
+
 
 STRATEGY_ID = "EMA1"
 PAPER_ONLY = True
+
 EMA1_FAST_SPAN = 9
 EMA1_SLOW_SPAN = 21
 EMA1_MIN_VOLUME_RATIO = 1.20
@@ -19,61 +21,96 @@ EMA_RESEARCH_FORWARD_START_UTC = "2026-08-03T13:30:00+00:00"
 
 @dataclass
 class _State:
-    observations: deque[Observation] = field(default_factory=deque)
+    observations_seen: int = 0
     fast: float | None = None
     slow: float | None = None
     prior_fast: float | None = None
     prior_slow: float | None = None
-    volume_rates: deque[tuple[object, float]] = field(default_factory=deque)
 
 
 class EMA1Strategy(EventStrategy):
     name = STRATEGY_ID
 
     def __init__(self):
-        self._state = defaultdict(_State)
+        self._state: dict[str, _State] = {}
 
-    def on_snapshot(self, snapshot: MarketSnapshot) -> list[SignalEvent]:
+    def on_snapshot(
+        self,
+        snapshot: MarketSnapshot,
+    ) -> list[SignalEvent]:
         signals = []
+        volume_provider = snapshot.metadata.get(
+            "confirm_recent_volume_ratio"
+        )
+
         for symbol, quote in snapshot.quotes.items():
-            state = self._state[symbol]
-            previous = state.observations[-1] if state.observations else None
-            current = Observation(snapshot.timestamp, float(quote.price), quote.total_volume)
-            state.observations.append(current)
-            trim_before(state.observations, snapshot.timestamp - timedelta(minutes=25))
+            state = self._state.setdefault(symbol, _State())
+            price = float(quote.price)
 
-            rate = cumulative_volume_rate(previous, current)
-            if rate is not None:
-                state.volume_rates.append((snapshot.timestamp, rate))
-            cutoff = snapshot.timestamp - timedelta(minutes=10)
-            while state.volume_rates and state.volume_rates[0][0] < cutoff:
-                state.volume_rates.popleft()
+            state.prior_fast = state.fast
+            state.prior_slow = state.slow
 
-            dt = (snapshot.timestamp - previous.timestamp).total_seconds() if previous else 0.0
-            state.prior_fast, state.prior_slow = state.fast, state.slow
-            state.fast = update_time_ema(state.fast, current.price, dt, EMA1_FAST_SPAN)
-            state.slow = update_time_ema(state.slow, current.price, dt, EMA1_SLOW_SPAN)
+            if state.fast is None:
+                state.fast = price
+                state.slow = price
+            else:
+                fast_alpha = 2.0 / (EMA1_FAST_SPAN + 1.0)
+                slow_alpha = 2.0 / (EMA1_SLOW_SPAN + 1.0)
 
-            if None in (state.prior_fast, state.prior_slow, state.fast, state.slow):
-                continue
-            crossed = state.prior_fast <= state.prior_slow and state.fast > state.slow
-            if not crossed or rate is None or len(state.volume_rates) < 2:
-                continue
-            baseline_values = [value for _, value in list(state.volume_rates)[:-1]]
-            baseline = sum(baseline_values) / len(baseline_values) if baseline_values else 0.0
-            volume_ratio = rate / baseline if baseline > 0 else None
-            if volume_ratio is None or volume_ratio < EMA1_MIN_VOLUME_RATIO:
+                state.fast = (
+                    fast_alpha * price
+                    + (1.0 - fast_alpha) * state.fast
+                )
+                state.slow = (
+                    slow_alpha * price
+                    + (1.0 - slow_alpha) * state.slow
+                )
+
+            state.observations_seen += 1
+
+            if state.observations_seen < EMA1_SLOW_SPAN + 3:
                 continue
 
-            signals.append(make_signal(
-                snapshot, STRATEGY_ID, symbol, current.price, 0.75, 0.55,
-                "ema_9_21_bullish_crossover",
-                ema_9=state.fast, ema_21=state.slow,
-                prior_ema_9=state.prior_fast, prior_ema_21=state.prior_slow,
-                latest_volume_rate_per_second=rate,
-                latest_volume_ratio=volume_ratio,
-                minimum_volume_ratio=EMA1_MIN_VOLUME_RATIO,
-                forward_start_utc=EMA_RESEARCH_FORWARD_START_UTC,
-                sampling_model="continuous_time_raw_snapshots",
-            ))
+            crossed = (
+                state.prior_fast is not None
+                and state.prior_slow is not None
+                and state.prior_fast <= state.prior_slow
+                and state.fast > state.slow
+            )
+
+            if not crossed or not callable(volume_provider):
+                continue
+
+            try:
+                volume_ratio = volume_provider(symbol)
+            except Exception:
+                volume_ratio = None
+
+            if (
+                volume_ratio is None
+                or float(volume_ratio) < EMA1_MIN_VOLUME_RATIO
+            ):
+                continue
+
+            signals.append(
+                make_signal(
+                    snapshot,
+                    STRATEGY_ID,
+                    symbol,
+                    price,
+                    0.75,
+                    0.55,
+                    "ema_9_21_bullish_crossover",
+                    ema_9=state.fast,
+                    ema_21=state.slow,
+                    prior_ema_9=state.prior_fast,
+                    prior_ema_21=state.prior_slow,
+                    latest_volume_ratio=float(volume_ratio),
+                    minimum_volume_ratio=EMA1_MIN_VOLUME_RATIO,
+                    forward_start_utc=EMA_RESEARCH_FORWARD_START_UTC,
+                    sampling_model="completed_minute_discrete_ema",
+                    volume_model="lazy_schwab_completed_minute_ratio",
+                )
+            )
+
         return signals

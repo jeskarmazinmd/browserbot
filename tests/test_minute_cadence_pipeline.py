@@ -94,8 +94,8 @@ class MinuteCadencePipelineTests(unittest.TestCase):
 
         self.assertEqual(30, len(all_ids))
         self.assertEqual(4, len(flash_ids))
-        self.assertEqual(8, len(tick_ids))
-        self.assertEqual(22, len(minute_ids))
+        self.assertEqual(0, len(tick_ids))
+        self.assertEqual(30, len(minute_ids))
         self.assertEqual(
             set(all_ids),
             set(tick_ids) | set(minute_ids),

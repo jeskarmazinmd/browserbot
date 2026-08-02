@@ -122,7 +122,7 @@ class AcceptanceTests(unittest.TestCase):
 
     def test_05_fixture_backed_snapshot_scanners_generate_expected_signal(self):
         uncovered = set()
-        incompatible_legacy_fixtures = {"EMA1", "SMA1", "TF1"}
+        incompatible_legacy_fixtures = {"SMA1", "TF1"}
 
         for registered in ENABLED_STRATEGIES:
             strategy = type(registered)()
@@ -170,6 +170,11 @@ class AcceptanceTests(unittest.TestCase):
                         expected_symbol_count=2,
                         returned_symbol_count=2,
                         fetch_duration_seconds=0.01,
+                        metadata={
+                            "confirm_recent_volume_ratio": (
+                                lambda symbol: 2.0
+                            ),
+                        },
                     )
                     signals.extend(strategy.on_snapshot(snapshot))
 
@@ -179,7 +184,6 @@ class AcceptanceTests(unittest.TestCase):
 
         self.assertEqual(
             {
-                "EMA1",
                 "SMA1",
                 "TF1",
                 "GE1",
