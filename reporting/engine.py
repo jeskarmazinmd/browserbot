@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 from collections import deque
 import json
+import csv
 import time
 import shutil
 import heapq
@@ -12,7 +13,7 @@ RUN_MODE = os.environ.get("RUN_MODE", "LIVE")
 RUN_ID = os.environ.get("RUN_ID", "live")
 
 if RUN_MODE == "REPLAY":
-    OUTPUT_ROOT = Path(f"/data/replay/{RUN_ID}")
+    OUTPUT_ROOT = Path("./replay") / RUN_ID
 else:
     OUTPUT_ROOT = Path("/data")
 
@@ -79,6 +80,11 @@ SIGNAL_PAPER_OUTCOMES_EMA2_JSONL = output_path("signal_paper_outcomes_ema2_pullb
 SIGNAL_PAPER_OUTCOMES_EMA3_JSONL = output_path("signal_paper_outcomes_ema3_alignment_breakout_v1.jsonl")
 SIGNAL_PAPER_OUTCOMES_SMA1_JSONL = output_path("signal_paper_outcomes_sma1_20_50_crossover_v1.jsonl")
 SIGNAL_PAPER_OUTCOMES_VWEMA1_JSONL = output_path("signal_paper_outcomes_vwema1_mean_ema_momentum_v1.jsonl")
+SIGNAL_PAPER_OUTCOMES_GE1_JSONL = output_path("signal_paper_outcomes_ge1_selling_exhaustion_v1.jsonl")
+SIGNAL_PAPER_OUTCOMES_GM1_JSONL = output_path("signal_paper_outcomes_gm1_mean_reversion_v1.jsonl")
+SIGNAL_PAPER_OUTCOMES_GP1_JSONL = output_path("signal_paper_outcomes_gp1_trend_pullback_v1.jsonl")
+SIGNAL_PAPER_OUTCOMES_GR1_JSONL = output_path("signal_paper_outcomes_gr1_support_rejection_v1.jsonl")
+SIGNAL_PAPER_OUTCOMES_GT1_JSONL = output_path("signal_paper_outcomes_gt1_trend_continuation_v1.jsonl")
 SIGNAL_PAPER_OUTCOMES_K1_JSONL = output_path("signal_paper_outcomes_strategy_k1_exit_30s_v1.jsonl")
 SIGNAL_PAPER_OUTCOMES_K2_JSONL = output_path("signal_paper_outcomes_strategy_k2_exit_60s_v1.jsonl")
 SIGNAL_PAPER_OUTCOMES_K3_JSONL = output_path("signal_paper_outcomes_strategy_k3_exit_120s_v1.jsonl")
@@ -100,6 +106,7 @@ HISTORY_JSONL = output_path("bot_history.jsonl")
 EVENTS_JSONL = output_path("bot_events.jsonl")
 TRIGGER_OUTCOMES_JSONL = output_path("trigger_trade_outcomes.jsonl")
 DAILY_PNL_HISTORY_JSON = output_path("daily_pnl_history.json")
+STRATEGY_PERFORMANCE_CSV = output_path("strategy_performance.csv")
 DAILY_LIVE_DEPLOYMENT_HISTORY_JSON = output_path("daily_live_deployment_history.json")
 DAILY_MARKET_BEHAVIOR_HISTORY_JSON = output_path("daily_market_behavior_history.json")
 
@@ -264,6 +271,11 @@ INDEPENDENT_STRATEGY_PATHS = {
     "EMA3": SIGNAL_PAPER_OUTCOMES_EMA3_JSONL,
     "SMA1": SIGNAL_PAPER_OUTCOMES_SMA1_JSONL,
     "VWEMA1": SIGNAL_PAPER_OUTCOMES_VWEMA1_JSONL,
+    "GE1": SIGNAL_PAPER_OUTCOMES_GE1_JSONL,
+    "GM1": SIGNAL_PAPER_OUTCOMES_GM1_JSONL,
+    "GP1": SIGNAL_PAPER_OUTCOMES_GP1_JSONL,
+    "GR1": SIGNAL_PAPER_OUTCOMES_GR1_JSONL,
+    "GT1": SIGNAL_PAPER_OUTCOMES_GT1_JSONL,
 }
 INDEPENDENT_STRATEGY_DESCRIPTIONS = {
     "TF1": "Trend pullback: orderly +30m trend, shallow pullback, renewed rise",
@@ -3450,63 +3462,7 @@ def strategy_dynamic_variant_lines(source_events, variant, max_items=5):
 
 def current_pnl_summary_lines(today):
     """Render one compact current P/L table across every paper strategy."""
-    series = [
-        ("A signal", SIGNAL_PAPER_OUTCOMES_JSONL),
-        ("A near miss", NEAR_MISS_PAPER_JSONL),
-        ("B signal", SIGNAL_PAPER_OUTCOMES_B_JSONL),
-        ("B near miss", NEAR_MISS_PAPER_B_JSONL),
-        ("C1 signal", SIGNAL_PAPER_OUTCOMES_C1_JSONL),
-        ("C1 near miss", NEAR_MISS_PAPER_C1_JSONL),
-        ("C2 signal", SIGNAL_PAPER_OUTCOMES_C2_JSONL),
-        ("C2 near miss", NEAR_MISS_PAPER_C2_JSONL),
-        ("C3 signal", SIGNAL_PAPER_OUTCOMES_C3_JSONL),
-        ("C3 near miss", NEAR_MISS_PAPER_C3_JSONL),
-        ("C4 signal", SIGNAL_PAPER_OUTCOMES_C4_JSONL),
-        ("C4 near miss", NEAR_MISS_PAPER_C4_JSONL),
-        ("D signal", SIGNAL_PAPER_OUTCOMES_D_JSONL),
-        ("D near miss", NEAR_MISS_PAPER_D_JSONL),
-        ("E signal", SIGNAL_PAPER_OUTCOMES_E_JSONL),
-        ("E near miss", NEAR_MISS_PAPER_E_JSONL),
-        ("F signal", SIGNAL_PAPER_OUTCOMES_F_JSONL),
-        ("F near miss", NEAR_MISS_PAPER_F_JSONL),
-        ("G signal", SIGNAL_PAPER_OUTCOMES_G_JSONL),
-        ("G near miss", NEAR_MISS_PAPER_G_JSONL),
-        ("H signal", SIGNAL_PAPER_OUTCOMES_H_JSONL),
-        ("H near miss", NEAR_MISS_PAPER_H_JSONL),
-        ("I signal", SIGNAL_PAPER_OUTCOMES_I_JSONL),
-        ("J1 signal", SIGNAL_PAPER_OUTCOMES_J1_JSONL),
-        ("J2 signal", SIGNAL_PAPER_OUTCOMES_J2_JSONL),
-        ("J3 signal", SIGNAL_PAPER_OUTCOMES_J3_JSONL),
-        ("J4 signal", SIGNAL_PAPER_OUTCOMES_J4_JSONL),
-        ("J5 signal", SIGNAL_PAPER_OUTCOMES_J5_JSONL),
-        ("J6 signal", SIGNAL_PAPER_OUTCOMES_J6_JSONL),
-        ("K1 signal", SIGNAL_PAPER_OUTCOMES_K1_JSONL),
-        ("K2 signal", SIGNAL_PAPER_OUTCOMES_K2_JSONL),
-        ("K3 signal", SIGNAL_PAPER_OUTCOMES_K3_JSONL),
-        ("K4 signal", SIGNAL_PAPER_OUTCOMES_K4_JSONL),
-        ("K5 signal", SIGNAL_PAPER_OUTCOMES_K5_JSONL),
-        ("K6 signal", SIGNAL_PAPER_OUTCOMES_K6_JSONL),
-        ("K7 signal", SIGNAL_PAPER_OUTCOMES_K7_JSONL),
-        ("K8 signal", SIGNAL_PAPER_OUTCOMES_K8_JSONL),
-        ("K9 signal", SIGNAL_PAPER_OUTCOMES_K9_JSONL),
-        ("L signal", SIGNAL_PAPER_OUTCOMES_L_JSONL),
-        ("M signal", SIGNAL_PAPER_OUTCOMES_M_JSONL),
-        ("N signal", SIGNAL_PAPER_OUTCOMES_N_JSONL),
-        ("O signal", SIGNAL_PAPER_OUTCOMES_O_JSONL),
-        ("P signal", SIGNAL_PAPER_OUTCOMES_P_JSONL),
-        ("Q signal", SIGNAL_PAPER_OUTCOMES_Q_JSONL),
-        ("R signal", SIGNAL_PAPER_OUTCOMES_R_JSONL),
-        ("S signal", SIGNAL_PAPER_OUTCOMES_S_JSONL),
-        ("TF1 signal", SIGNAL_PAPER_OUTCOMES_TF1_JSONL),
-        ("BO1 signal", SIGNAL_PAPER_OUTCOMES_BO1_JSONL),
-        ("OR1 signal", SIGNAL_PAPER_OUTCOMES_OR1_JSONL),
-        ("RS1 signal", SIGNAL_PAPER_OUTCOMES_RS1_JSONL),
-        ("VE1 signal", SIGNAL_PAPER_OUTCOMES_VE1_JSONL),
-        ("VR1 signal", SIGNAL_PAPER_OUTCOMES_VR1_JSONL),
-        ("M1 signal", SIGNAL_PAPER_OUTCOMES_M1_JSONL),
-        ("M2 signal", SIGNAL_PAPER_OUTCOMES_M2_JSONL),
-        ("M3 signal", SIGNAL_PAPER_OUTCOMES_M3_JSONL),
-    ]
+    series = _paper_series_definitions()
 
     lines = [
         f"CURRENT PAPER P/L SUMMARY — US MARKET DATE {today}",
@@ -3600,11 +3556,41 @@ def _paper_series_definitions():
         ("BO1 signal", SIGNAL_PAPER_OUTCOMES_BO1_JSONL),
         ("OR1 signal", SIGNAL_PAPER_OUTCOMES_OR1_JSONL),
         ("RS1 signal", SIGNAL_PAPER_OUTCOMES_RS1_JSONL),
+        ("RS2 signal", SIGNAL_PAPER_OUTCOMES_RS2_JSONL),
         ("VE1 signal", SIGNAL_PAPER_OUTCOMES_VE1_JSONL),
         ("VR1 signal", SIGNAL_PAPER_OUTCOMES_VR1_JSONL),
         ("M1 signal", SIGNAL_PAPER_OUTCOMES_M1_JSONL),
         ("M2 signal", SIGNAL_PAPER_OUTCOMES_M2_JSONL),
         ("M3 signal", SIGNAL_PAPER_OUTCOMES_M3_JSONL),
+        ("RS3 signal", SIGNAL_PAPER_OUTCOMES_RS3_JSONL),
+        ("MC1 signal", SIGNAL_PAPER_OUTCOMES_MC1_JSONL),
+        ("TL1 signal", SIGNAL_PAPER_OUTCOMES_TL1_JSONL),
+        ("AV1 signal", SIGNAL_PAPER_OUTCOMES_AV1_JSONL),
+        ("TD1 signal", SIGNAL_PAPER_OUTCOMES_TD1_JSONL),
+        ("SH1 signal", SIGNAL_PAPER_OUTCOMES_SH1_JSONL),
+        ("CV1 signal", SIGNAL_PAPER_OUTCOMES_CV1_JSONL),
+        ("HL1 signal", SIGNAL_PAPER_OUTCOMES_HL1_JSONL),
+        ("VT1 signal", SIGNAL_PAPER_OUTCOMES_VT1_JSONL),
+        ("PD1 signal", SIGNAL_PAPER_OUTCOMES_PD1_JSONL),
+        ("EMA1 signal", SIGNAL_PAPER_OUTCOMES_EMA1_JSONL),
+        ("EMA2 signal", SIGNAL_PAPER_OUTCOMES_EMA2_JSONL),
+        ("EMA3 signal", SIGNAL_PAPER_OUTCOMES_EMA3_JSONL),
+        ("SMA1 signal", SIGNAL_PAPER_OUTCOMES_SMA1_JSONL),
+        ("VWEMA1 signal", SIGNAL_PAPER_OUTCOMES_VWEMA1_JSONL),
+        ("GE1 signal", SIGNAL_PAPER_OUTCOMES_GE1_JSONL),
+        ("GM1 signal", SIGNAL_PAPER_OUTCOMES_GM1_JSONL),
+        ("GP1 signal", SIGNAL_PAPER_OUTCOMES_GP1_JSONL),
+        ("GR1 signal", SIGNAL_PAPER_OUTCOMES_GR1_JSONL),
+        ("GT1 signal", SIGNAL_PAPER_OUTCOMES_GT1_JSONL),
+    ]
+
+
+def _strategy_signal_series_definitions():
+    """Return exactly one outcome series for each of the 65 strategies."""
+    return [
+        (label.removesuffix(" signal"), path)
+        for label, path in _paper_series_definitions()
+        if label.endswith(" signal")
     ]
 
 
@@ -3971,6 +3957,153 @@ def update_daily_pnl_history(today):
         history[today] = snapshot
         _save_daily_pnl_history(history)
     return history
+
+
+
+def _all_time_closed_stats(path):
+    """Read one outcome ledger and summarize its newest closed trade records."""
+    records = {}
+
+    if path.exists():
+        try:
+            with path.open() as source:
+                for raw in source:
+                    try:
+                        record = json.loads(raw)
+                    except Exception:
+                        continue
+
+                    timestamp = str(
+                        record.get("detected_at")
+                        or record.get("signal_time")
+                        or record.get("entry_time")
+                        or record.get("confirmation_time")
+                        or record.get("timestamp")
+                        or ""
+                    )
+                    key = record.get("key") or (
+                        timestamp,
+                        record.get("symbol"),
+                        record.get("strategy_id"),
+                    )
+                    records[str(key)] = record
+        except Exception:
+            records = {}
+
+    closed = [
+        record
+        for record in records.values()
+        if record.get("status") == "closed"
+    ]
+    wins = sum(
+        1
+        for record in closed
+        if float(record.get("pnl_usd", 0) or 0) > 0
+    )
+    realized_pnl = sum(
+        float(record.get("pnl_usd", 0) or 0)
+        for record in closed
+    )
+
+    return_pct_sum = 0.0
+    for record in closed:
+        value = _safe_float(record.get("ret_pct"))
+
+        if value is None:
+            notional = float(record.get("paper_notional", 1000.0) or 1000.0)
+            pnl = float(record.get("pnl_usd", 0) or 0)
+            value = (pnl / notional * 100.0) if notional else 0.0
+
+        return_pct_sum += value
+
+    return {
+        "closed_trades": len(closed),
+        "wins": wins,
+        "realized_pnl": realized_pnl,
+        "return_pct_sum": return_pct_sum,
+    }
+
+
+def write_strategy_performance_csv(today):
+    """Write the single strategy comparison table requested by the operator."""
+    history = update_daily_pnl_history(today)
+    historical_days = sorted(history)
+    day_columns = [
+        f"{day}_pnl_per_1000"
+        for day in historical_days
+        if day != today
+    ]
+
+    fieldnames = [
+        "strategy_id",
+        "today_market_date",
+        "today_pnl_per_1000",
+        "today_closed_trades",
+        "today_open_trades",
+        "closed_trades_all_time",
+        "wins_all_time",
+        "win_rate_pct",
+        "all_time_realized_pnl_per_1000",
+        "all_time_return_pct_sum",
+        *day_columns,
+    ]
+
+    rows = []
+
+    for strategy_id, outcome_path in _strategy_signal_series_definitions():
+        today_stats = _paper_pnl_stats(outcome_path, today)
+        all_time = _all_time_closed_stats(outcome_path)
+        today_total = today_stats["closed_pnl"] + today_stats["open_pnl"]
+        closed_trades = all_time["closed_trades"]
+        win_rate = (
+            all_time["wins"] / closed_trades * 100.0
+            if closed_trades
+            else 0.0
+        )
+
+        row = {
+            "strategy_id": strategy_id,
+            "today_market_date": today,
+            "today_pnl_per_1000": round(today_total, 4),
+            "today_closed_trades": today_stats["closed"],
+            "today_open_trades": (
+                today_stats["open_marked"]
+                + today_stats["open_unavailable"]
+            ),
+            "closed_trades_all_time": closed_trades,
+            "wins_all_time": all_time["wins"],
+            "win_rate_pct": round(win_rate, 4),
+            "all_time_realized_pnl_per_1000": round(
+                all_time["realized_pnl"],
+                4,
+            ),
+            "all_time_return_pct_sum": round(
+                all_time["return_pct_sum"],
+                6,
+            ),
+        }
+
+        label = f"{strategy_id} signal"
+        for day in historical_days:
+            if day == today:
+                continue
+            row[f"{day}_pnl_per_1000"] = history.get(day, {}).get(label)
+
+        rows.append(row)
+
+    STRATEGY_PERFORMANCE_CSV.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+    temporary = STRATEGY_PERFORMANCE_CSV.with_suffix(".csv.tmp")
+
+    with temporary.open("w", newline="") as output:
+        writer = csv.DictWriter(output, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+    temporary.replace(STRATEGY_PERFORMANCE_CSV)
+    return rows
 
 
 def daily_pnl_history_lines(today, max_days=10):
@@ -4970,7 +5103,7 @@ def main():
                     and _event_after_start(e, INDEPENDENT_FORWARD_START_UTC)
                     and is_rth_timestamp(e.get("timestamp"))
                 ]
-                lines += ["", f"STRATEGY {strategy_id} — {INDEPENDENT_STRATEGY_DESCRIPTIONS[strategy_id]}"]
+                lines += ["", f"STRATEGY {strategy_id} — {INDEPENDENT_STRATEGY_DESCRIPTIONS.get(strategy_id, strategy_id)}"]
                 lines.extend(signal_paper_outcome_lines(
                     strategy_events,
                     max_items=5,
@@ -5107,6 +5240,12 @@ def main():
             # End the report with the persistent multi-day P/L matrix. After
             # the US close, today's finalized values are saved under its market
             # date; earlier dates remain available after ledgers roll forward.
+            _performance_rows = write_strategy_performance_csv(today)
+            print(
+                f"STRATEGY_PERFORMANCE_CSV rows={len(_performance_rows)} "
+                f"path={STRATEGY_PERFORMANCE_CSV}",
+                flush=True,
+            )
             lines += ["", *daily_pnl_history_lines(today)]
             lines += ["", *daily_live_deployment_history_lines(today)]
             lines += ["", *daily_market_behavior_history_lines(today)]
