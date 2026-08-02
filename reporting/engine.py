@@ -107,6 +107,9 @@ EVENTS_JSONL = output_path("bot_events.jsonl")
 TRIGGER_OUTCOMES_JSONL = output_path("trigger_trade_outcomes.jsonl")
 DAILY_PNL_HISTORY_JSON = output_path("daily_pnl_history.json")
 STRATEGY_PERFORMANCE_CSV = output_path("strategy_performance.csv")
+STRATEGY_PERFORMANCE_TABLE_TXT = output_path(
+    "strategy_performance_table.txt"
+)
 DAILY_LIVE_DEPLOYMENT_HISTORY_JSON = output_path("daily_live_deployment_history.json")
 DAILY_MARKET_BEHAVIOR_HISTORY_JSON = output_path("daily_market_behavior_history.json")
 
@@ -4199,15 +4202,101 @@ def _all_time_closed_stats(path):
     }
 
 
+def _write_strategy_performance_table(
+    rows,
+    today,
+    historical_days,
+    max_days=10,
+):
+    """Write a compact table intended for direct viewing with ``cat``."""
+    days = sorted(set(historical_days) | {today})[-max_days:]
+    strategy_width = 9
+    day_width = 15
+
+    lines = [
+        "STRATEGY PERFORMANCE — $1,000 ASSIGNED TO EVERY TRADE",
+        (
+            "Daily cells show P/L / trades. Today's P/L includes "
+            "marked-to-market open trades."
+        ),
+        (
+            "This is signal-level research P/L, not a "
+            "capital-constrained portfolio simulation."
+        ),
+        "",
+    ]
+
+    header = f"{'Strategy':<{strategy_width}}"
+    header += "".join(
+        f"{day[5:] + ' P/L/N':>{day_width}}"
+        for day in days
+    )
+    header += (
+        f"{'All P/L':>13}"
+        f"{'Trades':>9}"
+        f"{'Avg/trade':>12}"
+        f"{'Win %':>9}"
+        f"{'Open':>7}"
+    )
+    lines.extend([header, "-" * len(header)])
+
+    for row in rows:
+        rendered = f"{row['strategy_id']:<{strategy_width}}"
+
+        for day in days:
+            if day == today:
+                pnl = row["today_pnl_per_1000"]
+                trades = (
+                    int(row["today_closed_trades"])
+                    + int(row["today_open_trades"])
+                )
+            else:
+                pnl = row.get(f"{day}_pnl_per_1000")
+                trades = int(row.get(f"{day}_trades", 0) or 0)
+
+            if pnl is None and trades == 0:
+                cell = "—/0"
+            else:
+                cell = f"{float(pnl or 0):+.2f}/{trades}"
+
+            rendered += f"{cell:>{day_width}}"
+
+        rendered += (
+            f"{float(row['all_time_realized_pnl_per_1000']):+13.2f}"
+            f"{int(row['closed_trades_all_time']):>9}"
+            f"{float(row['average_pnl_per_closed_trade']):+12.2f}"
+            f"{float(row['win_rate_pct']):>9.1f}"
+            f"{int(row['today_open_trades']):>7}"
+        )
+        lines.append(rendered)
+
+    lines.extend([
+        "-" * len(header),
+        "P/L/N means paper P/L followed by number of trades for that date.",
+    ])
+
+    STRATEGY_PERFORMANCE_TABLE_TXT.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+    temporary = STRATEGY_PERFORMANCE_TABLE_TXT.with_suffix(".txt.tmp")
+    temporary.write_text("\n".join(lines) + "\n")
+    temporary.replace(STRATEGY_PERFORMANCE_TABLE_TXT)
+
+
 def write_strategy_performance_csv(today):
-    """Write the single strategy comparison table requested by the operator."""
+    """Write machine-readable and human-readable strategy comparisons."""
     history = update_daily_pnl_history(today)
     historical_days = sorted(history)
-    day_columns = [
-        f"{day}_pnl_per_1000"
-        for day in historical_days
-        if day != today
-    ]
+
+    day_columns = []
+    for day in historical_days:
+        if day == today:
+            continue
+        day_columns.extend([
+            f"{day}_pnl_per_1000",
+            f"{day}_trades",
+        ])
 
     fieldnames = [
         "strategy_id",
@@ -4220,6 +4309,7 @@ def write_strategy_performance_csv(today):
         "win_rate_pct",
         "all_time_realized_pnl_per_1000",
         "all_time_return_pct_sum",
+        "average_pnl_per_closed_trade",
         *day_columns,
     ]
 
@@ -4232,6 +4322,11 @@ def write_strategy_performance_csv(today):
         closed_trades = all_time["closed_trades"]
         win_rate = (
             all_time["wins"] / closed_trades * 100.0
+            if closed_trades
+            else 0.0
+        )
+        average_pnl = (
+            all_time["realized_pnl"] / closed_trades
             if closed_trades
             else 0.0
         )
@@ -4256,13 +4351,26 @@ def write_strategy_performance_csv(today):
                 all_time["return_pct_sum"],
                 6,
             ),
+            "average_pnl_per_closed_trade": round(
+                average_pnl,
+                4,
+            ),
         }
 
         label = f"{strategy_id} signal"
+
         for day in historical_days:
             if day == today:
                 continue
-            row[f"{day}_pnl_per_1000"] = history.get(day, {}).get(label)
+
+            historical_stats = _paper_pnl_stats(
+                outcome_path,
+                day,
+            )
+            row[f"{day}_pnl_per_1000"] = (
+                history.get(day, {}).get(label)
+            )
+            row[f"{day}_trades"] = historical_stats["closed"]
 
         rows.append(row)
 
@@ -4278,6 +4386,11 @@ def write_strategy_performance_csv(today):
         writer.writerows(rows)
 
     temporary.replace(STRATEGY_PERFORMANCE_CSV)
+    _write_strategy_performance_table(
+        rows,
+        today,
+        historical_days,
+    )
     return rows
 
 

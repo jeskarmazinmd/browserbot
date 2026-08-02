@@ -54,31 +54,68 @@ class StrategyPerformanceCSVTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             csv_path = root / "strategy_performance.csv"
+            table_path = root / "strategy_performance_table.txt"
             history_path = root / "daily_pnl_history.json"
             a_path = root / "a.jsonl"
             ge1_path = root / "ge1.jsonl"
 
-            a_path.write_text(json.dumps({
-                "key": "A|AAA|test",
-                "strategy_id": "A",
-                "symbol": "AAA",
-                "timestamp": "2026-08-03T14:00:00+00:00",
-                "status": "closed",
-                "paper_notional": 1000.0,
-                "pnl_usd": 12.50,
-                "ret_pct": 1.25,
-            }) + "\n")
+            a_path.write_text(
+                "\n".join(
+                    json.dumps(record)
+                    for record in [
+                        {
+                            "key": "A|AAA|historical",
+                            "strategy_id": "A",
+                            "symbol": "AAA",
+                            "timestamp": "2026-07-31T14:00:00+00:00",
+                            "status": "closed",
+                            "paper_notional": 1000.0,
+                            "pnl_usd": 7.00,
+                            "ret_pct": 0.70,
+                        },
+                        {
+                            "key": "A|AAA|today",
+                            "strategy_id": "A",
+                            "symbol": "AAA",
+                            "timestamp": "2026-08-03T14:00:00+00:00",
+                            "status": "closed",
+                            "paper_notional": 1000.0,
+                            "pnl_usd": 12.50,
+                            "ret_pct": 1.25,
+                        },
+                    ]
+                )
+                + "\n"
+            )
 
-            ge1_path.write_text(json.dumps({
-                "key": "GE1|BBB|test",
-                "strategy_id": "GE1",
-                "symbol": "BBB",
-                "timestamp": "2026-08-03T14:01:00+00:00",
-                "status": "closed",
-                "paper_notional": 1000.0,
-                "pnl_usd": -5.00,
-                "ret_pct": -0.50,
-            }) + "\n")
+            ge1_path.write_text(
+                "\n".join(
+                    json.dumps(record)
+                    for record in [
+                        {
+                            "key": "GE1|BBB|historical",
+                            "strategy_id": "GE1",
+                            "symbol": "BBB",
+                            "timestamp": "2026-07-31T14:01:00+00:00",
+                            "status": "closed",
+                            "paper_notional": 1000.0,
+                            "pnl_usd": -2.00,
+                            "ret_pct": -0.20,
+                        },
+                        {
+                            "key": "GE1|BBB|today",
+                            "strategy_id": "GE1",
+                            "symbol": "BBB",
+                            "timestamp": "2026-08-03T14:01:00+00:00",
+                            "status": "closed",
+                            "paper_notional": 1000.0,
+                            "pnl_usd": -5.00,
+                            "ret_pct": -0.50,
+                        },
+                    ]
+                )
+                + "\n"
+            )
 
             history_path.write_text(json.dumps({
                 "2026-07-31": {
@@ -94,6 +131,11 @@ class StrategyPerformanceCSVTests(unittest.TestCase):
                     engine,
                     "STRATEGY_PERFORMANCE_CSV",
                     csv_path,
+                ),
+                patch.object(
+                    engine,
+                    "STRATEGY_PERFORMANCE_TABLE_TXT",
+                    table_path,
                 ),
                 patch.object(
                     engine,
@@ -153,6 +195,32 @@ class StrategyPerformanceCSVTests(unittest.TestCase):
                     ]
                 ),
             )
+            self.assertEqual(
+                1,
+                int(by_strategy["A"]["2026-07-31_trades"]),
+            )
+            self.assertEqual(
+                1,
+                int(by_strategy["GE1"]["2026-07-31_trades"]),
+            )
+            self.assertEqual(
+                9.75,
+                float(
+                    by_strategy["A"][
+                        "average_pnl_per_closed_trade"
+                    ]
+                ),
+            )
+
+            rendered = table_path.read_text()
+            self.assertIn(
+                "Daily cells show P/L / trades",
+                rendered,
+            )
+            self.assertIn("+7.00/1", rendered)
+            self.assertIn("+12.50/1", rendered)
+            self.assertIn("-2.00/1", rendered)
+            self.assertIn("-5.00/1", rendered)
 
 
 if __name__ == "__main__":
