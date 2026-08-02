@@ -33,6 +33,13 @@ STRATEGY_CLASSES = [
     ("strategy_hl1", "HL1Strategy"),
     ("strategy_vt1", "VT1Strategy"),
     ("strategy_pd1", "PD1Strategy"),
+    ("strategy_bo1", "BO1Strategy"),
+    ("strategy_ge1", "GE1Strategy"),
+    ("strategy_gm1", "GM1Strategy"),
+    ("strategy_gp1", "GP1Strategy"),
+    ("strategy_gr1", "GR1Strategy"),
+    ("strategy_gt1", "GT1Strategy"),
+    ("strategy_or1", "OR1Strategy"),
 ]
 
 
