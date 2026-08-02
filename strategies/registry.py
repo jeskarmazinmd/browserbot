@@ -15,6 +15,8 @@ STRATEGY_CLASSES = [
     ("strategy_ema3", "EMA3Strategy"),
     ("strategy_sma1", "SMA1Strategy"),
     ("strategy_vwema1", "VWEMA1Strategy"),
+    ("strategy_tf1", "TF1Strategy"),
+    ("strategy_rs1", "RS1Strategy"),
 ]
 
 
