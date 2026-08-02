@@ -1,11 +1,13 @@
-
-# Schwab auth tokens - never bake into image
-schwab_token.json
-schwab_trade_token.json
-schwab_token_old_access_only.json
-schwabkey.txt
-schwabtradekey.txt
-.schwab.env
-.env
-*.zip
 __pycache__/
+*.pyc
+.DS_Store
+
+*.backup*
+*.pre_*
+*.before_*
+*_patched.py
+
+*.log
+
+manual_review/
+replay/
