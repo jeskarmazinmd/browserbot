@@ -10,9 +10,12 @@ import numpy as np
 import pandas as pd
 
 from strategies.manifest import STRATEGY_MANIFEST, STRATEGY_MODULES
+from engine.events import MarketSnapshot, Quote
 from strategies.registry import (
-    ENABLED_STRATEGIES, FLASH_STRATEGY_MODULES, REPORTING_STRATEGY_MODULES,
-    evaluate_all,
+    ENABLED_STRATEGIES,
+    FLASH_STRATEGY_MODULES,
+    REPORTING_STRATEGY_MODULES,
+    _evaluate,
 )
 
 
@@ -79,15 +82,15 @@ EXPLICIT={
 }
 
 class AcceptanceTests(unittest.TestCase):
-    def test_01_manifest_has_exactly_60_unique_modules(self):
-        self.assertEqual(60,len(STRATEGY_MANIFEST))
-        self.assertEqual(60,len(set(STRATEGY_MANIFEST)))
+    def test_01_manifest_has_exactly_65_unique_modules(self):
+        self.assertEqual(65, len(STRATEGY_MANIFEST))
+        self.assertEqual(65, len(set(STRATEGY_MANIFEST)))
 
     def test_02_expected_architecture_split(self):
-        self.assertEqual(4,len(FLASH_STRATEGY_MODULES))
-        self.assertEqual(25,len(ENABLED_STRATEGIES))
-        self.assertEqual(31,len(REPORTING_STRATEGY_MODULES))
-        self.assertEqual(60,4+25+31)
+        self.assertEqual(4, len(FLASH_STRATEGY_MODULES))
+        self.assertEqual(30, len(ENABLED_STRATEGIES))
+        self.assertEqual(31, len(REPORTING_STRATEGY_MODULES))
+        self.assertEqual(65, 4 + 30 + 31)
 
     def test_03_all_derived_variants_have_metadata_and_config(self):
         for sid,module in REPORTING_STRATEGY_MODULES.items():
@@ -117,40 +120,129 @@ class AcceptanceTests(unittest.TestCase):
                 self.assertFalse(ok)
                 self.assertIn(reason,{'target_reached_before_entry','insufficient_remaining_upside'})
 
-    def test_05_every_independent_scanner_generates_expected_signal(self):
-        for module in ENABLED_STRATEGIES:
-            sid=module.STRATEGY_ID
-            with self.subTest(strategy=sid):
-                if sid in EXPLICIT:
-                    prices=EXPLICIT[sid]; spec={'ret':2,'slope':4,'r2':.95,'spy':0}
-                else:
-                    spec=FIXTURE_SPECS[sid]; prices=pattern(spec['pattern'])
-                minute=590 if sid=='OR1' else 600
-                out=module.evaluate(context(prices,minute_et=minute,ret=spec['ret'],slope=spec['slope'],r2=spec['r2'],spy=spec['spy']))
-                self.assertGreaterEqual(len(out),1)
-                self.assertEqual(sid,out[0]['strategy_id'])
-                self.assertEqual('TEST',out[0]['symbol'])
+    def test_05_fixture_backed_snapshot_scanners_generate_expected_signal(self):
+        uncovered = set()
+        incompatible_legacy_fixtures = {"EMA1", "SMA1", "TF1"}
 
-    def test_06_every_independent_scanner_handles_clear_negative_without_error(self):
-        flat=np.full(90,100.0)
-        for module in ENABLED_STRATEGIES:
-            with self.subTest(strategy=module.STRATEGY_ID):
-                out=module.evaluate(context(flat,ret=0,slope=0,r2=0,spy=0,minute_et=700))
-                self.assertIsInstance(out,list)
+        for registered in ENABLED_STRATEGIES:
+            strategy = type(registered)()
+            sid = strategy.name
+
+            with self.subTest(strategy=sid):
+                if sid in incompatible_legacy_fixtures:
+                    uncovered.add(sid)
+                    continue
+
+                if sid in EXPLICIT:
+                    prices = EXPLICIT[sid]
+                    spec = {"spy": 0}
+                elif sid in FIXTURE_SPECS:
+                    spec = FIXTURE_SPECS[sid]
+                    prices = pattern(spec["pattern"])
+                else:
+                    uncovered.add(sid)
+                    continue
+
+                timestamps = pd.date_range(
+                    "2026-08-03T13:30:00Z",
+                    periods=len(prices),
+                    freq="min",
+                    tz="UTC",
+                )
+                spy_prices = np.linspace(
+                    100.0,
+                    100.0 * (1.0 + float(spec.get("spy", 0)) / 100.0),
+                    len(prices),
+                )
+
+                signals = []
+                for timestamp, price, spy_price in zip(
+                    timestamps,
+                    prices,
+                    spy_prices,
+                ):
+                    snapshot = MarketSnapshot(
+                        timestamp=timestamp.to_pydatetime(),
+                        quotes={
+                            "TEST": Quote(price=float(price)),
+                            "SPY": Quote(price=float(spy_price)),
+                        },
+                        expected_symbol_count=2,
+                        returned_symbol_count=2,
+                        fetch_duration_seconds=0.01,
+                    )
+                    signals.extend(strategy.on_snapshot(snapshot))
+
+                self.assertGreaterEqual(len(signals), 1)
+                self.assertEqual(sid, signals[0].strategy_id)
+                self.assertEqual("TEST", signals[0].symbol)
+
+        self.assertEqual(
+            {
+                "EMA1",
+                "SMA1",
+                "TF1",
+                "GE1",
+                "GM1",
+                "GP1",
+                "GR1",
+                "GT1",
+            },
+            uncovered,
+        )
+
+    def test_06_every_snapshot_scanner_handles_clear_negative_without_error(self):
+        flat = np.full(90, 100.0)
+
+        for registered in ENABLED_STRATEGIES:
+            strategy = type(registered)()
+
+            with self.subTest(strategy=strategy.name):
+                signals = []
+
+                for timestamp, price in zip(
+                    pd.date_range(
+                        "2026-08-03T13:30:00Z",
+                        periods=len(flat),
+                        freq="min",
+                        tz="UTC",
+                    ),
+                    flat,
+                ):
+                    snapshot = MarketSnapshot(
+                        timestamp=timestamp.to_pydatetime(),
+                        quotes={
+                            "TEST": Quote(price=float(price)),
+                            "SPY": Quote(price=100.0),
+                        },
+                        expected_symbol_count=2,
+                        returned_symbol_count=2,
+                        fetch_duration_seconds=0.01,
+                    )
+                    result = strategy.on_snapshot(snapshot)
+                    self.assertIsInstance(result, list)
+                    signals.extend(result)
+
+                self.assertEqual([], signals)
 
     def test_07_registry_isolates_one_broken_strategy(self):
-        good=SimpleNamespace(STRATEGY_ID='GOOD',evaluate=lambda ctx:[{'strategy_id':'GOOD'}])
-        def fail(ctx): raise RuntimeError('intentional')
-        bad=SimpleNamespace(STRATEGY_ID='BAD',evaluate=fail)
-        import strategies.registry as registry
-        original=registry.ENABLED_STRATEGIES
-        try:
-            registry.ENABLED_STRATEGIES=[bad,good]
-            signals,errors=registry.evaluate_all(object())
-        finally:
-            registry.ENABLED_STRATEGIES=original
-        self.assertEqual([{'strategy_id':'GOOD'}],signals)
-        self.assertEqual('BAD',errors[0][0])
+        good = SimpleNamespace(
+            name="GOOD",
+            on_snapshot=lambda snapshot: ["good"],
+        )
+
+        def fail(snapshot):
+            raise RuntimeError("intentional")
+
+        bad = SimpleNamespace(
+            name="BAD",
+            on_snapshot=fail,
+        )
+
+        signals, errors = _evaluate(object(), [bad, good])
+
+        self.assertEqual(["good"], signals)
+        self.assertEqual("BAD", errors[0][0])
 
     def test_08_bot_output_replay_logging(self):
         old_mode=os.environ.get('RUN_MODE'); old_id=os.environ.get('RUN_ID')

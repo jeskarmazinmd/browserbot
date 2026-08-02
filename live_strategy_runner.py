@@ -8,10 +8,14 @@ from schwab_clients import SchwabTradeClient
 from bot_output import write_bot_output, append_bot_event
 from quote_source import LiveQuoteSource
 from types import SimpleNamespace
-from engine.dispatcher import EventDispatcher
+from engine.events import MarketSnapshot, Quote, SignalEvent
 from strategies.generic_registry import evaluate_all as evaluate_generic_strategies
 from strategies.registry import (
-    on_snapshot as run_snapshot_strategies,
+    flash_accepts,
+    flash_strategy_configs,
+    on_minute_snapshot as run_minute_strategies,
+    refresh_flash_entry,
+    validate_flash_entry,
 )
 from regime_logger import log_regime, latest_regime
 
@@ -64,10 +68,20 @@ MAX_QUOTE_AGE_SECONDS = 300
 
 attempted = set()
 
+STRATEGY_CONFIGS = flash_strategy_configs()
+
 STRATEGY_A = "A"
 STRATEGY_B = "B"
 STRATEGY_D = "D"
 STRATEGY_H = "H"
+
+# Reporting and near-miss aliases derived from module-owned Strategy H rules.
+STRATEGY_H_MIN_FLASH_DROP_PCT = STRATEGY_CONFIGS[STRATEGY_H]["flash_drop_pct"]
+STRATEGY_H_MAX_FLASH_DROP_PCT = STRATEGY_CONFIGS[STRATEGY_H]["max_flash_drop_pct"]
+STRATEGY_H_MIN_PRE_R2 = STRATEGY_CONFIGS[STRATEGY_H]["min_pre_r2"]
+STRATEGY_H_MAX_PRE_SLOPE_PCT_PER_HOUR = (
+    STRATEGY_CONFIGS[STRATEGY_H]["max_pre_slope_pct_per_hour"]
+)
 
 # Independent strategy orchestration settings. Individual strategy rules and
 # thresholds live exclusively in strategies/strategy_*.py.
@@ -77,28 +91,6 @@ INDEPENDENT_MIN_PRICE = 1.00
 INDEPENDENT_MAX_PRICE = 1000.00
 UNIVERSE_MANIFEST_DIR = DATA_ROOT
 
-# Snapshot-native strategy dispatcher. Legacy paths remain temporarily during migration.
-SNAPSHOT_DISPATCHER = EventDispatcher()
-
-def _register_snapshot_strategies():
-    """Load snapshot-native strategies into the dispatcher."""
-    try:
-        from strategies.registry import ENABLED_STRATEGIES
-
-        for strategy in ENABLED_STRATEGIES:
-            SNAPSHOT_DISPATCHER.register(strategy)
-
-        print(
-            f"SNAPSHOT_STRATEGIES_REGISTERED count={len(ENABLED_STRATEGIES)}",
-            flush=True,
-        )
-    except Exception as exc:
-        print(
-            f"SNAPSHOT_STRATEGY_REGISTRATION_ERROR {type(exc).__name__}: {exc}",
-            flush=True,
-        )
-
-_register_snapshot_strategies()
 _UNIVERSE_MANIFEST_CACHE = {"path": None, "mtime_ns": None, "symbols": {}}
 
 def append_strategy_event(strategy_id, event_type, **payload):
@@ -1339,98 +1331,133 @@ def _universe_metadata(symbol, timestamp):
         return {"primary_universe": "UNKNOWN", "universe_memberships": [], "sampling_tier": "UNKNOWN", "dynamic_promoted": False}
 
 
-def _independent_signal(strategy_id, sym, timestamp, entry, target_pct, stop_pct, setup, **metrics):
-    entry = float(entry)
-    return {
-        "strategy_id": strategy_id,
-        "symbol": str(sym),
-        "timestamp": pd.Timestamp(timestamp).isoformat(),
-        "entry_price": entry,
-        "target_price": entry * (1.0 + float(target_pct) / 100.0),
-        "stop_price": entry * (1.0 - float(stop_pct) / 100.0),
-        "setup": setup,
-        "setup_id": f"{strategy_id}|{sym}|{pd.Timestamp(timestamp).floor('min').isoformat()}",
-        "live_order_placement": False,
-        **_universe_metadata(sym, timestamp),
-        **metrics,
+def completed_minute_snapshots(df, after_timestamp=None):
+    """Build complete one-minute snapshots from the rolling minute cache.
+
+    The newest clock minute is withheld because the collector may still be
+    appending symbols for that minute. Once a newer minute appears, the prior
+    minute is complete and safe to dispatch.
+    """
+    if df is None or df.empty:
+        return []
+
+    required = {"timestamp", "symbol", "price"}
+    if not required.issubset(df.columns):
+        return []
+
+    work = df.dropna(
+        subset=["timestamp", "symbol", "price"],
+    ).copy()
+
+    if work.empty:
+        return []
+
+    work["timestamp"] = pd.to_datetime(
+        work["timestamp"],
+        utc=True,
+        errors="coerce",
+    )
+    work["price"] = pd.to_numeric(
+        work["price"],
+        errors="coerce",
+    )
+    work = work.dropna(
+        subset=["timestamp", "symbol", "price"],
+    )
+
+    if work.empty:
+        return []
+
+    newest_minute = work["timestamp"].max().floor("min")
+    completed_through = newest_minute - pd.Timedelta(minutes=1)
+
+    eligible = work[
+        work["timestamp"] <= completed_through
+    ]
+
+    if after_timestamp is not None:
+        after = pd.Timestamp(after_timestamp)
+
+        if after.tzinfo is None:
+            after = after.tz_localize("UTC")
+        else:
+            after = after.tz_convert("UTC")
+
+        eligible = eligible[
+            eligible["timestamp"] > after
+        ]
+
+    if eligible.empty:
+        return []
+
+    expected_symbol_count = int(
+        work["symbol"].astype(str).nunique()
+    )
+    snapshots = []
+
+    for timestamp, minute_rows in eligible.groupby(
+        "timestamp",
+        sort=True,
+    ):
+        latest = (
+            minute_rows
+            .sort_values("timestamp")
+            .drop_duplicates(
+                subset=["symbol"],
+                keep="last",
+            )
+        )
+
+        quotes = {
+            str(row["symbol"]): Quote(
+                price=float(row["price"]),
+                total_volume=None,
+                bid=None,
+                ask=None,
+            )
+            for _, row in latest.iterrows()
+        }
+
+        snapshots.append(
+            MarketSnapshot(
+                timestamp=pd.Timestamp(timestamp).to_pydatetime(),
+                quotes=quotes,
+                expected_symbol_count=expected_symbol_count,
+                returned_symbol_count=len(quotes),
+                fetch_duration_seconds=0.0,
+                metadata={
+                    "source": "completed_minute_cache",
+                    "cadence": "minute",
+                },
+            )
+        )
+
+    return snapshots
+
+
+def snapshot_signal_payload(signal):
+    """Convert SignalEvent to the established paper-event payload schema."""
+    timestamp = pd.Timestamp(signal.timestamp)
+
+    payload = {
+        "strategy_id": str(signal.strategy_id),
+        "symbol": str(signal.symbol),
+        "timestamp": timestamp.isoformat(),
+        "setup_id": (
+            f"{signal.strategy_id}|{signal.symbol}|"
+            f"{timestamp.floor('min').isoformat()}"
+        ),
+        **_universe_metadata(signal.symbol, signal.timestamp),
+        **dict(signal.data or {}),
     }
 
+    payload.setdefault("live_order_placement", False)
 
-
-def _ema(series, span):
-    return series.ewm(span=int(span), adjust=False).mean()
-
-
-def _confirm_recent_volume_ratio(symbol, lookback_minutes=30):
-    """Fetch volume only after a price-based candidate exists.
-
-    Returns latest completed-minute volume divided by the mean of the preceding
-    completed minutes. Failures return None and the volume-gated signal is skipped.
-    """
-    try:
-        candles = _minute_candles(symbol, lookback_minutes=max(lookback_minutes, 40))
-        if len(candles) < 12:
-            return None
-        completed = candles.iloc[:-1] if len(candles) > 1 else candles
-        latest_volume = float(completed.iloc[-1]["volume"])
-        baseline = completed.iloc[-11:-1]["volume"].astype(float)
-        average_volume = float(baseline.mean())
-        if average_volume <= 0:
-            return None
-        return latest_volume / average_volume
-    except Exception:
-        return None
-
-
-def detect_independent_signals(sym, g, spy_30m_return_pct=None):
-    """Evaluate each enabled independent strategy module in isolation."""
-    work = _series_at_least(g, 18)
-    if work is None:
-        return []
-    latest = work.iloc[-1]
-    ts = latest["timestamp"]
-    px = float(latest["price"])
-    if not (INDEPENDENT_MIN_PRICE <= px <= INDEPENDENT_MAX_PRICE):
-        return []
-
-    et = pd.Timestamp(ts).tz_convert(ZoneInfo("America/New_York"))
-    minute_et = et.hour * 60 + et.minute
-    prices = work["price"].astype(float)
-    last30 = prices.tail(31)
-    ret30 = _simple_return_pct(last30.iloc[0], last30.iloc[-1]) if len(last30) >= 21 else math.nan
-    slope30, r2_30 = fit_log_slope_pct_per_hour(last30) if len(last30) >= 21 else (math.nan, math.nan)
-
-    context = SimpleNamespace(
-        symbol=sym, work=work, timestamp=ts, current_price=px, minute_et=minute_et,
-        prices=prices, return_30m_pct=ret30, slope_30m_pct_per_hour=slope30,
-        r2_30m=r2_30, spy_30m_return_pct=spy_30m_return_pct,
-        signal_factory=_independent_signal, simple_return_pct=_simple_return_pct,
-        fit_log_slope_pct_per_hour=fit_log_slope_pct_per_hour, ema=_ema,
-        confirm_recent_volume_ratio=_confirm_recent_volume_ratio,
-    )
-    signals, errors = evaluate_registered_strategies(context)
-    generic_signals, generic_errors = evaluate_generic_strategies(context)
-    signals.extend(generic_signals)
-    errors.extend(generic_errors)
-    for strategy_id, exc in errors:
-        print(f"STRATEGY_EVALUATION_ERROR {strategy_id}: {type(exc).__name__}: {exc}", flush=True)
-        append_strategy_event(strategy_id, "STRATEGY_EVALUATION_ERROR", error=f"{type(exc).__name__}: {exc}")
-    return signals
-
-
-
-
-def run_native_strategy_pipeline(snapshot):
-    """Run snapshot-native strategies.
-
-    Strategies receive the live snapshot and decide internally what state to
-    keep and whether to emit SignalEvents.
-    """
-    return SNAPSHOT_DISPATCHER.dispatch_snapshot(snapshot)
+    return payload
 
 
 def main():
-    print("🚀 SNAPSHOT MIGRATION RUNNER ONLINE — legacy flash wiring bypass checkpoint", flush=True)
+    print("🚀 CADENCE-AWARE STRATEGY RUNNER ONLINE", flush=True)
     print(f"PRE={PRE_CRASH_TREND_MINUTES}m FLASH={FLASH_WINDOW_MINUTES}m DROP={FLASH_DROP_PCT}-{MAX_FLASH_DROP_PCT}% TARGET={RECOVERY_TARGET_FRACTION} STOP={STOP_LOSS_FRACTION_BELOW_ENTRY}", flush=True)
 
     trader = make_trader() if RUN_MODE == "LIVE" else None
@@ -1446,13 +1473,23 @@ def main():
 
     # Symbols that met the full signal but are waiting for a 0.10% rebound
     # from the lowest live price observed after qualification.
-    pending_entries = {}
-    last_flash_signature = {}
+    pending_entries = {
+        strategy_id: {}
+        for strategy_id in STRATEGY_CONFIGS
+    }
+    last_flash_signature = {
+        strategy_id: {}
+        for strategy_id in STRATEGY_CONFIGS
+    }
 
     # Native independent-strategy signals are deduplicated by emitted minute and
     # also receive a per-symbol cooldown to avoid repeatedly entering one trend.
     independent_last_signal = {}
     independent_dedupe_day = None
+
+    # Completed-minute strategies warm from the existing cache once, then
+    # receive each newly completed minute exactly once.
+    last_minute_snapshot_timestamp = None
 
     while True:
         try:
@@ -1590,6 +1627,109 @@ def main():
             }
             scan_error_samples = []
 
+            minute_snapshots = completed_minute_snapshots(
+                df,
+                after_timestamp=last_minute_snapshot_timestamp,
+            )
+            warming_minute_pipeline = (
+                last_minute_snapshot_timestamp is None
+            )
+
+            for minute_snapshot in minute_snapshots:
+                minute_signals, minute_errors = run_minute_strategies(
+                    minute_snapshot
+                )
+                last_minute_snapshot_timestamp = (
+                    minute_snapshot.timestamp
+                )
+
+                for strategy_id, exc in minute_errors:
+                    scan_stats["calculation_errors"] += 1
+                    print(
+                        "MINUTE_STRATEGY_EVALUATION_ERROR "
+                        f"{strategy_id}: {type(exc).__name__}: {exc}",
+                        flush=True,
+                    )
+                    append_strategy_event(
+                        strategy_id,
+                        "STRATEGY_EVALUATION_ERROR",
+                        error=f"{type(exc).__name__}: {exc}",
+                        cadence="minute",
+                    )
+
+                if warming_minute_pipeline:
+                    continue
+
+                for signal in minute_signals:
+                    independent = snapshot_signal_payload(signal)
+                    strategy_id = independent["strategy_id"]
+                    symbol = independent["symbol"]
+                    entry_price = float(
+                        independent.get("entry_price", 0.0) or 0.0
+                    )
+
+                    if symbol in positions:
+                        continue
+
+                    if not (
+                        INDEPENDENT_MIN_PRICE
+                        <= entry_price
+                        <= INDEPENDENT_MAX_PRICE
+                    ):
+                        continue
+
+                    emitted_ts = pd.Timestamp(
+                        independent["timestamp"]
+                    )
+                    dedupe_key = (
+                        market_day,
+                        strategy_id,
+                        symbol,
+                    )
+                    prior_ts = independent_last_signal.get(
+                        dedupe_key
+                    )
+
+                    if prior_ts is not None:
+                        age_minutes = (
+                            emitted_ts - prior_ts
+                        ).total_seconds() / 60.0
+
+                        if (
+                            age_minutes
+                            < INDEPENDENT_COOLDOWN_MINUTES
+                        ):
+                            continue
+
+                    independent_last_signal[dedupe_key] = emitted_ts
+                    independent_events.append(independent)
+
+                    append_strategy_event(
+                        strategy_id,
+                        "SIGNAL",
+                        symbol=symbol,
+                        signal=independent,
+                        signal_regime=latest_regime(),
+                        thresholds={
+                            "INDEPENDENT_FORWARD_START_UTC": (
+                                INDEPENDENT_FORWARD_START_UTC
+                            ),
+                            "INDEPENDENT_COOLDOWN_MINUTES": (
+                                INDEPENDENT_COOLDOWN_MINUTES
+                            ),
+                            "LIVE_ORDER_PLACEMENT": False,
+                            "CADENCE": "minute",
+                        },
+                    )
+
+            if warming_minute_pipeline and minute_snapshots:
+                print(
+                    "MINUTE_STRATEGY_WARMUP "
+                    f"snapshots={len(minute_snapshots)} "
+                    f"through={last_minute_snapshot_timestamp}",
+                    flush=True,
+                )
+
             for sym, g in df.groupby("symbol"):
                 scan_stats["symbols_seen"] += 1
                 if sym in positions:
@@ -1660,39 +1800,6 @@ def main():
                         symbol=sym, lowest_price=running_low, entry_price=px,
                         rebound_pct=rebound_fraction * 100, waiting_seconds=age_seconds,
                         recovery_fraction_at_entry=recovery_fraction, signal=confirmed_event)
-
-                # Independently scan this symbol for non-mean-reversion strategy
-                # families. These emit paper SIGNAL events directly and never place orders.
-                try:
-                    for independent in detect_independent_signals(sym, g, spy_30m_return_pct):
-                        strategy_id = independent["strategy_id"]
-                        emitted_ts = pd.Timestamp(independent["timestamp"])
-                        dedupe_key = (market_day, strategy_id, str(sym))
-                        prior_ts = independent_last_signal.get(dedupe_key)
-                        if prior_ts is not None:
-                            age_minutes = (emitted_ts - prior_ts).total_seconds() / 60.0
-                            if age_minutes < INDEPENDENT_COOLDOWN_MINUTES:
-                                continue
-                        independent_last_signal[dedupe_key] = emitted_ts
-                        independent_events.append(independent)
-                        append_strategy_event(
-                            strategy_id,
-                            "SIGNAL",
-                            symbol=sym,
-                            signal=independent,
-                            signal_regime=latest_regime(),
-                            thresholds={
-                                "INDEPENDENT_FORWARD_START_UTC": INDEPENDENT_FORWARD_START_UTC,
-                                "INDEPENDENT_COOLDOWN_MINUTES": INDEPENDENT_COOLDOWN_MINUTES,
-                                "LIVE_ORDER_PLACEMENT": False,
-                            },
-                        )
-                except Exception as ex:
-                    scan_stats["calculation_errors"] += 1
-                    if len(scan_error_samples) < 5:
-                        scan_error_samples.append(
-                            f"independent symbol={sym} type={type(ex).__name__} error={ex}"
-                        )
 
                 # Detect using the lowest configured threshold, then admit only the
                 # strategies whose own flash threshold is satisfied.

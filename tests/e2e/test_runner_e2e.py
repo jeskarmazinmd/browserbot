@@ -77,33 +77,87 @@ class RunnerEndToEndTests(unittest.TestCase):
     def tearDown(self):
         os.environ.pop("RUN_MODE", None); os.environ.pop("RUN_ID", None); os.environ.pop("REPLAY_TAPE_PATH", None)
 
-    def test_01_actual_runner_logs_all_25_independent_scanners(self):
-        runner = import_runner("e2e_all_scanners")
-        modules = runner.evaluate_registered_strategies.__globals__["ENABLED_STRATEGIES"]
-        start=pd.Timestamp("2026-08-03T14:00:00Z")
-        rows=[]; symbol_to_sid={}
-        for idx,module in enumerate(modules):
-            symbol=f"T{idx:02d}"; symbol_to_sid[symbol]=module.STRATEGY_ID
-            for ts,px in zip(pd.date_range(start,periods=20,freq="min",tz="UTC"),np.linspace(100,101,20)):
-                rows.append((ts,symbol,float(px)))
-        frame=pd.DataFrame(rows,columns=["timestamp","symbol","price"])
-        runner.quote_source=OneFrameSource(frame)
-        runner.load_positions=lambda: {}
-        runner.detect_latest_flash=lambda *a,**k: None
-        runner.minute_prices=lambda g: pd.Series(dtype=float)
-        def injected(sym,g,spy=None):
-            sid=symbol_to_sid[sym]
-            ts=g["timestamp"].max()
-            return [{"strategy_id":sid,"symbol":sym,"timestamp":pd.Timestamp(ts).isoformat(),"entry_price":float(g["price"].iloc[-1]),"target_price":102.0,"stop_price":99.0,"setup_id":f"{sid}|{sym}|x","live_order_placement":False}]
-        runner.detect_independent_signals=injected
-        outroot=runner.DATA_ROOT
-        shutil.rmtree(outroot,ignore_errors=True); outroot.mkdir(parents=True,exist_ok=True)
+    def test_01_actual_runner_logs_all_minute_scanners(self):
+        runner = import_runner("e2e_all_minute_scanners")
+
+        from strategies.registry import MINUTE_STRATEGIES
+
+        strategy_ids = [strategy.name for strategy in MINUTE_STRATEGIES]
+        start = pd.Timestamp("2026-08-03T14:00:00Z")
+        symbols = {
+            strategy_id: f"T{idx:02d}"
+            for idx, strategy_id in enumerate(strategy_ids)
+        }
+
+        def frame_through(minutes):
+            rows = []
+            for minute in range(minutes + 1):
+                timestamp = start + pd.Timedelta(minutes=minute)
+                for idx, symbol in enumerate(symbols.values()):
+                    rows.append(
+                        (
+                            timestamp,
+                            symbol,
+                            100.0 + idx / 100.0 + minute / 1000.0,
+                        )
+                    )
+            return pd.DataFrame(
+                rows,
+                columns=["timestamp", "symbol", "price"],
+            )
+
+        runner.quote_source = MultiFrameSource(
+            [
+                frame_through(2),
+                frame_through(3),
+            ]
+        )
+        runner.load_positions = lambda: {}
+        runner.detect_latest_flash = lambda *args, **kwargs: None
+        runner.minute_prices = lambda group: pd.Series(dtype=float)
+
+        def injected(snapshot):
+            signals = []
+            for strategy_id, symbol in symbols.items():
+                signals.append(
+                    runner.SignalEvent(
+                        timestamp=snapshot.timestamp,
+                        strategy_id=strategy_id,
+                        symbol=symbol,
+                        signal_type="SIGNAL",
+                        data={
+                            "entry_price": snapshot.quotes[symbol].price,
+                            "target_price": 102.0,
+                            "stop_price": 99.0,
+                            "setup": "e2e_injected_minute_signal",
+                            "live_order_placement": False,
+                        },
+                    )
+                )
+            return signals, []
+
+        runner.run_minute_strategies = injected
+
+        outroot = runner.DATA_ROOT
+        shutil.rmtree(outroot, ignore_errors=True)
+        outroot.mkdir(parents=True, exist_ok=True)
+
         runner.main()
-        events=read_events(outroot)
-        got={e.get("strategy_id") for e in events if e.get("event_type")=="SIGNAL"}
-        expected={m.STRATEGY_ID for m in modules}
-        self.assertEqual(expected,got, f"missing={sorted(expected-got)} extra={sorted(got-expected)}")
-        self.assertTrue((outroot/"bot_history.jsonl").exists())
+
+        events = read_events(outroot)
+        got = {
+            event.get("strategy_id")
+            for event in events
+            if event.get("event_type") == "SIGNAL"
+        }
+        expected = set(strategy_ids)
+
+        self.assertEqual(
+            expected,
+            got,
+            f"missing={sorted(expected - got)} extra={sorted(got - expected)}",
+        )
+        self.assertTrue((outroot / "bot_history.jsonl").exists())
 
     def test_02_actual_flash_orchestration_logs_pending_confirmed_and_signal(self):
         runner=import_runner("e2e_flash_signal")

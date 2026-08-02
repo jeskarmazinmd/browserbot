@@ -28,7 +28,10 @@ def _strategy_module_names() -> list[str]:
     return sorted(
         f"strategies.{path.stem}"
         for path in folder.glob("strategy_*.py")
-        if path.stem not in {"strategy_template"}
+        if (
+            path.stem not in {"strategy_template"}
+            and not path.stem.endswith("_legacy_backup")
+        )
     )
 
 
@@ -56,7 +59,15 @@ def build_manifest() -> dict[str, StrategyRecord]:
             family=str(raw.get("family", getattr(module, "FAMILY", "independent"))),
             paper_only=bool(raw.get("paper_only", getattr(module, "PAPER_ONLY", True))),
             config=dict(raw.get("config", getattr(module, "CONFIG", {})) or {}),
-            scanner=callable(getattr(module, "evaluate", None)),
+            scanner=(
+                callable(getattr(module, "evaluate", None))
+                or any(
+                    isinstance(value, type)
+                    and value.__module__ == module.__name__
+                    and callable(getattr(value, "on_snapshot", None))
+                    for value in vars(module).values()
+                )
+            ),
         )
     return records
 
