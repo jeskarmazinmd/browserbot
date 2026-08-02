@@ -32,9 +32,9 @@ def write_rows():
 
     with open(OUT, "w", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(["timestamp", "symbol", "price", "total_volume"])
+        writer.writerow(["timestamp", "symbol", "price"])
         for ts, symbol, price in rows:
-            writer.writerow([ts.isoformat(), symbol, price, 1000])
+            writer.writerow([ts.isoformat(), symbol, price])
 
     print(f"WROTE {OUT} rows={len(rows)}")
 

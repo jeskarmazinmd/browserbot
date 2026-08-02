@@ -19,13 +19,13 @@ class ReplayQuoteSource:
     def _load(self):
         df = pd.read_csv(
             self.tape_path,
+            names=["timestamp", "symbol", "price"],
             header=0,
             low_memory=False,
         )
 
         df["timestamp"] = pd.to_datetime(
             df["timestamp"],
-            format="ISO8601",
             utc=True,
             errors="coerce",
         )
@@ -77,7 +77,7 @@ class ReplayQuoteSource:
             for _, row in latest.iterrows():
                 quotes[str(row["symbol"])] = Quote(
                     price=float(row["price"]),
-                    total_volume=float(row["total_volume"]) if "total_volume" in row and row["total_volume"] else None,
+                    total_volume=0,
                     bid=None,
                     ask=None,
                 )

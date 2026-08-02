@@ -1,25 +1,20 @@
-"""Snapshot-native strategy registry.
-
-Each strategy receives MarketSnapshot objects directly and emits SignalEvent
-objects. The registry does not know strategy logic.
-"""
+"""Snapshot-native strategy registry."""
 
 from __future__ import annotations
 
 import importlib
 
 
-STRATEGY_MODULE_NAMES = [
-    "strategy_a",
-    "strategy_b",
-    "strategy_d",
-    "strategy_h",
-    "strategy_tf1",
-    "strategy_ema1",
-    "strategy_ema2",
-    "strategy_ema3",
-    "strategy_sma1",
-    "strategy_vwema1",
+STRATEGY_CLASSES = [
+    ("strategy_a", "StrategyA"),
+    ("strategy_b", "StrategyB"),
+    ("strategy_d", "StrategyD"),
+    ("strategy_h", "StrategyH"),
+    ("strategy_ema1", "EMA1Strategy"),
+    ("strategy_ema2", "EMA2Strategy"),
+    ("strategy_ema3", "EMA3Strategy"),
+    ("strategy_sma1", "SMA1Strategy"),
+    ("strategy_vwema1", "VWEMA1Strategy"),
 ]
 
 
@@ -29,13 +24,20 @@ FAILED_STRATEGIES = []
 def _load_strategies():
     loaded = []
 
-    for name in STRATEGY_MODULE_NAMES:
+    for module_name, class_name in STRATEGY_CLASSES:
         try:
-            loaded.append(importlib.import_module(f".{name}", __package__))
+            module = importlib.import_module(
+                f".{module_name}",
+                __package__,
+            )
+
+            cls = getattr(module, class_name)
+            loaded.append(cls())
+
         except Exception as exc:
             FAILED_STRATEGIES.append(
                 {
-                    "strategy": name,
+                    "strategy": module_name,
                     "error": f"{type(exc).__name__}: {exc}",
                 }
             )
@@ -56,8 +58,6 @@ for failed in FAILED_STRATEGIES:
 
 
 def on_snapshot(snapshot):
-    """Feed one snapshot into every enabled strategy."""
-
     signals = []
     errors = []
 
@@ -67,7 +67,7 @@ def on_snapshot(snapshot):
         if handler is None:
             errors.append(
                 (
-                    getattr(strategy, "STRATEGY_ID", strategy.__name__),
+                    type(strategy).__name__,
                     RuntimeError("strategy missing on_snapshot"),
                 )
             )
@@ -82,7 +82,7 @@ def on_snapshot(snapshot):
         except Exception as exc:
             errors.append(
                 (
-                    getattr(strategy, "STRATEGY_ID", strategy.__name__),
+                    type(strategy).__name__,
                     exc,
                 )
             )
