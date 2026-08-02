@@ -1,73 +1,39 @@
-"""Strategy A rules.
+from typing import Any
+from engine.events import SignalEvent
+from ._flash_common import FlashReboundState
 
-This module owns Strategy A's configuration and entry-specific calculations.
-Shared scanning, pending-entry lifecycle, logging, and broker order management
-remain in live_strategy_runner.py.
-"""
+class StrategyA(FlashReboundState):
+    name = "A"
+    STRATEGY_ID = "A"
 
-import math
-from typing import Any, Mapping
+    def on_snapshot(self, snapshot) -> list[SignalEvent]:
+        self._update(snapshot)
+        signals = []
 
-STRATEGY_ID = "A"
+        for symbol, quote in snapshot.quotes.items():
+            price = float(quote.price)
+            low = self.low.get(symbol, price)
 
-CONFIG = {
-    "flash_drop_pct": 1.0,
-    "rebound_confirmation_pct": 0.001,
-    "stop_loss_fraction": 0.05,
-    "live_order_placement": True,
-}
+            drop_pct = ((low / price) - 1.0) * 100.0 if price else 0.0
+            rebound_pct = ((price / low) - 1.0) * 100.0 if low else 0.0
 
+            if drop_pct >= 1.0 and rebound_pct >= 0.1:
+                signals.append(
+                    SignalEvent(
+                        timestamp=snapshot.timestamp,
+                        strategy_id=self.STRATEGY_ID,
+                        symbol=symbol,
+                        signal_type="SIGNAL",
+                        data={
+                            "entry_price": price,
+                            "stop_price": price * (1.0 - 0.05),
+                            "setup": "1.0% flash drop, 0.1% rebound",
+                            "live_order_placement": False,
+                            "flash_drop_pct": drop_pct,
+                            "rebound_pct": rebound_pct,
+                        },
+                    )
+                )
+                self._reset_if_recovered(symbol, price)
 
-def accepts_flash(event: Mapping[str, Any], max_flash_drop_pct: float) -> bool:
-    """Return whether a detected flash satisfies Strategy A's drop range."""
-    drop = float(event.get("flash_drop_pct", 0) or 0)
-    return CONFIG["flash_drop_pct"] <= drop <= float(max_flash_drop_pct)
-
-
-def refresh_event_for_entry(
-    event: Mapping[str, Any],
-    current_price: float,
-) -> dict[str, Any]:
-    """Build Strategy A's confirmed-entry snapshot.
-
-    The original recovery target is preserved while the protective stop is
-    recalculated from the actual rebound-confirmed entry price.
-    """
-    refreshed = dict(event)
-    entry = float(current_price)
-    original_target = float(refreshed["target_price"])
-    original_drop_pct = float(refreshed["flash_drop_pct"])
-
-    remaining_upside_pct = ((original_target / entry) - 1.0) * 100.0
-    refreshed.update({
-        "strategy_id": STRATEGY_ID,
-        "entry_price": entry,
-        "original_flash_drop_pct": original_drop_pct,
-        "original_target_price": original_target,
-        "remaining_upside_pct": remaining_upside_pct,
-        "target_price": original_target,
-        "stop_price": entry * (1.0 - CONFIG["stop_loss_fraction"]),
-        "rebound_confirmation_pct": CONFIG["rebound_confirmation_pct"] * 100.0,
-    })
-    return refreshed
-
-
-def validate_confirmed_entry(
-    event: Mapping[str, Any],
-    min_remaining_upside_pct: float,
-) -> tuple[bool, str | None]:
-    """Validate a rebound-confirmed Strategy A entry."""
-    entry = float(event.get("entry_price", 0) or 0)
-    target = float(event.get("target_price", 0) or 0)
-    original_drop = float(
-        event.get("original_flash_drop_pct", event.get("flash_drop_pct", 0)) or 0
-    )
-    remaining = float(event.get("remaining_upside_pct", -999) or -999)
-
-    if original_drop <= 0:
-        return False, "invalid_original_drop"
-    if target <= entry:
-        return False, "target_reached_before_entry"
-    if remaining < float(min_remaining_upside_pct):
-        return False, "insufficient_remaining_upside"
-    return True, None
+        return signals

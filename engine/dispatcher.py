@@ -16,9 +16,23 @@ class EventDispatcher:
         signals: list[SignalEvent] = []
 
         for strategy in self.strategies:
-            result = strategy.on_snapshot(snapshot)
+            try:
+                result = strategy.on_snapshot(snapshot)
 
-            if result:
-                signals.extend(result)
+                if result:
+                    signals.extend(result)
+
+            except Exception as exc:
+                strategy_name = getattr(
+                    strategy,
+                    "STRATEGY_ID",
+                    strategy.__class__.__name__,
+                )
+
+                print(
+                    f"STRATEGY_ERROR {strategy_name}: "
+                    f"{type(exc).__name__}: {exc}",
+                    flush=True,
+                )
 
         return signals

@@ -8,14 +8,10 @@ from schwab_clients import SchwabTradeClient
 from bot_output import write_bot_output, append_bot_event
 from quote_source import LiveQuoteSource
 from types import SimpleNamespace
+from engine.dispatcher import EventDispatcher
 from strategies.generic_registry import evaluate_all as evaluate_generic_strategies
 from strategies.registry import (
-    evaluate_all as evaluate_registered_strategies,
-    FLASH_STRATEGY_MODULES,
-    flash_strategy_configs,
-    flash_accepts,
-    refresh_flash_entry,
-    validate_flash_entry,
+    on_snapshot as run_snapshot_strategies,
 )
 from regime_logger import log_regime, latest_regime
 
@@ -68,18 +64,10 @@ MAX_QUOTE_AGE_SECONDS = 300
 
 attempted = set()
 
-STRATEGY_CONFIGS = flash_strategy_configs()
 STRATEGY_A = "A"
 STRATEGY_B = "B"
 STRATEGY_D = "D"
 STRATEGY_H = "H"
-
-# Strategy H near-miss aliases derived from the module-owned configuration.
-# These preserve the existing near-miss calculations without duplicating rules.
-STRATEGY_H_MIN_FLASH_DROP_PCT = STRATEGY_CONFIGS[STRATEGY_H]["flash_drop_pct"]
-STRATEGY_H_MAX_FLASH_DROP_PCT = STRATEGY_CONFIGS[STRATEGY_H]["max_flash_drop_pct"]
-STRATEGY_H_MIN_PRE_R2 = STRATEGY_CONFIGS[STRATEGY_H]["min_pre_r2"]
-STRATEGY_H_MAX_PRE_SLOPE_PCT_PER_HOUR = STRATEGY_CONFIGS[STRATEGY_H]["max_pre_slope_pct_per_hour"]
 
 # Independent strategy orchestration settings. Individual strategy rules and
 # thresholds live exclusively in strategies/strategy_*.py.
@@ -88,6 +76,29 @@ INDEPENDENT_COOLDOWN_MINUTES = 30
 INDEPENDENT_MIN_PRICE = 1.00
 INDEPENDENT_MAX_PRICE = 1000.00
 UNIVERSE_MANIFEST_DIR = DATA_ROOT
+
+# Snapshot-native strategy dispatcher. Legacy paths remain temporarily during migration.
+SNAPSHOT_DISPATCHER = EventDispatcher()
+
+def _register_snapshot_strategies():
+    """Load snapshot-native strategies into the dispatcher."""
+    try:
+        from strategies.registry import ENABLED_STRATEGIES
+
+        for strategy in ENABLED_STRATEGIES:
+            SNAPSHOT_DISPATCHER.register(strategy)
+
+        print(
+            f"SNAPSHOT_STRATEGIES_REGISTERED count={len(ENABLED_STRATEGIES)}",
+            flush=True,
+        )
+    except Exception as exc:
+        print(
+            f"SNAPSHOT_STRATEGY_REGISTRATION_ERROR {type(exc).__name__}: {exc}",
+            flush=True,
+        )
+
+_register_snapshot_strategies()
 _UNIVERSE_MANIFEST_CACHE = {"path": None, "mtime_ns": None, "symbols": {}}
 
 def append_strategy_event(strategy_id, event_type, **payload):
@@ -1407,8 +1418,19 @@ def detect_independent_signals(sym, g, spy_30m_return_pct=None):
     return signals
 
 
+
+
+def run_native_strategy_pipeline(snapshot):
+    """Run snapshot-native strategies.
+
+    Strategies receive the live snapshot and decide internally what state to
+    keep and whether to emit SignalEvents.
+    """
+    return SNAPSHOT_DISPATCHER.dispatch_snapshot(snapshot)
+
+
 def main():
-    print("🚀 V15 FLASH-DIP RUNNER ONLINE — A LIVE + B/D/H PAPER", flush=True)
+    print("🚀 SNAPSHOT MIGRATION RUNNER ONLINE — legacy flash wiring bypass checkpoint", flush=True)
     print(f"PRE={PRE_CRASH_TREND_MINUTES}m FLASH={FLASH_WINDOW_MINUTES}m DROP={FLASH_DROP_PCT}-{MAX_FLASH_DROP_PCT}% TARGET={RECOVERY_TARGET_FRACTION} STOP={STOP_LOSS_FRACTION_BELOW_ENTRY}", flush=True)
 
     trader = make_trader() if RUN_MODE == "LIVE" else None
@@ -1424,8 +1446,8 @@ def main():
 
     # Symbols that met the full signal but are waiting for a 0.10% rebound
     # from the lowest live price observed after qualification.
-    pending_entries = {strategy_id: {} for strategy_id in STRATEGY_CONFIGS}
-    last_flash_signature = {strategy_id: {} for strategy_id in STRATEGY_CONFIGS}
+    pending_entries = {}
+    last_flash_signature = {}
 
     # Native independent-strategy signals are deduplicated by emitted minute and
     # also receive a per-symbol cooldown to avoid repeatedly entering one trend.

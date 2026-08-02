@@ -1,103 +1,90 @@
-from . import strategy_a
-from . import strategy_b
-from . import strategy_d
-from . import strategy_h
+"""Snapshot-native strategy registry.
 
-FLASH_STRATEGY_MODULES = {
-    module.STRATEGY_ID: module
-    for module in (strategy_a, strategy_b, strategy_d, strategy_h)
-}
+Each strategy receives MarketSnapshot objects directly and emits SignalEvent
+objects. The registry does not know strategy logic.
+"""
 
-def flash_strategy_configs():
-    return {strategy_id: dict(module.CONFIG) for strategy_id, module in FLASH_STRATEGY_MODULES.items()}
+from __future__ import annotations
 
-def flash_accepts(strategy_id, event, global_max_drop_pct):
-    return FLASH_STRATEGY_MODULES[strategy_id].accepts_flash(event, global_max_drop_pct)
+import importlib
 
-def refresh_flash_entry(strategy_id, event, current_price):
-    return FLASH_STRATEGY_MODULES[strategy_id].refresh_event_for_entry(event, current_price)
 
-def validate_flash_entry(strategy_id, event, default_min_remaining_upside_pct):
-    module = FLASH_STRATEGY_MODULES[strategy_id]
-    try:
-        return module.validate_confirmed_entry(event, default_min_remaining_upside_pct)
-    except TypeError:
-        return module.validate_confirmed_entry(event)
-
-"""Registry for independently removable strategy modules."""
-from . import strategy_tf1
-from . import strategy_bo1
-from . import strategy_or1
-from . import strategy_rs1
-from . import strategy_rs2
-from . import strategy_ve1
-from . import strategy_rs3
-from . import strategy_mc1
-from . import strategy_tl1
-from . import strategy_av1
-from . import strategy_td1
-from . import strategy_sh1
-from . import strategy_cv1
-from . import strategy_hl1
-from . import strategy_vt1
-from . import strategy_pd1
-from . import strategy_m1
-from . import strategy_m2
-from . import strategy_m3
-from . import strategy_vr1
-from . import strategy_ema1
-from . import strategy_ema2
-from . import strategy_ema3
-from . import strategy_sma1
-from . import strategy_vwema1
-
-ENABLED_STRATEGIES = [
-    strategy_tf1,
-    strategy_bo1,
-    strategy_or1,
-    strategy_rs1,
-    strategy_rs2,
-    strategy_ve1,
-    strategy_rs3,
-    strategy_mc1,
-    strategy_tl1,
-    strategy_av1,
-    strategy_td1,
-    strategy_sh1,
-    strategy_cv1,
-    strategy_hl1,
-    strategy_vt1,
-    strategy_pd1,
-    strategy_m1,
-    strategy_m2,
-    strategy_m3,
-    strategy_vr1,
-    strategy_ema1,
-    strategy_ema2,
-    strategy_ema3,
-    strategy_sma1,
-    strategy_vwema1
+STRATEGY_MODULE_NAMES = [
+    "strategy_a",
+    "strategy_b",
+    "strategy_d",
+    "strategy_h",
+    "strategy_tf1",
+    "strategy_ema1",
+    "strategy_ema2",
+    "strategy_ema3",
+    "strategy_sma1",
+    "strategy_vwema1",
 ]
 
-def evaluate_all(context):
-    signals=[]
-    errors=[]
-    for module in ENABLED_STRATEGIES:
-        try:
-            signals.extend(module.evaluate(context))
-        except Exception as exc:
-            errors.append((module.STRATEGY_ID, exc))
-    return signals, errors
 
-# Paper/reporting-only variants. They are intentionally not included in
-# ENABLED_STRATEGIES because they consume parent strategy events rather than
-# scanning quotes directly.
-REPORTING_STRATEGY_MODULES = {}
-for _strategy_id in (
-    "C1", "C2", "C3", "C4", "E", "F", "G", "I",
-    "J1", "J2", "J3", "J4", "J5", "J6",
-    "K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8", "K9",
-    "L", "M", "N", "O", "P", "Q", "R", "S",
-):
-    _module = __import__(f"strategies.strategy_{_strategy_id.lower()}", fromlist=["*"])
-    REPORTING_STRATEGY_MODULES[_strategy_id] = _module
+FAILED_STRATEGIES = []
+
+
+def _load_strategies():
+    loaded = []
+
+    for name in STRATEGY_MODULE_NAMES:
+        try:
+            loaded.append(importlib.import_module(f".{name}", __package__))
+        except Exception as exc:
+            FAILED_STRATEGIES.append(
+                {
+                    "strategy": name,
+                    "error": f"{type(exc).__name__}: {exc}",
+                }
+            )
+
+    return loaded
+
+
+ENABLED_STRATEGIES = _load_strategies()
+
+
+for failed in FAILED_STRATEGIES:
+    print(
+        "STRATEGY_LOAD_WARNING",
+        failed["strategy"],
+        failed["error"],
+        flush=True,
+    )
+
+
+def on_snapshot(snapshot):
+    """Feed one snapshot into every enabled strategy."""
+
+    signals = []
+    errors = []
+
+    for strategy in ENABLED_STRATEGIES:
+        handler = getattr(strategy, "on_snapshot", None)
+
+        if handler is None:
+            errors.append(
+                (
+                    getattr(strategy, "STRATEGY_ID", strategy.__name__),
+                    RuntimeError("strategy missing on_snapshot"),
+                )
+            )
+            continue
+
+        try:
+            result = handler(snapshot)
+
+            if result:
+                signals.extend(result)
+
+        except Exception as exc:
+            errors.append(
+                (
+                    getattr(strategy, "STRATEGY_ID", strategy.__name__),
+                    exc,
+                )
+            )
+
+    return signals, errors

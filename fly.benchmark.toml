@@ -1,0 +1,14 @@
+app = "schwab-replay-benchmark"
+primary_region = "lax"
+
+[build]
+  dockerfile = "Dockerfile.benchmark"
+
+[env]
+  BENCHMARK_SECONDS = "600"
+  RUN_MODE = "REPLAY"
+
+[[vm]]
+  memory = "2gb"
+  cpus = 2
+  cpu_kind = "shared"

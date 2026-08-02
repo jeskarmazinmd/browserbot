@@ -1,12 +1,15 @@
 import time
 from collections import deque
 
+from random import uniform
+
 from engine.events import Quote
 from engine.feed import MappingSnapshotFeed
 from strategies.snapshot_registry import build_snapshot_strategies
 
 
 counter = 0
+previous_timestamp = None
 
 prices = deque(
     [
@@ -35,20 +38,32 @@ def fake_prices():
         "AAA": Quote(
             price=float(price),
             total_volume=100000 + (counter * 50000),
-        )
+        ),
+        "BBB": Quote(
+            price=50.0,
+            total_volume=50000 + (counter * 10000),
+        ),
     }
 
 
 def main():
+    global previous_timestamp
+
     feed = MappingSnapshotFeed(
         fetch_prices=fake_prices,
-        expected_symbol_count=1,
+        expected_symbol_count=2,
     )
 
     strategies = build_snapshot_strategies()
 
     for _ in range(35):
         snapshot = feed.fetch()
+
+        gap = None
+        if previous_timestamp is not None:
+            gap = (snapshot.timestamp - previous_timestamp).total_seconds()
+
+        previous_timestamp = snapshot.timestamp
 
         signals = []
 
@@ -58,10 +73,14 @@ def main():
         print(
             "SNAPSHOT",
             snapshot.timestamp,
-            "price=",
+            "gap=",
+            f"{gap:.2f}s" if gap is not None else "first",
+            "AAA=",
             snapshot.prices["AAA"],
-            "volume=",
-            snapshot.quotes["AAA"].total_volume,
+            "BBB=",
+            snapshot.prices["BBB"],
+            "symbols=",
+            snapshot.returned_symbol_count,
             "signals=",
             len(signals),
         )
@@ -69,7 +88,7 @@ def main():
         for signal in signals:
             print(signal)
 
-        time.sleep(0.2)
+        time.sleep(uniform(0.5, 2.0))
 
 
 if __name__ == "__main__":
