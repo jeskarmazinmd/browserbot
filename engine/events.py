@@ -1,29 +1,24 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any
 
 
-@dataclass
-class QuoteEvent:
+@dataclass(frozen=True)
+class MarketSnapshot:
+    """One complete market-data observation from a single fetch cycle."""
+
     timestamp: datetime
-    symbol: str
-    price: float
+    prices: dict[str, float]
+    expected_symbol_count: int
+    returned_symbol_count: int
+    fetch_duration_seconds: float
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
-@dataclass
-class CandleEvent:
-    timestamp: datetime
-    symbol: str
-    open: float
-    high: float
-    low: float
-    close: float
-    volume: float
-
-
-@dataclass
+@dataclass(frozen=True)
 class SignalEvent:
     timestamp: datetime
     strategy_id: str
     symbol: str
     signal_type: str
-    data: dict
+    data: dict[str, Any] = field(default_factory=dict)

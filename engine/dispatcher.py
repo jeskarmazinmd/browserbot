@@ -1,26 +1,23 @@
+from engine.events import MarketSnapshot, SignalEvent
+
+
 class EventDispatcher:
 
     def __init__(self):
         self.strategies = []
 
-    def register(self, strategy):
+    def register(self, strategy) -> None:
         self.strategies.append(strategy)
 
-    def dispatch_quote(self, event):
-        signals = []
+    def dispatch_snapshot(
+        self,
+        snapshot: MarketSnapshot,
+    ) -> list[SignalEvent]:
+        signals: list[SignalEvent] = []
 
         for strategy in self.strategies:
-            result = strategy.on_quote(event)
-            if result:
-                signals.extend(result)
+            result = strategy.on_snapshot(snapshot)
 
-        return signals
-
-    def dispatch_candle(self, event):
-        signals = []
-
-        for strategy in self.strategies:
-            result = strategy.on_candle(event)
             if result:
                 signals.extend(result)
 
