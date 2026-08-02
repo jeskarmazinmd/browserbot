@@ -1,44 +1,181 @@
-"""Self-contained RS2 strategy module.
+"""Snapshot-native RS2 relative strength exit-variant strategy."""
 
-Extracted without intentional behavior changes from live_strategy_runner.py.
-"""
+from __future__ import annotations
+
+from collections import defaultdict, deque
+from dataclasses import dataclass, field
+from datetime import timedelta
 import math
-import numpy as np
-import pandas as pd
-from zoneinfo import ZoneInfo
+
+from engine.events import MarketSnapshot, SignalEvent
+from strategies.event_base import EventStrategy
+from .snapshot_common import Observation, make_signal, prices_since, trim_before
+
 
 STRATEGY_ID = "RS2"
 PAPER_ONLY = True
 
-RS1_MIN_EXCESS_VS_SPY_PCT = 0.75
-RS1_MIN_R2 = 0.50
-RS1_MIN_RETURN_30M_PCT = 0.75
+RS2_MIN_EXCESS_VS_SPY_PCT = 0.75
+RS2_MIN_R2 = 0.50
+RS2_MIN_RETURN_30M_PCT = 0.75
 
-def evaluate(ctx):
-    sym = ctx.symbol
-    work = ctx.work
-    ts = ctx.timestamp
-    px = ctx.current_price
-    minute_et = ctx.minute_et
-    prices = ctx.prices
-    ret30 = ctx.return_30m_pct
-    slope30 = ctx.slope_30m_pct_per_hour
-    r2_30 = ctx.r2_30m
-    spy_30m_return_pct = ctx.spy_30m_return_pct
-    signals = []
-    _independent_signal = ctx.signal_factory
-    _simple_return_pct = ctx.simple_return_pct
-    fit_log_slope_pct_per_hour = ctx.fit_log_slope_pct_per_hour
-    _ema = ctx.ema
-    _confirm_recent_volume_ratio = ctx.confirm_recent_volume_ratio
-    if len(prices) >= 31 and spy_30m_return_pct is not None and not math.isnan(ret30):
-        excess = ret30 - float(spy_30m_return_pct)
-        if ret30 >= RS1_MIN_RETURN_30M_PCT and excess >= RS1_MIN_EXCESS_VS_SPY_PCT and r2_30 >= RS1_MIN_R2:
-            signals.append(_independent_signal(
-                "RS2", sym, ts, px, 0.90, 0.65, "relative_strength_exit_variant",
-                parent_strategy="RS1",
-                exit_model="50pct_rs1_exit_50pct_60m_hold",
-                return_30m_pct=ret30, spy_return_30m_pct=float(spy_30m_return_pct),
-                excess_return_30m_pct=excess, r2_30m=r2_30,
-            ))
-    return signals
+TARGET_PCT = 0.90
+STOP_PCT = 0.65
+
+
+@dataclass
+class _State:
+    observations: deque[Observation] = field(default_factory=deque)
+
+
+def _simple_return_pct(old_price: float, new_price: float) -> float:
+    if old_price <= 0:
+        return math.nan
+    return (new_price / old_price - 1.0) * 100.0
+
+
+def _fit_log_slope_r2(prices: list[float]) -> tuple[float, float]:
+    if len(prices) < 2:
+        return math.nan, math.nan
+
+    logs = [math.log(p) for p in prices if p > 0]
+
+    if len(logs) < 2:
+        return math.nan, math.nan
+
+    x = list(range(len(logs)))
+
+    x_mean = sum(x) / len(x)
+    y_mean = sum(logs) / len(logs)
+
+    denominator = sum((v - x_mean) ** 2 for v in x)
+
+    if denominator == 0:
+        return math.nan, math.nan
+
+    slope = sum(
+        (a - x_mean) * (b - y_mean)
+        for a, b in zip(x, logs)
+    ) / denominator
+
+    fitted = [
+        y_mean + slope * (a - x_mean)
+        for a in x
+    ]
+
+    ss_res = sum(
+        (actual - predicted) ** 2
+        for actual, predicted in zip(logs, fitted)
+    )
+
+    ss_tot = sum(
+        (actual - y_mean) ** 2
+        for actual in logs
+    )
+
+    r2 = 1.0 - ss_res / ss_tot if ss_tot else 0.0
+
+    slope_pct_hour = (math.exp(slope * 60.0) - 1.0) * 100.0
+
+    return slope_pct_hour, r2
+
+
+def _return_30m(observations: deque[Observation], timestamp):
+    prices = prices_since(
+        observations,
+        timestamp - timedelta(minutes=30),
+    )
+
+    if len(prices) < 31:
+        return math.nan, []
+
+    return _simple_return_pct(prices[0], prices[-1]), prices
+
+
+class RS2Strategy(EventStrategy):
+
+    name = STRATEGY_ID
+
+    def __init__(self):
+        self._state = defaultdict(_State)
+
+    def on_snapshot(
+        self,
+        snapshot: MarketSnapshot,
+    ) -> list[SignalEvent]:
+
+        out = []
+
+        # update all symbol histories first
+        for symbol, quote in snapshot.quotes.items():
+            state = self._state[symbol]
+
+            state.observations.append(
+                Observation(
+                    snapshot.timestamp,
+                    float(quote.price),
+                    quote.total_volume,
+                )
+            )
+
+            trim_before(
+                state.observations,
+                snapshot.timestamp - timedelta(minutes=60),
+            )
+
+        spy_state = self._state.get("SPY")
+
+        if spy_state is None:
+            return out
+
+        spy_return, _ = _return_30m(
+            spy_state.observations,
+            snapshot.timestamp,
+        )
+
+        if math.isnan(spy_return):
+            return out
+
+        for symbol, quote in snapshot.quotes.items():
+
+            if symbol == "SPY":
+                continue
+
+            state = self._state[symbol]
+
+            ret30, prices = _return_30m(
+                state.observations,
+                snapshot.timestamp,
+            )
+
+            if len(prices) < 31 or math.isnan(ret30):
+                continue
+
+            _, r2_30 = _fit_log_slope_r2(prices)
+
+            excess = ret30 - spy_return
+
+            if (
+                ret30 >= RS2_MIN_RETURN_30M_PCT
+                and excess >= RS2_MIN_EXCESS_VS_SPY_PCT
+                and r2_30 >= RS2_MIN_R2
+            ):
+                out.append(
+                    make_signal(
+                        snapshot,
+                        STRATEGY_ID,
+                        symbol,
+                        float(quote.price),
+                        TARGET_PCT,
+                        STOP_PCT,
+                        "relative_strength_exit_variant",
+                        parent_strategy="RS1",
+                        exit_model="50pct_rs1_exit_50pct_60m_hold",
+                        return_30m_pct=ret30,
+                        spy_return_30m_pct=spy_return,
+                        excess_return_30m_pct=excess,
+                        r2_30m=r2_30,
+                    )
+                )
+
+        return out

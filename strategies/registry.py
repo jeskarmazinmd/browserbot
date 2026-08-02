@@ -17,6 +17,22 @@ STRATEGY_CLASSES = [
     ("strategy_vwema1", "VWEMA1Strategy"),
     ("strategy_tf1", "TF1Strategy"),
     ("strategy_rs1", "RS1Strategy"),
+    ("strategy_rs2", "RS2Strategy"),
+    ("strategy_rs3", "RS3Strategy"),
+    ("strategy_ve1", "VE1Strategy"),
+    ("strategy_vr1", "VR1Strategy"),
+    ("strategy_m1", "M1Strategy"),
+    ("strategy_m2", "M2Strategy"),
+    ("strategy_m3", "M3Strategy"),
+    ("strategy_mc1", "MC1Strategy"),
+    ("strategy_tl1", "TL1Strategy"),
+    ("strategy_av1", "AV1Strategy"),
+    ("strategy_td1", "TD1Strategy"),
+    ("strategy_sh1", "SH1Strategy"),
+    ("strategy_cv1", "CV1Strategy"),
+    ("strategy_hl1", "HL1Strategy"),
+    ("strategy_vt1", "VT1Strategy"),
+    ("strategy_pd1", "PD1Strategy"),
 ]
 
 

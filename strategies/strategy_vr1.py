@@ -1,11 +1,22 @@
-"""Self-contained VR1 strategy module.
+"""Snapshot-native VR1 rolling-mean reclaim strategy."""
 
-Extracted without intentional behavior changes from live_strategy_runner.py.
-"""
+from __future__ import annotations
+
+from collections import defaultdict, deque
+from dataclasses import dataclass, field
+from datetime import timedelta
 import math
-import numpy as np
-import pandas as pd
-from zoneinfo import ZoneInfo
+
+from engine.events import MarketSnapshot, SignalEvent
+from strategies.event_base import EventStrategy
+from .snapshot_common import (
+    Observation,
+    make_signal,
+    time_weighted_mean,
+    trim_before,
+    value_at_or_before,
+)
+
 
 STRATEGY_ID = "VR1"
 PAPER_ONLY = True
@@ -13,34 +24,125 @@ PAPER_ONLY = True
 VR1_HOLD_MINUTES = 2
 VR1_MIN_DEPTH_BELOW_VWAP_PCT = 0.40
 
-def evaluate(ctx):
-    sym = ctx.symbol
-    work = ctx.work
-    ts = ctx.timestamp
-    px = ctx.current_price
-    minute_et = ctx.minute_et
-    prices = ctx.prices
-    ret30 = ctx.return_30m_pct
-    slope30 = ctx.slope_30m_pct_per_hour
-    r2_30 = ctx.r2_30m
-    spy_30m_return_pct = ctx.spy_30m_return_pct
-    signals = []
-    _independent_signal = ctx.signal_factory
-    _simple_return_pct = ctx.simple_return_pct
-    fit_log_slope_pct_per_hour = ctx.fit_log_slope_pct_per_hour
-    _ema = ctx.ema
-    _confirm_recent_volume_ratio = ctx.confirm_recent_volume_ratio
-    if len(prices) >= 31:
-        rolling = prices.tail(31)
-        proxy = float(rolling.iloc[:-2].mean())
-        historical_low = float(rolling.iloc[:-2].min())
-        depth_pct = (proxy / historical_low - 1.0) * 100.0 if historical_low > 0 else math.nan
-        held_above = float(rolling.iloc[-2]) >= proxy and float(rolling.iloc[-1]) >= proxy
-        crossed = float(rolling.iloc[-3]) < proxy <= float(rolling.iloc[-2])
-        if depth_pct >= VR1_MIN_DEPTH_BELOW_VWAP_PCT and crossed and held_above:
-            signals.append(_independent_signal(
-                "VR1", sym, ts, px, 0.75, 0.45, "rolling_mean_reclaim_proxy",
-                rolling_mean_30m=proxy, prior_depth_below_proxy_pct=depth_pct,
-                confirmation_minutes=VR1_HOLD_MINUTES,
-            ))
-    return signals
+TARGET_PCT = 0.75
+STOP_PCT = 0.45
+
+
+@dataclass
+class _State:
+    observations: deque[Observation] = field(default_factory=deque)
+
+
+class VR1Strategy(EventStrategy):
+
+    name = STRATEGY_ID
+
+    def __init__(self):
+        self._state = defaultdict(_State)
+
+    def on_snapshot(
+        self,
+        snapshot: MarketSnapshot,
+    ) -> list[SignalEvent]:
+
+        out = []
+
+        for symbol, quote in snapshot.quotes.items():
+            state = self._state[symbol]
+
+            state.observations.append(
+                Observation(
+                    snapshot.timestamp,
+                    float(quote.price),
+                    quote.total_volume,
+                )
+            )
+
+            trim_before(
+                state.observations,
+                snapshot.timestamp - timedelta(minutes=35),
+            )
+
+            window_start = snapshot.timestamp - timedelta(minutes=30)
+            two_minutes_ago = snapshot.timestamp - timedelta(minutes=2)
+            one_minute_ago = snapshot.timestamp - timedelta(minutes=1)
+
+            start_observation = value_at_or_before(
+                state.observations,
+                window_start,
+            )
+            prior_two = value_at_or_before(
+                state.observations,
+                two_minutes_ago,
+            )
+            prior_one = value_at_or_before(
+                state.observations,
+                one_minute_ago,
+            )
+
+            if (
+                start_observation is None
+                or prior_two is None
+                or prior_one is None
+            ):
+                continue
+
+            # At one-minute cadence this equals the legacy mean of the
+            # first 29 values in the trailing 31-minute series.
+            proxy = time_weighted_mean(
+                state.observations,
+                window_start,
+                one_minute_ago,
+            )
+
+            if proxy is None:
+                continue
+
+            historical_prices = [start_observation.price]
+            historical_prices.extend(
+                item.price
+                for item in state.observations
+                if (
+                    window_start < item.timestamp <= two_minutes_ago
+                )
+            )
+
+            historical_low = min(historical_prices)
+
+            depth_pct = (
+                (proxy / historical_low - 1.0) * 100.0
+                if historical_low > 0
+                else math.nan
+            )
+
+            current_price = float(quote.price)
+
+            held_above = (
+                prior_one.price >= proxy
+                and current_price >= proxy
+            )
+            crossed = (
+                prior_two.price < proxy <= prior_one.price
+            )
+
+            if (
+                depth_pct >= VR1_MIN_DEPTH_BELOW_VWAP_PCT
+                and crossed
+                and held_above
+            ):
+                out.append(
+                    make_signal(
+                        snapshot,
+                        STRATEGY_ID,
+                        symbol,
+                        current_price,
+                        TARGET_PCT,
+                        STOP_PCT,
+                        "rolling_mean_reclaim_proxy",
+                        rolling_mean_30m=proxy,
+                        prior_depth_below_proxy_pct=depth_pct,
+                        confirmation_minutes=VR1_HOLD_MINUTES,
+                    )
+                )
+
+        return out
