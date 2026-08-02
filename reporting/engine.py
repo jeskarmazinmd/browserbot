@@ -603,6 +603,172 @@ def save_trigger_outcomes(outcomes, path=SIGNAL_PAPER_OUTCOMES_JSONL):
         pass
 
 
+def _resolve_rs2_split_outcome(rec, trade_rows, entry_ts):
+    """Resolve RS2 as 50% RS1 exit plus 50% protected 60-minute hold."""
+    import pandas as pd
+
+    entry = float(rec["entry"])
+    target = float(rec["target"])
+    stop = float(rec["stop"])
+    deadline = entry_ts + pd.Timedelta(minutes=60)
+
+    standard_exit = None
+    standard_reason = None
+    hold_exit = None
+    hold_reason = None
+
+    highest = entry
+    lowest = entry
+    highest_time = entry_ts
+    lowest_time = entry_ts
+
+    for _, row in trade_rows.iterrows():
+        price = float(row["price"])
+        timestamp = row["timestamp"]
+        market_time = timestamp.tz_convert(NY_TZ)
+
+        if price > highest:
+            highest = price
+            highest_time = timestamp
+
+        if price < lowest:
+            lowest = price
+            lowest_time = timestamp
+
+        if standard_exit is None:
+            if price >= target:
+                standard_exit = row
+                standard_reason = "target"
+            elif price <= stop:
+                standard_exit = row
+                standard_reason = "stop"
+            elif (market_time.hour, market_time.minute) >= (15, 55):
+                standard_exit = row
+                standard_reason = "end"
+
+        if hold_exit is None:
+            if price <= stop:
+                hold_exit = row
+                hold_reason = "stop"
+            elif timestamp >= deadline:
+                hold_exit = row
+                hold_reason = "60_minute_hold"
+            elif (market_time.hour, market_time.minute) >= (15, 55):
+                hold_exit = row
+                hold_reason = "end"
+
+        if standard_exit is not None and hold_exit is not None:
+            break
+
+    def leg_values(exit_row, reason, latest_price):
+        if exit_row is None:
+            exit_price = float(latest_price)
+            return {
+                "closed": False,
+                "exit_time": None,
+                "exit_price": None,
+                "exit_reason": None,
+                "ret_pct": (exit_price / entry - 1.0) * 100.0,
+            }
+
+        if reason == "target":
+            exit_price = target
+        elif reason == "stop":
+            exit_price = stop
+        else:
+            exit_price = float(exit_row["price"])
+
+        return {
+            "closed": True,
+            "exit_time": str(exit_row["timestamp"]),
+            "exit_price": exit_price,
+            "exit_reason": reason,
+            "ret_pct": (exit_price / entry - 1.0) * 100.0,
+        }
+
+    latest = trade_rows.iloc[-1]
+    standard = leg_values(
+        standard_exit,
+        standard_reason,
+        latest["price"],
+    )
+    hold = leg_values(
+        hold_exit,
+        hold_reason,
+        latest["price"],
+    )
+
+    combined_return = (
+        standard["ret_pct"] * 0.50
+        + hold["ret_pct"] * 0.50
+    )
+    combined_pnl = (
+        float(rec.get("paper_notional", 1000.0))
+        * combined_return
+        / 100.0
+    )
+
+    rec.update({
+        "exit_model": "50pct_rs1_exit_50pct_60m_hold",
+        "standard_leg_fraction": 0.50,
+        "standard_leg_exit_time": standard["exit_time"],
+        "standard_leg_exit_price": standard["exit_price"],
+        "standard_leg_exit_reason": standard["exit_reason"],
+        "standard_leg_ret_pct": standard["ret_pct"],
+        "hold_leg_fraction": 0.50,
+        "hold_leg_stop": stop,
+        "hold_leg_deadline": str(deadline),
+        "hold_leg_exit_time": hold["exit_time"],
+        "hold_leg_exit_price": hold["exit_price"],
+        "hold_leg_exit_reason": hold["exit_reason"],
+        "hold_leg_ret_pct": hold["ret_pct"],
+        "highest_price": highest,
+        "highest_price_time": str(highest_time),
+        "lowest_price": lowest,
+        "lowest_price_time": str(lowest_time),
+        "mfe_pct": (highest / entry - 1.0) * 100.0,
+        "mae_pct": (lowest / entry - 1.0) * 100.0,
+        "last_checked": datetime.now(timezone.utc).isoformat(),
+    })
+
+    if standard["closed"] and hold["closed"]:
+        completion_times = [
+            pd.Timestamp(standard["exit_time"]),
+            pd.Timestamp(hold["exit_time"]),
+        ]
+        completion_time = max(completion_times)
+
+        rec.update({
+            "status": "closed",
+            "exit_time": str(completion_time),
+            "exit_price": (
+                float(standard["exit_price"]) * 0.50
+                + float(hold["exit_price"]) * 0.50
+            ),
+            "exit_reason": (
+                f"50pct_{standard['exit_reason']}_"
+                f"50pct_{hold['exit_reason']}"
+            ),
+            "ret_pct": combined_return,
+            "pnl_usd": combined_pnl,
+            "holding_minutes": max(
+                0.0,
+                (completion_time - entry_ts).total_seconds() / 60.0,
+            ),
+            "current_price": None,
+            "current_return_pct": None,
+            "current_pnl_usd": None,
+        })
+    else:
+        rec.update({
+            "status": "open",
+            "current_price": float(latest["price"]),
+            "current_return_pct": combined_return,
+            "current_pnl_usd": combined_pnl,
+            "last_price_time": str(latest["timestamp"]),
+        })
+
+
 def signal_paper_outcome_lines(signal_events, max_items=5, strategy_id="A", outcomes_path=SIGNAL_PAPER_OUTCOMES_JSONL):
     """Paper-track every qualifying SIGNAL using its entry, target, stop and EOD exit."""
     try:
@@ -662,6 +828,7 @@ def signal_paper_outcome_lines(signal_events, max_items=5, strategy_id="A", outc
                 "original_flash_drop_pct": sig.get("original_flash_drop_pct"),
                 "setup": sig.get("setup"),
                 "setup_id": sig.get("setup_id"),
+                "exit_model": sig.get("exit_model"),
                 "primary_universe": sig.get("primary_universe", "UNKNOWN"),
                 "universe_memberships": sig.get("universe_memberships", []),
                 "sampling_tier": sig.get("sampling_tier", "UNKNOWN"),
@@ -779,6 +946,14 @@ def signal_paper_outcome_lines(signal_events, max_items=5, strategy_id="A", outc
                 & (df["timestamp"] >= ts)
             ].sort_values("timestamp")
             if sdf.empty:
+                continue
+
+            if (
+                rec.get("strategy_id") == "RS2"
+                and rec.get("exit_model")
+                == "50pct_rs1_exit_50pct_60m_hold"
+            ):
+                _resolve_rs2_split_outcome(rec, sdf, ts)
                 continue
 
             target = float(rec["target"])
