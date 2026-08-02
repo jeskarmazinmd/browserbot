@@ -25,6 +25,7 @@ COPY universe_tags.py .
 COPY regime_detector.py .
 COPY regime_logger.py .
 
+COPY engine /app/engine
 COPY strategies /app/strategies
 COPY detectors /app/detectors
 COPY reporting /app/reporting
