@@ -18,6 +18,9 @@ COPY trade_logger.py .
 COPY leaderboard_writer.py .
 COPY bot_output.py .
 COPY live_strategy_runner.py .
+COPY paper_outcome_tracker.py .
+COPY strategy_diagnostics.py .
+COPY strategy_diagnostics_report.py .
 COPY quote_source.py .
 COPY supervisor.py .
 COPY refresh_eligible_symbols.py .
