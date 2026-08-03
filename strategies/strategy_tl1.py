@@ -9,6 +9,7 @@ import math
 
 from engine.events import MarketSnapshot, SignalEvent
 from strategies.event_base import EventStrategy
+from .nearest_miss import boolean, consider, minimum, reset
 from .snapshot_common import (
     Observation,
     make_signal,
@@ -124,7 +125,7 @@ class TL1Strategy(EventStrategy):
         snapshot: MarketSnapshot,
     ) -> list[SignalEvent]:
 
-        out = []
+        out = []; reset(self)
 
         for symbol, quote in snapshot.quotes.items():
             state = self._state[symbol]
@@ -168,6 +169,8 @@ class TL1Strategy(EventStrategy):
                 prices[-2] < trend[-2]
                 and current_price >= trend[-1]
             )
+
+            consider(self,symbol,snapshot.timestamp,current_price,[boolean("positive_trend_slope",slope>0),minimum("r2_30m",r2_30,TL1_MIN_R2_30M),minimum("prior_gap_below_trend_pct",prior_gap,TL1_MIN_PRIOR_GAP_BELOW_TREND_PCT,"%"),boolean("crossed_trendline",crossed)])
 
             if (
                 slope > 0

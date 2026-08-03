@@ -9,6 +9,7 @@ import math
 
 from engine.events import MarketSnapshot, SignalEvent
 from strategies.event_base import EventStrategy
+from .nearest_miss import boolean, consider, minimum, reset
 from .snapshot_common import (
     Observation,
     make_signal,
@@ -45,7 +46,7 @@ class VR1Strategy(EventStrategy):
         snapshot: MarketSnapshot,
     ) -> list[SignalEvent]:
 
-        out = []
+        out = []; reset(self)
 
         for symbol, quote in snapshot.quotes.items():
             state = self._state[symbol]
@@ -124,6 +125,8 @@ class VR1Strategy(EventStrategy):
             crossed = (
                 prior_two.price < proxy <= prior_one.price
             )
+
+            consider(self,symbol,snapshot.timestamp,current_price,[minimum("depth_below_mean_pct",depth_pct,VR1_MIN_DEPTH_BELOW_VWAP_PCT,"%"),boolean("crossed_mean",crossed),boolean("held_above_mean",held_above)])
 
             if (
                 depth_pct >= VR1_MIN_DEPTH_BELOW_VWAP_PCT

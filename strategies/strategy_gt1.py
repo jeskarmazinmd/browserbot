@@ -9,6 +9,7 @@ from datetime import timedelta
 from detectors.trend import detect_trend
 from engine.events import MarketSnapshot, SignalEvent
 from strategies.event_base import EventStrategy
+from .nearest_miss import consider, minimum, reset
 from .snapshot_common import (
     Observation,
     make_signal,
@@ -75,7 +76,7 @@ class GT1Strategy(EventStrategy):
         snapshot: MarketSnapshot,
     ) -> list[SignalEvent]:
 
-        out = []
+        out = []; reset(self)
 
         for symbol, quote in snapshot.quotes.items():
             state = self._state[symbol]
@@ -109,6 +110,8 @@ class GT1Strategy(EventStrategy):
 
             if not detection.get("detected"):
                 continue
+
+            consider(self, symbol, snapshot.timestamp, float(quote.price), [minimum("return_pct", detection["return_pct"], MIN_RETURN_PCT, "%"), minimum("r2", detection["r2"], MIN_R2), minimum("up_minute_fraction", detection["up_minute_fraction"], MIN_UP_MINUTE_FRACTION)])
 
             if (
                 detection["return_pct"] < MIN_RETURN_PCT

@@ -24,6 +24,8 @@ class LiveQuoteSource(QuoteSource):
 
 from pathlib import Path
 from datetime import datetime, timezone
+import os
+import time
 import pandas as pd
 
 # Globals
@@ -35,6 +37,8 @@ _TAPE_PATH = None
 _TAPE_INODE = None
 CACHE_MINUTES = 75
 INITIAL_TAIL_ROWS = 900_000
+MINUTE_CACHE_SAVE_SECONDS = 60
+_LAST_MINUTE_CACHE_SAVE = 0.0
 
 # Functions
 
@@ -100,6 +104,52 @@ def _merge_minute_cache(current, incoming):
 
     return merged.reset_index(drop=True)
 
+def _persistent_minute_cache_path(tape):
+    data_root = tape.parent.parent if tape.parent.name == "tapes" else tape.parent
+    market_day = datetime.now(timezone.utc).strftime("%Y%m%d")
+    return data_root / f"minute_quote_cache_{market_day}.pkl"
+
+def _load_persistent_minute_cache(tape):
+    path = _persistent_minute_cache_path(tape)
+    if not path.exists() or path.stat().st_size <= 0:
+        return None
+    try:
+        cached = pd.read_pickle(path)
+        required = {"timestamp", "symbol", "price"}
+        if not isinstance(cached, pd.DataFrame) or not required.issubset(cached.columns):
+            raise ValueError("unexpected minute-cache schema")
+        cached = cached[["timestamp", "symbol", "price"]].copy()
+        cached["timestamp"] = pd.to_datetime(cached["timestamp"], errors="coerce", utc=True)
+        cached["price"] = pd.to_numeric(cached["price"], errors="coerce")
+        cached = cached.dropna(subset=["timestamp", "symbol", "price"])
+        print(
+            f"PERSISTENT_MINUTE_CACHE_LOADED rows={len(cached)} path={path}",
+            flush=True,
+        )
+        return cached
+    except Exception as exc:
+        print(f"persistent minute cache load error: {type(exc).__name__}: {exc}", flush=True)
+        return None
+
+def _save_persistent_minute_cache(tape, cache, force=False):
+    global _LAST_MINUTE_CACHE_SAVE
+    if cache is None or cache.empty:
+        return False
+    now = time.monotonic()
+    if not force and now - _LAST_MINUTE_CACHE_SAVE < MINUTE_CACHE_SAVE_SECONDS:
+        return False
+    path = _persistent_minute_cache_path(tape)
+    temporary = path.with_name(path.name + ".tmp")
+    try:
+        cache.to_pickle(temporary)
+        os.replace(temporary, path)
+        _LAST_MINUTE_CACHE_SAVE = now
+        return True
+    except Exception as exc:
+        temporary.unlink(missing_ok=True)
+        print(f"persistent minute cache save error: {type(exc).__name__}: {exc}", flush=True)
+        return False
+
 def _initialise_tape_cache(tape):
     """Load restart history once, then remember the current byte position."""
     global _TAPE_CACHE, _TAPE_PATH, _TAPE_OFFSET, _TAPE_INODE, _TAPE_PARTIAL
@@ -122,7 +172,9 @@ def _initialise_tape_cache(tape):
 
         payload = tmp_path.read_bytes()
         raw = _parse_quote_bytes(payload)
-        _TAPE_CACHE = _to_minute_cache(raw)
+        tail_minutes = _to_minute_cache(raw)
+        persisted = _load_persistent_minute_cache(tape)
+        _TAPE_CACHE = _merge_minute_cache(persisted, tail_minutes)
 
         _TAPE_PATH = tape
         _TAPE_OFFSET = stat_before.st_size
@@ -135,6 +187,7 @@ def _initialise_tape_cache(tape):
             f"offset={_TAPE_OFFSET}",
             flush=True,
         )
+        _save_persistent_minute_cache(tape, _TAPE_CACHE, force=True)
         return _TAPE_CACHE
 
     except Exception as e:
@@ -205,6 +258,7 @@ def read_data():
         raw_new = _parse_quote_bytes(complete)
         minute_new = _to_minute_cache(raw_new)
         _TAPE_CACHE = _merge_minute_cache(_TAPE_CACHE, minute_new)
+        _save_persistent_minute_cache(tape, _TAPE_CACHE)
 
         return _TAPE_CACHE
 

@@ -9,6 +9,7 @@ import math
 
 from engine.events import MarketSnapshot, SignalEvent
 from strategies.event_base import EventStrategy
+from .nearest_miss import boolean, consider, maximum, minimum, reset
 from .snapshot_common import (
     Observation,
     make_signal,
@@ -81,7 +82,7 @@ class SH1Strategy(EventStrategy):
         snapshot: MarketSnapshot,
     ) -> list[SignalEvent]:
 
-        out = []
+        out = []; reset(self)
 
         for symbol, quote in snapshot.quotes.items():
             state = self._state[symbol]
@@ -135,6 +136,8 @@ class SH1Strategy(EventStrategy):
                 if first_half < 0
                 else math.inf
             )
+
+            consider(self,symbol,snapshot.timestamp,current_price,[minimum("decline_20m_pct",decline20,SH1_MIN_DECLINE_20M_PCT,"%"),boolean("first_half_negative",first_half<0),maximum("flattening_ratio",flattening,SH1_MIN_FLATTENING_RATIO),boolean("positive_rebound_3m",rebound3>0)])
 
             if (
                 decline20 >= SH1_MIN_DECLINE_20M_PCT

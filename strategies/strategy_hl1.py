@@ -9,6 +9,7 @@ import math
 
 from engine.events import MarketSnapshot, SignalEvent
 from strategies.event_base import EventStrategy
+from .nearest_miss import consider, minimum, reset
 from .snapshot_common import (
     Observation,
     make_signal,
@@ -75,7 +76,7 @@ class HL1Strategy(EventStrategy):
         snapshot: MarketSnapshot,
     ) -> list[SignalEvent]:
 
-        out = []
+        out = []; reset(self)
 
         for symbol, quote in snapshot.quotes.items():
             state = self._state[symbol]
@@ -139,6 +140,7 @@ class HL1Strategy(EventStrategy):
                 if intervening_high > 0
                 else math.nan
             )
+            consider(self,symbol,snapshot.timestamp,current_price,[minimum("higher_low_pct",higher_low_pct,HL1_MIN_HIGHER_LOW_PCT,"%"),minimum("breakout_pct",breakout_pct,HL1_BREAK_BUFFER_PCT,"%")])
 
             if (
                 higher_low_pct >= HL1_MIN_HIGHER_LOW_PCT

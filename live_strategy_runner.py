@@ -10,7 +10,12 @@ from quote_source import LiveQuoteSource
 from types import SimpleNamespace
 from engine.events import MarketSnapshot, Quote, SignalEvent
 from strategies.generic_registry import evaluate_all as evaluate_generic_strategies
+from strategies.derived_runtime import DERIVED_STRATEGY_IDS, derive_signals
+from strategies.flash_nearest_miss import score as score_flash_window
 from strategies.registry import (
+    DERIVED_RUNTIME_STRATEGY_IDS,
+    MINUTE_STRATEGIES,
+    REPORTING_STRATEGY_MODULES,
     flash_accepts,
     flash_strategy_configs,
     on_minute_snapshot as run_minute_strategies,
@@ -18,6 +23,8 @@ from strategies.registry import (
     validate_flash_entry,
 )
 from regime_logger import log_regime, latest_regime
+from paper_outcome_tracker import PaperOutcomeTracker
+from strategy_diagnostics import diagnostics
 
 RUN_MODE = os.environ.get("RUN_MODE", "LIVE")
 REPLAY_TAPE_PATH = os.environ.get("REPLAY_TAPE_PATH")
@@ -607,7 +614,10 @@ if RUN_MODE == "REPLAY":
 
     quote_source = ReplayQuoteSource(REPLAY_TAPE_PATH)
 else:
-    quote_source = LiveQuoteSource(read_data)
+    # Use quote_source.py's incremental reader so its compact persistent
+    # minute cache survives process and machine restarts.  Passing the legacy
+    # local reader here bypasses that persistence layer.
+    quote_source = LiveQuoteSource()
 
 
 def set_quote_source(source):
@@ -884,8 +894,10 @@ def minute_prices(g):
         .last()
     )
 
-def detect_latest_flash(sym, g, min_flash_drop_pct=FLASH_DROP_PCT):
-    prices = minute_prices(g)
+def measure_latest_flash(sym, g, prices=None):
+    """Return flash-window measurements once the complete, current window exists."""
+    if prices is None:
+        prices = minute_prices(g)
 
     # 31 points span the 30-minute pre-window and 4 points span the
     # 3-minute flash window. The boundary point is shared: 31 + 4 - 1 = 34.
@@ -929,6 +941,28 @@ def detect_latest_flash(sym, g, min_flash_drop_pct=FLASH_DROP_PCT):
     pre_slope_pct_per_hour, pre_r2 = fit_log_slope_pct_per_hour(pre)
     flash_drop_pct = ((flash_start - flash_end) / flash_start) * 100
 
+    return {
+        "symbol": sym,
+        "entry_price": flash_end,
+        "flash_start_price": flash_start,
+        "flash_drop_pct": flash_drop_pct,
+        "pre_return_pct": pre_return_pct,
+        "pre_slope_pct_per_hour": pre_slope_pct_per_hour,
+        "pre_r2": pre_r2,
+        "price": flash_end,
+        "signal_window_end": window.index[-1].isoformat(),
+    }
+
+
+def detect_latest_flash(sym, g, min_flash_drop_pct=FLASH_DROP_PCT, measurement=None):
+    measured = measurement if measurement is not None else measure_latest_flash(sym, g)
+    if measured is None:
+        return None
+
+    pre_return_pct = float(measured["pre_return_pct"])
+    pre_slope_pct_per_hour = float(measured["pre_slope_pct_per_hour"])
+    flash_drop_pct = float(measured["flash_drop_pct"])
+
     pass_pre_return = pre_return_pct >= MIN_PRE_CRASH_RETURN_PCT
     pass_pre_slope = not math.isnan(pre_slope_pct_per_hour) and pre_slope_pct_per_hour >= MIN_PRE_CRASH_SLOPE_PCT_PER_HOUR
     pass_flash = min_flash_drop_pct <= flash_drop_pct <= MAX_FLASH_DROP_PCT
@@ -936,22 +970,28 @@ def detect_latest_flash(sym, g, min_flash_drop_pct=FLASH_DROP_PCT):
     if not (pass_pre_return and pass_pre_slope and pass_flash):
         return None
 
-    entry = flash_end
+    entry = float(measured["entry_price"])
+    flash_start = float(measured["flash_start_price"])
     target = entry + RECOVERY_TARGET_FRACTION * (flash_start - entry)
     stop = entry * (1 - STOP_LOSS_FRACTION_BELOW_ENTRY)
 
     return {
-        "symbol": sym,
-        "entry_price": entry,
-        "flash_start_price": flash_start,
-        "flash_drop_pct": flash_drop_pct,
-        "pre_return_pct": pre_return_pct,
-        "pre_slope_pct_per_hour": pre_slope_pct_per_hour,
-        "pre_r2": pre_r2,
+        **measured,
         "target_price": target,
         "stop_price": stop,
-        "signal_window_end": window.index[-1].isoformat(),
     }
+
+
+def score_flash_near_miss(strategy_id, measurement):
+    """Score a complete flash window against one strategy's pre-entry rules."""
+    return score_flash_window(
+        measurement,
+        strategy_id,
+        STRATEGY_CONFIGS[strategy_id],
+        MIN_PRE_CRASH_RETURN_PCT,
+        MIN_PRE_CRASH_SLOPE_PCT_PER_HOUR,
+        MAX_FLASH_DROP_PCT,
+    )
 
 def refresh_event_for_entry(event, current_price, strategy_id):
     """Delegate confirmed-entry construction to the strategy module."""
@@ -1503,6 +1543,53 @@ def main():
     last_market_token_touch = 0
     positions = load_positions()
     print(f"LOADED_POSITIONS={list(positions.keys())}", flush=True)
+    paper_outcomes = PaperOutcomeTracker(
+        DATA_ROOT,
+        eod_hour=EOD_EXIT_HOUR_ET,
+        eod_minute=EOD_EXIT_MINUTE_ET,
+    )
+    print(
+        "PAPER_OUTCOME_TRACKER_ONLINE "
+        f"active={len(paper_outcomes.active)} seen={len(paper_outcomes.seen)}",
+        flush=True,
+    )
+    print(
+        "DERIVED_STRATEGIES_ONLINE " + ",".join(sorted(DERIVED_STRATEGY_IDS)),
+        flush=True,
+    )
+    for strategy in MINUTE_STRATEGIES:
+        strategy_id = str(getattr(strategy, "name", type(strategy).__name__))
+        diagnostics.define(
+            strategy_id,
+            "RUNNING",
+            runtime_path="minute",
+            nearest_miss_status="no rejected candidate with sufficient history yet",
+        )
+    for strategy_id in STRATEGY_CONFIGS:
+        diagnostics.define(strategy_id, "RUNNING", runtime_path="flash")
+    derived_parents = {
+        **{key: "B" for key in ("C1", "C2", "C3", "C4", "G", "J1", "J2", "J3", "J4", "J5", "J6")},
+        "E": "A", "I": "A", "F": "D",
+        **{key: "A" for key in ("K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8", "K9", "L", "M", "N", "O", "P", "Q", "R", "S")},
+    }
+    for strategy_id, parent_id in derived_parents.items():
+        diagnostics.define(
+            strategy_id,
+            "WAITING_PARENT",
+            runtime_path="derived",
+            parent_strategy=parent_id,
+        )
+    inactive_ids = set(REPORTING_STRATEGY_MODULES) - set(DERIVED_RUNTIME_STRATEGY_IDS)
+    for strategy_id in inactive_ids:
+        diagnostics.define(
+            strategy_id,
+            "INACTIVE",
+            runtime_path="legacy_reporting_only",
+            reason="not connected to runtime evaluation",
+        )
+    parent_signal_counts = {"A": 0, "B": 0, "D": 0}
+    derived_signal_counts = {key: 0 for key in derived_parents}
+    diagnostics.flush(force=True)
 
     # In-memory research tracker for NEAR_MISS forward returns.
     near_miss_tracker = {}
@@ -1588,6 +1675,13 @@ def main():
                 manage_exits(trader, positions, prices_now)
 
             now_utc = quote_source.now()
+            for outcome in paper_outcomes.update(prices_now, now_utc):
+                print(
+                    "PAPER_OUTCOME "
+                    f"strategy={outcome['strategy_id']} symbol={outcome['symbol']} "
+                    f"reason={outcome['exit_reason']} pnl={outcome['pnl']:+.2f}",
+                    flush=True,
+                )
             market_day = now_utc.astimezone(ZoneInfo("America/New_York")).date().isoformat()
             if market_day != near_miss_logged_day:
                 near_miss_logged.clear()
@@ -1644,13 +1738,33 @@ def main():
                 independent_dedupe_day = market_day
 
             spy_30m_return_pct = None
+            spy_5m_return_pct = None
+            spy_1m_return_pct = None
+            market_confirmation_symbol = None
             try:
                 spy_group = df[df["symbol"].astype(str) == "SPY"].sort_values("timestamp")
                 if len(spy_group) >= 31:
                     spy_prices = spy_group["price"].astype(float).tail(31)
                     spy_30m_return_pct = _simple_return_pct(spy_prices.iloc[0], spy_prices.iloc[-1])
+                spy_minutes = minute_prices(spy_group).dropna()
+                if len(spy_minutes) >= 6:
+                    spy_5m_return_pct = _simple_return_pct(spy_minutes.iloc[-6], spy_minutes.iloc[-1])
+                if len(spy_minutes) >= 2:
+                    spy_1m_return_pct = _simple_return_pct(spy_minutes.iloc[-2], spy_minutes.iloc[-1])
+                market_confirmation_symbol = "SPY"
+                qqq_group = df[df["symbol"].astype(str) == "QQQ"].sort_values("timestamp")
+                qqq_minutes = minute_prices(qqq_group).dropna()
+                if len(qqq_minutes) >= 6:
+                    qqq_5m = _simple_return_pct(qqq_minutes.iloc[-6], qqq_minutes.iloc[-1])
+                    qqq_1m = _simple_return_pct(qqq_minutes.iloc[-2], qqq_minutes.iloc[-1]) if len(qqq_minutes) >= 2 else None
+                    if spy_5m_return_pct is None or qqq_5m > spy_5m_return_pct:
+                        spy_5m_return_pct = qqq_5m
+                        spy_1m_return_pct = qqq_1m
+                        market_confirmation_symbol = "QQQ"
             except Exception:
                 spy_30m_return_pct = None
+                spy_5m_return_pct = None
+                spy_1m_return_pct = None
 
             scan_stats = {
                 "symbols_seen": 0,
@@ -1659,6 +1773,7 @@ def main():
                 "empty_minute_series": 0,
                 "insufficient_history": 0,
                 "missing_minutes": 0,
+                "stale_windows": 0,
                 "invalid_prices": 0,
                 "calculation_errors": 0,
                 "near_candidates": 0,
@@ -1785,6 +1900,7 @@ def main():
                             "CADENCE": "minute",
                         },
                     )
+                    paper_outcomes.register(independent)
 
             if warming_minute_pipeline and minute_snapshots:
                 print(
@@ -1867,8 +1983,40 @@ def main():
 
                 # Detect using the lowest configured threshold, then admit only the
                 # strategies whose own flash threshold is satisfied.
+                flash_prices = minute_prices(g)
+                flash_measurement = measure_latest_flash(sym, g, prices=flash_prices)
+                if flash_measurement is not None:
+                    near_events.append(flash_measurement)
+                    scan_stats["near_candidates"] += 1
+                else:
+                    needed = PRE_CRASH_TREND_MINUTES + FLASH_WINDOW_MINUTES + 1
+                    if flash_prices.empty:
+                        scan_stats["empty_minute_series"] += 1
+                    elif len(flash_prices) < needed:
+                        scan_stats["insufficient_history"] += 1
+                    else:
+                        diagnostic_window = flash_prices.iloc[-needed:]
+                        if diagnostic_window.isna().any():
+                            scan_stats["missing_minutes"] += 1
+                        elif (diagnostic_window <= 0).any():
+                            scan_stats["invalid_prices"] += 1
+                        else:
+                            latest = diagnostic_window.index[-1]
+                            if latest.tzinfo is None:
+                                latest = latest.tz_localize("UTC")
+                            else:
+                                latest = latest.tz_convert("UTC")
+                            age = (pd.Timestamp.now(tz="UTC") - latest).total_seconds()
+                            if age > MAX_QUOTE_AGE_SECONDS:
+                                scan_stats["stale_windows"] += 1
+                            else:
+                                scan_stats["invalid_prices"] += 1
+
                 event = detect_latest_flash(
-                    sym, g, min(cfg["flash_drop_pct"] for cfg in STRATEGY_CONFIGS.values())
+                    sym,
+                    g,
+                    min(cfg["flash_drop_pct"] for cfg in STRATEGY_CONFIGS.values()),
+                    measurement=flash_measurement,
                 )
 
                 if event:
@@ -1918,105 +2066,6 @@ def main():
                         created_any = True
                     if created_any or strategies_processed_pending:
                         continue
-                else:
-                    try:
-                        prices = minute_prices(g)
-
-                        if prices.empty:
-                            scan_stats["empty_minute_series"] += 1
-                            continue
-
-                        needed = PRE_CRASH_TREND_MINUTES + FLASH_WINDOW_MINUTES + 1
-
-                        if len(prices) < needed:
-                            scan_stats["insufficient_history"] += 1
-                            continue
-
-                        window = prices.iloc[-needed:]
-
-                        latest_minute = window.index[-1]
-                        now_minute_utc = pd.Timestamp.now(tz="UTC")
-                        if latest_minute.tzinfo is None:
-                            latest_minute = latest_minute.tz_localize("UTC")
-                        else:
-                            latest_minute = latest_minute.tz_convert("UTC")
-                        if (
-                            now_minute_utc - latest_minute
-                        ).total_seconds() > MAX_QUOTE_AGE_SECONDS:
-                            scan_stats["insufficient_history"] += 1
-                            continue
-
-                        # Do not score a near miss across missing minutes.
-                        missing_count = int(window.isna().sum())
-                        if missing_count:
-                            scan_stats["missing_minutes"] += 1
-                            continue
-
-                        pre = window.iloc[:PRE_CRASH_TREND_MINUTES + 1]
-                        flash = window.iloc[-(FLASH_WINDOW_MINUTES + 1):]
-
-                        flash_start = float(flash.iloc[0])
-                        flash_end = float(flash.iloc[-1])
-                        pre_start = float(pre.iloc[0]) if len(pre) else 0
-                        pre_end = float(pre.iloc[-1]) if len(pre) else 0
-
-                        if flash_start > 0 and flash_end > 0 and pre_start > 0:
-                            pre_return_pct = ((pre_end / pre_start) - 1) * 100
-                            pre_slope_pct_per_hour, pre_r2 = fit_log_slope_pct_per_hour(pre)
-                            flash_drop_pct = ((flash_start - flash_end) / flash_start) * 100
-                            gap = FLASH_DROP_PCT - flash_drop_pct
-
-                            pass_pre_return = pre_return_pct >= MIN_PRE_CRASH_RETURN_PCT
-                            pass_pre_slope = (
-                                not math.isnan(pre_slope_pct_per_hour)
-                                and pre_slope_pct_per_hour >= MIN_PRE_CRASH_SLOPE_PCT_PER_HOUR
-                            )
-                            pass_flash = FLASH_DROP_PCT <= flash_drop_pct <= MAX_FLASH_DROP_PCT
-
-                            failed = []
-                            if not pass_pre_return:
-                                failed.append("pre_return")
-                            if not pass_pre_slope:
-                                failed.append("pre_slope")
-                            if not pass_flash:
-                                failed.append("flash_drop")
-
-                            # Combined "nearest miss" score across all required dimensions.
-                            # Lower score = closer to becoming a true trigger.
-                            flash_penalty = max(0.0, FLASH_DROP_PCT - flash_drop_pct) / max(FLASH_DROP_PCT, 1e-9)
-                            pre_ret_penalty = max(0.0, MIN_PRE_CRASH_RETURN_PCT - pre_return_pct) / max(MIN_PRE_CRASH_RETURN_PCT, 1e-9)
-                            pre_slope_penalty = max(0.0, MIN_PRE_CRASH_SLOPE_PCT_PER_HOUR - pre_slope_pct_per_hour) / max(MIN_PRE_CRASH_SLOPE_PCT_PER_HOUR, 1e-9)
-
-                            miss_score = flash_penalty + pre_ret_penalty + pre_slope_penalty
-
-                            near_events.append({
-                                "symbol": sym,
-                                "flash_drop_pct": flash_drop_pct,
-                                "gap": gap,
-                                "miss_score": miss_score,
-                                "flash_penalty": flash_penalty,
-                                "pre_ret_penalty": pre_ret_penalty,
-                                "pre_slope_penalty": pre_slope_penalty,
-                                "price": flash_end,
-                                "pre_return_pct": pre_return_pct,
-                                "pre_slope_pct_per_hour": pre_slope_pct_per_hour,
-                                "pre_r2": pre_r2,
-                                "pass_pre_return": pass_pre_return,
-                                "pass_pre_slope": pass_pre_slope,
-                                "pass_flash": pass_flash,
-                                "failed": ",".join(failed) if failed else "none",
-                            })
-                            scan_stats["near_candidates"] += 1
-                        else:
-                            scan_stats["invalid_prices"] += 1
-
-                    except Exception as ex:
-                        scan_stats["calculation_errors"] += 1
-                        if len(scan_error_samples) < 5:
-                            scan_error_samples.append(
-                                f"symbol={sym} type={type(ex).__name__} error={ex}"
-                            )
-
             print(
                 "SCAN_SUMMARY "
                 f"symbols_seen={scan_stats['symbols_seen']} "
@@ -2027,6 +2076,7 @@ def main():
                 f"empty_minute_series={scan_stats['empty_minute_series']} "
                 f"insufficient_history={scan_stats['insufficient_history']} "
                 f"missing_minutes={scan_stats['missing_minutes']} "
+                f"stale_windows={scan_stats['stale_windows']} "
                 f"invalid_prices={scan_stats['invalid_prices']} "
                 f"calculation_errors={scan_stats['calculation_errors']}",
                 flush=True,
@@ -2085,39 +2135,44 @@ def main():
                     "strategy_id": strategy_id,
                 }
 
-            # A and B share the same candidate score/entry boundary.
-            for candidate in near_events:
-                log_threshold_candidate(STRATEGY_A, candidate, FLASH_DROP_PCT)
-                log_threshold_candidate(STRATEGY_B, candidate, FLASH_DROP_PCT)
+            flash_nearest = {}
 
-                # Strategy D changes only the flash threshold to 0.90%.
-                d = dict(candidate)
-                d_threshold = STRATEGY_CONFIGS[STRATEGY_D]["flash_drop_pct"]
-                d["gap"] = d_threshold - float(d.get("flash_drop_pct", 0) or 0)
-                d["pass_flash"] = d_threshold <= float(d.get("flash_drop_pct", 0) or 0) <= MAX_FLASH_DROP_PCT
-                d["flash_penalty"] = max(0.0, d_threshold - float(d.get("flash_drop_pct", 0) or 0)) / max(d_threshold, 1e-9)
-                d["miss_score"] = d["flash_penalty"] + float(d.get("pre_ret_penalty", 0) or 0) + float(d.get("pre_slope_penalty", 0) or 0)
-                log_threshold_candidate(STRATEGY_D, d, d_threshold)
+            def retain_nearest(strategy_id, candidate):
+                current = flash_nearest.get(strategy_id)
+                if current is None or float(candidate.get("miss_score", 999)) < float(current.get("miss_score", 999)):
+                    flash_nearest[strategy_id] = dict(candidate)
 
-                # H adds both lower/upper boundary filters and pre-trend quality.
-                h = dict(candidate)
-                drop = float(h.get("flash_drop_pct", 0) or 0)
-                slope = float(h.get("pre_slope_pct_per_hour", 0) or 0)
-                r2 = float(h.get("pre_r2", 0) or 0)
-                h_low_flash = max(0.0, STRATEGY_H_MIN_FLASH_DROP_PCT - drop) / max(STRATEGY_H_MIN_FLASH_DROP_PCT, 1e-9)
-                h_high_flash = max(0.0, drop - STRATEGY_H_MAX_FLASH_DROP_PCT) / max(STRATEGY_H_MAX_FLASH_DROP_PCT, 1e-9)
-                h_high_slope = max(0.0, slope - STRATEGY_H_MAX_PRE_SLOPE_PCT_PER_HOUR) / max(STRATEGY_H_MAX_PRE_SLOPE_PCT_PER_HOUR, 1e-9)
-                h_r2 = max(0.0, STRATEGY_H_MIN_PRE_R2 - r2) / max(STRATEGY_H_MIN_PRE_R2, 1e-9)
-                h["flash_penalty"] = h_low_flash + h_high_flash
-                h["pre_slope_max_penalty"] = h_high_slope
-                h["pre_r2_penalty"] = h_r2
-                h["miss_score"] = h["flash_penalty"] + float(h.get("pre_ret_penalty", 0) or 0) + float(h.get("pre_slope_penalty", 0) or 0) + h_high_slope + h_r2
-                log_threshold_candidate(
-                    STRATEGY_H, h, STRATEGY_H_MIN_FLASH_DROP_PCT,
-                    extra_thresholds={
-                        "MIN_PRE_R2": STRATEGY_H_MIN_PRE_R2,
-                        "MAX_PRE_CRASH_SLOPE_PCT_PER_HOUR": STRATEGY_H_MAX_PRE_SLOPE_PCT_PER_HOUR,
-                    },
+            for measurement in near_events:
+                for strategy_id in (STRATEGY_A, STRATEGY_B, STRATEGY_D, STRATEGY_H):
+                    candidate = score_flash_near_miss(strategy_id, measurement)
+                    if candidate is None:
+                        continue
+                    retain_nearest(strategy_id, candidate)
+                    extra_thresholds = None
+                    if strategy_id == STRATEGY_H:
+                        extra_thresholds = {
+                            "MIN_PRE_R2": STRATEGY_H_MIN_PRE_R2,
+                            "MAX_PRE_CRASH_SLOPE_PCT_PER_HOUR": STRATEGY_H_MAX_PRE_SLOPE_PCT_PER_HOUR,
+                        }
+                    log_threshold_candidate(
+                        strategy_id,
+                        candidate,
+                        STRATEGY_CONFIGS[strategy_id]["flash_drop_pct"],
+                        extra_thresholds=extra_thresholds,
+                    )
+
+            for strategy_id, signal_rows in (
+                (STRATEGY_A, events_a),
+                (STRATEGY_B, events_b),
+                (STRATEGY_D, events_d),
+                (STRATEGY_H, events_h),
+            ):
+                diagnostics.evaluated(
+                    strategy_id,
+                    now_utc.isoformat(),
+                    scan_stats["symbols_seen"],
+                    signal_count=len(signal_rows),
+                    nearest_miss=flash_nearest.get(strategy_id),
                 )
 
             if events:
@@ -2143,6 +2198,9 @@ def main():
                         ))
                     except Exception:
                         pass
+                    e["market_5m_return_pct"] = spy_5m_return_pct
+                    e["market_1m_return_pct"] = spy_1m_return_pct
+                    e["market_confirmation_symbol"] = market_confirmation_symbol
 
                     append_strategy_event(
                         e.get("strategy_id", STRATEGY_A),
@@ -2166,6 +2224,24 @@ def main():
                             "REBOUND_CONFIRMATION_PCT": STRATEGY_CONFIGS[e.get("strategy_id", STRATEGY_A)]["rebound_confirmation_pct"],
                         },
                     )
+                    paper_outcomes.register(e)
+                    if e.get("strategy_id") in parent_signal_counts:
+                        parent_signal_counts[e["strategy_id"]] += 1
+                    for derived in derive_signals(e):
+                        append_strategy_event(
+                            derived["strategy_id"],
+                            "SIGNAL",
+                            symbol=derived["symbol"],
+                            signal=derived,
+                            signal_regime=latest_regime(),
+                            thresholds={
+                                "DERIVED_FROM": derived["source_strategy_id"],
+                                "LIVE_ORDER_PLACEMENT": False,
+                                "EXIT_MODEL": derived["exit_model"],
+                            },
+                        )
+                        paper_outcomes.register(derived)
+                        derived_signal_counts[derived["strategy_id"]] += 1
 
                 for e in events_a:
                     sym = e["symbol"]
@@ -2326,6 +2402,15 @@ def main():
                 # Threshold candidates were already logged above, independently of
                 # whether this scan also produced full signals.
                 write_bot_output(status="no_trigger", triggers=[], nearest=[e for e in near_events if 0.0 < float(e.get("miss_score", 999)) <= NEAR_MISS_SCORE_CUTOFF][:25])
+
+            for strategy_id, parent_id in derived_parents.items():
+                diagnostics.parent_state(
+                    strategy_id,
+                    parent_id,
+                    parent_signal_counts[parent_id],
+                    derived_signal_counts[strategy_id],
+                )
+            diagnostics.flush()
 
         except Exception as e:
             print("runner error:", type(e).__name__, e, flush=True)

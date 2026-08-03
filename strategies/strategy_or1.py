@@ -9,6 +9,7 @@ from zoneinfo import ZoneInfo
 
 from engine.events import MarketSnapshot, SignalEvent
 from strategies.event_base import EventStrategy
+from .nearest_miss import between, consider, minimum, reset
 from .snapshot_common import make_signal
 
 
@@ -43,7 +44,7 @@ class OR1Strategy(EventStrategy):
         snapshot: MarketSnapshot,
     ) -> list[SignalEvent]:
 
-        out = []
+        out = []; reset(self)
 
         timestamp_et = snapshot.timestamp.astimezone(
             ZoneInfo("America/New_York")
@@ -105,6 +106,7 @@ class OR1Strategy(EventStrategy):
                 if opening_high > 0
                 else math.nan
             )
+            consider(self,symbol,snapshot.timestamp,current_price,[between("opening_range_pct",opening_range_pct,OR1_MIN_RANGE_PCT,OR1_MAX_RANGE_PCT,"%"),minimum("breakout_pct",breakout_pct,OR1_BREAK_BUFFER_PCT,"%")])
 
             if (
                 OR1_MIN_RANGE_PCT

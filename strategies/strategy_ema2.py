@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from datetime import timedelta
 from engine.events import MarketSnapshot, SignalEvent
 from strategies.event_base import EventStrategy
+from .nearest_miss import boolean, consider, maximum, minimum, reset
 from .snapshot_common import Observation, make_signal, trim_before, update_time_ema, value_at_or_before
 
 STRATEGY_ID = "EMA2"
@@ -25,7 +26,7 @@ class EMA2Strategy(EventStrategy):
     def __init__(self): self._state = defaultdict(_State)
 
     def on_snapshot(self, snapshot: MarketSnapshot) -> list[SignalEvent]:
-        signals=[]
+        signals=[]; reset(self)
         for symbol, quote in snapshot.quotes.items():
             s=self._state[symbol]
             prev=s.observations[-1] if s.observations else None
@@ -44,6 +45,7 @@ class EMA2Strategy(EventStrategy):
             prior_distance=abs(prev.price/prior_ema-1.0)*100.0 if prior_ema>0 else 999.0
             bounce=(cur.price/obs2.price-1.0)*100.0 if obs2.price>0 else -999.0
             reclaimed=prev.price<=prior_ema and cur.price>s.ema
+            consider(self,symbol,snapshot.timestamp,cur.price,[boolean("ema_rising",ema_rising),maximum("prior_distance_from_ema_pct",prior_distance,EMA2_MAX_PULLBACK_DISTANCE_PCT,"%"),minimum("bounce_2m_pct",bounce,EMA2_MIN_BOUNCE_2M_PCT,"%"),boolean("reclaimed_ema",reclaimed)])
             if ema_rising and prior_distance<=EMA2_MAX_PULLBACK_DISTANCE_PCT and bounce>=EMA2_MIN_BOUNCE_2M_PCT and reclaimed:
                 signals.append(make_signal(snapshot,STRATEGY_ID,symbol,cur.price,0.75,0.50,"rising_ema20_pullback_bounce",
                     ema_20=s.ema,ema_20_change_3m_pct=(s.ema/ema3-1.0)*100.0,

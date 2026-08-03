@@ -9,6 +9,7 @@ import math
 
 from engine.events import MarketSnapshot, SignalEvent
 from strategies.event_base import EventStrategy
+from .nearest_miss import consider, maximum, minimum, reset
 from .snapshot_common import Observation, make_signal, trim_before
 
 
@@ -39,7 +40,7 @@ class VE1Strategy(EventStrategy):
         snapshot: MarketSnapshot,
     ) -> list[SignalEvent]:
 
-        out = []
+        out = []; reset(self)
 
         for symbol, quote in snapshot.quotes.items():
             state = self._state[symbol]
@@ -94,6 +95,8 @@ class VE1Strategy(EventStrategy):
                 if c_high > 0
                 else math.nan
             )
+
+            consider(self,symbol,snapshot.timestamp,price,[maximum("compression_range_pct",c_range_pct,VE1_MAX_COMPRESSION_RANGE_PCT,"%"),minimum("expansion_pct",expansion_pct,VE1_BREAK_BUFFER_PCT,"%")])
 
             if (
                 c_range_pct <= VE1_MAX_COMPRESSION_RANGE_PCT

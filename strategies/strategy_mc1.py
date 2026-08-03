@@ -9,6 +9,7 @@ import math
 
 from engine.events import MarketSnapshot, SignalEvent
 from strategies.event_base import EventStrategy
+from .nearest_miss import consider, maximum, minimum, reset
 from .snapshot_common import (
     Observation,
     make_signal,
@@ -126,7 +127,7 @@ class MC1Strategy(EventStrategy):
         snapshot: MarketSnapshot,
     ) -> list[SignalEvent]:
 
-        out = []
+        out = []; reset(self)
 
         for symbol, quote in snapshot.quotes.items():
             state = self._state[symbol]
@@ -166,6 +167,8 @@ class MC1Strategy(EventStrategy):
                 if current_price > 0
                 else math.nan
             )
+
+            consider(self,symbol,snapshot.timestamp,current_price,[minimum("return_15m_pct",ret15,MC1_MIN_RETURN_15M_PCT,"%"),minimum("return_5m_pct",ret5,MC1_MIN_RETURN_5M_PCT,"%"),minimum("r2_30m",r2_30,MC1_MIN_R2_30M),maximum("distance_from_10m_high_pct",distance_high,MC1_MAX_DISTANCE_FROM_10M_HIGH_PCT,"%")])
 
             if (
                 ret15 >= MC1_MIN_RETURN_15M_PCT

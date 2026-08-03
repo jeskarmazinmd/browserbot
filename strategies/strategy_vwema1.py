@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from datetime import timedelta
 from engine.events import MarketSnapshot, SignalEvent
 from strategies.event_base import EventStrategy
+from .nearest_miss import boolean, consider, minimum, reset
 from .snapshot_common import Observation, make_signal, time_weighted_mean, trim_before, update_time_ema, value_at_or_before
 
 STRATEGY_ID="VWEMA1"; PAPER_ONLY=True
@@ -21,7 +22,7 @@ class VWEMA1Strategy(EventStrategy):
     name=STRATEGY_ID
     def __init__(self): self._state=defaultdict(_State)
     def on_snapshot(self,snapshot:MarketSnapshot)->list[SignalEvent]:
-        out=[]
+        out=[]; reset(self)
         for symbol,q in snapshot.quotes.items():
             s=self._state[symbol]; prev=s.observations[-1] if s.observations else None
             cur=Observation(snapshot.timestamp,float(q.price),q.total_volume); s.observations.append(cur)
@@ -35,6 +36,7 @@ class VWEMA1Strategy(EventStrategy):
             if mean30 is None or obs15 is None or ema3 is None: continue
             above=(cur.price/mean30-1.0)*100.0 if mean30>0 else -999.0
             ret15=(cur.price/obs15.price-1.0)*100.0 if obs15.price>0 else -999.0
+            consider(self,symbol,snapshot.timestamp,cur.price,[boolean("price_above_ema20",cur.price>s.ema),minimum("distance_above_mean_pct",above,VWEMA1_MIN_PRICE_ABOVE_VWAP_PCT,"%"),minimum("return_15m_pct",ret15,VWEMA1_MIN_RETURN_15M_PCT,"%"),boolean("ema20_rising",s.ema>ema3)])
             if cur.price>s.ema and above>=VWEMA1_MIN_PRICE_ABOVE_VWAP_PCT and ret15>=VWEMA1_MIN_RETURN_15M_PCT and s.ema>ema3:
                 out.append(make_signal(snapshot,STRATEGY_ID,symbol,cur.price,0.80,0.55,"price_above_mean_proxy_and_ema20",
                     ema_20=s.ema,rolling_price_mean_30m=mean30,distance_above_price_mean_pct=above,

@@ -15,6 +15,7 @@ from .snapshot_common import (
     trim_before,
     value_at_or_before,
 )
+from .nearest_miss import between, boolean, consider, maximum, minimum, reset
 
 
 STRATEGY_ID = "M1"
@@ -85,6 +86,7 @@ class M1Strategy(EventStrategy):
     ) -> list[SignalEvent]:
 
         out = []
+        reset(self)
 
         for symbol, quote in snapshot.quotes.items():
             state = self._state[symbol]
@@ -155,6 +157,15 @@ class M1Strategy(EventStrategy):
             )
 
             prior_minute_above_low = prices[-2] > low_price
+
+            consider(self, symbol, snapshot.timestamp, current_price, [
+                minimum("decline_pct", decline_pct, MIN_DECLINE_PCT, "%"),
+                between("low_age_minutes", low_age_minutes, MEDIUM_REVERSAL_MIN_LOW_AGE_MINUTES, MEDIUM_REVERSAL_MAX_LOW_AGE_MINUTES, "minutes"),
+                minimum("rebound_from_low_pct", rebound_from_low_pct, MIN_REBOUND_FROM_LOW_PCT, "%"),
+                minimum("rebound_2m_pct", rebound_2m_pct, MIN_REBOUND_2M_PCT, "%"),
+                boolean("prior_minute_above_low", prior_minute_above_low),
+                maximum("largest_minute_share", largest_minute_share, MEDIUM_REVERSAL_MAX_SINGLE_MINUTE_SHARE),
+            ])
 
             if (
                 decline_pct >= MIN_DECLINE_PCT

@@ -10,6 +10,7 @@ from zoneinfo import ZoneInfo
 
 from engine.events import MarketSnapshot, SignalEvent
 from strategies.event_base import EventStrategy
+from .nearest_miss import boolean, consider, minimum, reset
 from .snapshot_common import (
     Observation,
     make_signal,
@@ -84,7 +85,7 @@ class TD1Strategy(EventStrategy):
         snapshot: MarketSnapshot,
     ) -> list[SignalEvent]:
 
-        out = []
+        out = []; reset(self)
 
         # Update every history first so stock and SPY returns use one timestamp.
         for symbol, quote in snapshot.quotes.items():
@@ -158,6 +159,8 @@ class TD1Strategy(EventStrategy):
                 prices[-1],
             )
             excess = ret30 - spy_return_30m_pct
+
+            consider(self,symbol,snapshot.timestamp,float(quote.price),[minimum("return_30m_pct",ret30,TD1_MIN_RETURN_30M_PCT,"%"),minimum("excess_vs_spy_pct",excess,TD1_MIN_EXCESS_VS_SPY_PCT,"%"),boolean("positive_return_5m",ret5>0)])
 
             if (
                 ret30 >= TD1_MIN_RETURN_30M_PCT

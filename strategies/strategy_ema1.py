@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 from engine.events import MarketSnapshot, SignalEvent
 from strategies.event_base import EventStrategy
+from .nearest_miss import boolean, consider, minimum, reset
 
 from .snapshot_common import make_signal
 
@@ -38,7 +39,7 @@ class EMA1Strategy(EventStrategy):
         self,
         snapshot: MarketSnapshot,
     ) -> list[SignalEvent]:
-        signals = []
+        signals = []; reset(self)
         volume_provider = snapshot.metadata.get(
             "confirm_recent_volume_ratio"
         )
@@ -78,6 +79,8 @@ class EMA1Strategy(EventStrategy):
                 and state.fast > state.slow
             )
 
+            consider(self, symbol, snapshot.timestamp, price, [boolean("bullish_ema_crossover", crossed), boolean("volume_provider_available", callable(volume_provider))])
+
             if not crossed or not callable(volume_provider):
                 continue
 
@@ -85,6 +88,8 @@ class EMA1Strategy(EventStrategy):
                 volume_ratio = volume_provider(symbol)
             except Exception:
                 volume_ratio = None
+
+            consider(self, symbol, snapshot.timestamp, price, [minimum("volume_ratio", volume_ratio, EMA1_MIN_VOLUME_RATIO)])
 
             if (
                 volume_ratio is None

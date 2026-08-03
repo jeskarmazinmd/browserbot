@@ -10,6 +10,7 @@ import math
 from engine.events import MarketSnapshot, SignalEvent
 from strategies.event_base import EventStrategy
 from .snapshot_common import Observation, make_signal, prices_since, trim_before
+from .nearest_miss import consider, minimum, reset
 
 
 STRATEGY_ID = "RS3"
@@ -106,6 +107,7 @@ class RS3Strategy(EventStrategy):
     ) -> list[SignalEvent]:
 
         out = []
+        reset(self)
 
         # update all symbol histories first
         for symbol, quote in snapshot.quotes.items():
@@ -155,6 +157,8 @@ class RS3Strategy(EventStrategy):
             _, r2_30 = _fit_log_slope_r2(prices)
 
             excess = ret30 - spy_return
+
+            consider(self, symbol, snapshot.timestamp, float(quote.price), [minimum("return_30m_pct", ret30, RS3_MIN_RETURN_30M_PCT, "%"), minimum("excess_vs_spy_pct", excess, RS3_MIN_EXCESS_VS_SPY_PCT, "%"), minimum("r2_30m", r2_30, RS3_MIN_R2)])
 
             if (
                 ret30 >= RS3_MIN_RETURN_30M_PCT

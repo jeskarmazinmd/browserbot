@@ -10,6 +10,7 @@ from detectors.pullback import detect_pullback
 from detectors.trend import detect_trend
 from engine.events import MarketSnapshot, SignalEvent
 from strategies.event_base import EventStrategy
+from .nearest_miss import between, boolean, consider, minimum, reset
 from .snapshot_common import (
     Observation,
     make_signal,
@@ -78,7 +79,7 @@ class GP1Strategy(EventStrategy):
         snapshot: MarketSnapshot,
     ) -> list[SignalEvent]:
 
-        out = []
+        out = []; reset(self)
 
         for symbol, quote in snapshot.quotes.items():
             state = self._state[symbol]
@@ -114,11 +115,15 @@ class GP1Strategy(EventStrategy):
                 trend_window=TREND_WINDOW,
             )
 
+            consider(self, symbol, snapshot.timestamp, float(quote.price), [boolean("trend_detected", trend.get("detected")), boolean("pullback_detected", pullback.get("detected"))])
+
             if (
                 not trend.get("detected")
                 or not pullback.get("detected")
             ):
                 continue
+
+            consider(self, symbol, snapshot.timestamp, float(quote.price), [minimum("trend_return_pct", trend["return_pct"], MIN_TREND_RETURN_PCT, "%"), minimum("trend_r2", trend["r2"], MIN_TREND_R2), between("pullback_depth_pct", pullback["pullback_depth_pct"], MIN_PULLBACK_DEPTH_PCT, MAX_PULLBACK_DEPTH_PCT, "%"), minimum("recovery_from_low_pct", pullback["recovery_from_low_pct"], MIN_RECOVERY_FROM_LOW_PCT, "%")])
 
             if (
                 trend["return_pct"] < MIN_TREND_RETURN_PCT

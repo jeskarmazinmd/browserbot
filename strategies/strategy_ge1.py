@@ -9,6 +9,7 @@ from datetime import timedelta
 from detectors.exhaustion import detect_selling_exhaustion
 from engine.events import MarketSnapshot, SignalEvent
 from strategies.event_base import EventStrategy
+from .nearest_miss import consider, minimum, reset
 from .snapshot_common import (
     Observation,
     make_signal,
@@ -75,7 +76,7 @@ class GE1Strategy(EventStrategy):
         snapshot: MarketSnapshot,
     ) -> list[SignalEvent]:
 
-        out = []
+        out = []; reset(self)
 
         for symbol, quote in snapshot.quotes.items():
             state = self._state[symbol]
@@ -109,6 +110,8 @@ class GE1Strategy(EventStrategy):
 
             if not detection.get("detected"):
                 continue
+
+            consider(self, symbol, snapshot.timestamp, float(quote.price), [minimum("decline_to_low_pct", detection["decline_to_low_pct"], MIN_DECLINE_TO_LOW_PCT, "%"), minimum("rebound_from_low_pct", detection["rebound_from_low_pct"], MIN_REBOUND_FROM_LOW_PCT, "%"), minimum("exhaustion_score", detection["score"], MIN_EXHAUSTION_SCORE)])
 
             if (
                 detection["decline_to_low_pct"]

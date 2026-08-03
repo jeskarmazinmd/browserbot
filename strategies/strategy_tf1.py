@@ -12,6 +12,7 @@ import math
 
 from engine.events import MarketSnapshot, SignalEvent
 from strategies.event_base import EventStrategy
+from .nearest_miss import between, boolean, consider, minimum, reset
 from .snapshot_common import Observation, make_signal, trim_before, prices_since
 
 
@@ -113,7 +114,7 @@ class TF1Strategy(EventStrategy):
         snapshot: MarketSnapshot,
     ) -> list[SignalEvent]:
 
-        out = []
+        out = []; reset(self)
 
         for symbol, quote in snapshot.quotes.items():
 
@@ -176,6 +177,8 @@ class TF1Strategy(EventStrategy):
                 prices_2m[0],
                 prices_2m[-1],
             )
+
+            consider(self,symbol,snapshot.timestamp,current_price,[minimum("return_30m_pct",return_30m_pct,MIN_RETURN_30M_PCT,"%"),boolean("positive_slope",slope_30m_pct_per_hour>0),minimum("r2_30m",r2_30m,MIN_R2),between("pullback_pct",pullback_pct,PULLBACK_MIN_PCT,PULLBACK_MAX_PCT,"%"),minimum("rebound_2m_pct",rebound_2m_pct,REBOUND_2M_PCT,"%")])
 
             qualifies = (
                 not math.isnan(return_30m_pct)

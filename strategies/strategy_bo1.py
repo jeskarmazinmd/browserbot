@@ -9,6 +9,7 @@ import math
 
 from engine.events import MarketSnapshot, SignalEvent
 from strategies.event_base import EventStrategy
+from .nearest_miss import consider, maximum, minimum, reset
 from .snapshot_common import Observation, make_signal, trim_before
 
 
@@ -40,7 +41,7 @@ class BO1Strategy(EventStrategy):
         snapshot: MarketSnapshot,
     ) -> list[SignalEvent]:
 
-        out = []
+        out = []; reset(self)
 
         for symbol, quote in snapshot.quotes.items():
             state = self._state[symbol]
@@ -95,6 +96,7 @@ class BO1Strategy(EventStrategy):
                 if prior_high > 0
                 else math.nan
             )
+            consider(self,symbol,snapshot.timestamp,current_price,[maximum("range_pct",range_pct,BO1_MAX_RANGE_PCT,"%"),minimum("breakout_pct",breakout_pct,BO1_BREAK_BUFFER_PCT,"%")])
 
             if (
                 range_pct <= BO1_MAX_RANGE_PCT

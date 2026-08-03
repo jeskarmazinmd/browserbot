@@ -9,6 +9,7 @@ import math
 
 from engine.events import MarketSnapshot, SignalEvent
 from strategies.event_base import EventStrategy
+from .nearest_miss import between, boolean, consider, minimum, reset
 from .snapshot_common import (
     Observation,
     make_signal,
@@ -81,7 +82,7 @@ class PD1Strategy(EventStrategy):
         snapshot: MarketSnapshot,
     ) -> list[SignalEvent]:
 
-        out = []
+        out = []; reset(self)
 
         for symbol, quote in snapshot.quotes.items():
             state = self._state[symbol]
@@ -142,6 +143,7 @@ class PD1Strategy(EventStrategy):
                 prices[-3],
                 prices[-1],
             )
+            consider(self,symbol,snapshot.timestamp,current_price,[minimum("worst_one_minute_drop_pct",worst_drop,PD1_MIN_ONE_MINUTE_DROP_PCT,"%"),between("low_age_minutes",low_age,2,8,"minutes"),minimum("rebound_from_low_pct",rebound_low,PD1_MIN_REBOUND_FROM_LOW_PCT,"%"),boolean("positive_rebound_2m",rebound2>0)])
 
             if (
                 worst_drop >= PD1_MIN_ONE_MINUTE_DROP_PCT

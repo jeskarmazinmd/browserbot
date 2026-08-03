@@ -9,6 +9,7 @@ import math
 
 from engine.events import MarketSnapshot, SignalEvent
 from strategies.event_base import EventStrategy
+from .nearest_miss import boolean, consider, maximum, minimum, reset
 from .snapshot_common import (
     Observation,
     make_signal,
@@ -131,7 +132,7 @@ class VT1Strategy(EventStrategy):
         snapshot: MarketSnapshot,
     ) -> list[SignalEvent]:
 
-        out = []
+        out = []; reset(self)
 
         for symbol, quote in snapshot.quotes.items():
             state = self._state[symbol]
@@ -181,6 +182,8 @@ class VT1Strategy(EventStrategy):
                 prices[-3],
                 prices[-1],
             )
+
+            consider(self,symbol,snapshot.timestamp,current_price,[boolean("positive_trend_slope",slope>0),minimum("r2_45m",r2_45,VT1_MIN_R2_45M),maximum("distance_to_trendline_pct",trend_dist,VT1_MAX_CONFLUENCE_DISTANCE_PCT,"%"),maximum("distance_to_mean_pct",mean_dist,VT1_MAX_CONFLUENCE_DISTANCE_PCT,"%"),minimum("rebound_2m_pct",rebound2,VT1_MIN_REBOUND_2M_PCT,"%")])
 
             if (
                 slope > 0

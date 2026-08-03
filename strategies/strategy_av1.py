@@ -9,6 +9,7 @@ import math
 
 from engine.events import MarketSnapshot, SignalEvent
 from strategies.event_base import EventStrategy
+from .nearest_miss import boolean, consider, minimum, reset
 from .snapshot_common import (
     Observation,
     make_signal,
@@ -120,7 +121,7 @@ class AV1Strategy(EventStrategy):
         snapshot: MarketSnapshot,
     ) -> list[SignalEvent]:
 
-        out = []
+        out = []; reset(self)
 
         for symbol, quote in snapshot.quotes.items():
             state = self._state[symbol]
@@ -191,6 +192,8 @@ class AV1Strategy(EventStrategy):
                 if not math.isnan(sigma)
                 else math.inf
             )
+
+            consider(self,symbol,snapshot.timestamp,float(quote.price),[boolean("positive_30m_slope",slope30>0),minimum("drawdown_pct",drawdown,required_drawdown,"%"),minimum("rebound_2m_pct",rebound2,required_rebound,"%")])
 
             if (
                 slope30 > 0

@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from datetime import timedelta
 from engine.events import MarketSnapshot, SignalEvent
 from strategies.event_base import EventStrategy
+from .nearest_miss import consider, minimum, reset
 from .snapshot_common import Observation, make_signal, prices_since, trim_before, update_time_ema
 
 STRATEGY_ID="EMA3"; PAPER_ONLY=True
@@ -22,7 +23,7 @@ class EMA3Strategy(EventStrategy):
     name=STRATEGY_ID
     def __init__(self): self._state=defaultdict(_State)
     def on_snapshot(self,snapshot:MarketSnapshot)->list[SignalEvent]:
-        out=[]
+        out=[]; reset(self)
         for symbol,q in snapshot.quotes.items():
             s=self._state[symbol]; prev=s.observations[-1] if s.observations else None
             cur=Observation(snapshot.timestamp,float(q.price),q.total_volume); s.observations.append(cur)
@@ -37,6 +38,7 @@ class EMA3Strategy(EventStrategy):
             prior=prices_since(s.observations,snapshot.timestamp-timedelta(minutes=EMA3_BREAKOUT_LOOKBACK_MINUTES))[:-1]
             if not prior: continue
             high=max(prior); breakout=(cur.price/high-1.0)*100.0 if high>0 else -999.0
+            consider(self,symbol,snapshot.timestamp,cur.price,[minimum("breakout_pct",breakout,EMA3_BREAK_BUFFER_PCT,"%")])
             if breakout>=EMA3_BREAK_BUFFER_PCT:
                 out.append(make_signal(snapshot,STRATEGY_ID,symbol,cur.price,0.90,0.60,"ema_alignment_breakout",
                     ema_9=s.e9,ema_21=s.e21,ema_50=s.e50,alignment_minutes=EMA3_ALIGNMENT_MINUTES,

@@ -9,6 +9,7 @@ from datetime import timedelta
 from detectors.rejection import detect_support_rejection
 from engine.events import MarketSnapshot, SignalEvent
 from strategies.event_base import EventStrategy
+from .nearest_miss import consider, minimum, reset
 from .snapshot_common import (
     Observation,
     make_signal,
@@ -75,7 +76,7 @@ class GR1Strategy(EventStrategy):
         snapshot: MarketSnapshot,
     ) -> list[SignalEvent]:
 
-        out = []
+        out = []; reset(self)
 
         for symbol, quote in snapshot.quotes.items():
             state = self._state[symbol]
@@ -110,6 +111,8 @@ class GR1Strategy(EventStrategy):
 
             if not detection.get("detected"):
                 continue
+
+            consider(self, symbol, snapshot.timestamp, float(quote.price), [minimum("confirmation_from_support_pct", detection["confirmation_from_support_pct"], MIN_CONFIRMATION_FROM_SUPPORT_PCT, "%"), minimum("separation_bounce_pct", detection["separation_bounce_pct"], MIN_SEPARATION_BOUNCE_PCT, "%")])
 
             if (
                 detection["confirmation_from_support_pct"]

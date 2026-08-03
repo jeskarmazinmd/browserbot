@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib
+from strategy_diagnostics import diagnostics
 
 from . import strategy_a
 from . import strategy_b
@@ -107,6 +108,17 @@ TICK_STRATEGY_IDS = frozenset()
 
 REPORTING_STRATEGY_MODULES = {}
 
+# These reporting-era definitions are now evaluated prospectively from their
+# live A/B/D parent signals by strategies.derived_runtime.  Keeping this set
+# explicit makes operational diagnostics distinguish active derived modules
+# from definitions that remain reporting-only.
+DERIVED_RUNTIME_STRATEGY_IDS = frozenset({
+    "C1", "C2", "C3", "C4", "E", "F", "G", "I",
+    "J1", "J2", "J3", "J4", "J5", "J6",
+    "K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8", "K9",
+    "L", "M", "N", "O", "P", "Q", "R", "S",
+})
+
 for _strategy_id in (
     "C1", "C2", "C3", "C4", "E", "F", "G", "I",
     "J1", "J2", "J3", "J4", "J5", "J6",
@@ -207,8 +219,22 @@ def _evaluate(snapshot, strategies):
 
             if result:
                 signals.extend(result)
+            diagnostics.evaluated(
+                strategy_id,
+                snapshot.timestamp,
+                len(snapshot.quotes),
+                signal_count=len(result or []),
+                nearest_miss=getattr(strategy, "nearest_miss", None),
+            )
 
         except Exception as exc:
+            diagnostics.evaluated(
+                strategy_id,
+                snapshot.timestamp,
+                len(snapshot.quotes),
+                error=f"{type(exc).__name__}: {exc}",
+                nearest_miss=getattr(strategy, "nearest_miss", None),
+            )
             errors.append(
                 (
                     strategy_id,

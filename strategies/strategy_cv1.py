@@ -9,6 +9,7 @@ import math
 
 from engine.events import MarketSnapshot, SignalEvent
 from strategies.event_base import EventStrategy
+from .nearest_miss import boolean, consider, minimum, reset
 from .snapshot_common import (
     Observation,
     make_signal,
@@ -121,7 +122,7 @@ class CV1Strategy(EventStrategy):
         snapshot: MarketSnapshot,
     ) -> list[SignalEvent]:
 
-        out = []
+        out = []; reset(self)
 
         for symbol, quote in snapshot.quotes.items():
             state = self._state[symbol]
@@ -164,8 +165,9 @@ class CV1Strategy(EventStrategy):
                 if low20 > 0
                 else math.nan
             )
-
             improvement = late_slope - early_slope
+
+            consider(self,symbol,snapshot.timestamp,current_price,[boolean("early_slope_negative",early_slope<0),minimum("slope_improvement_pct_per_hour",improvement,CV1_MIN_SLOPE_IMPROVEMENT_PCT_PER_HOUR,"%/hour"),minimum("rebound_from_low_pct",rebound_low,CV1_MIN_REBOUND_FROM_LOW_PCT,"%")])
 
             if (
                 early_slope < 0

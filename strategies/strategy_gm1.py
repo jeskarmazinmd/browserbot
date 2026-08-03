@@ -9,6 +9,7 @@ from datetime import timedelta
 from detectors.mean_reversion import detect_mean_reversion
 from engine.events import MarketSnapshot, SignalEvent
 from strategies.event_base import EventStrategy
+from .nearest_miss import consider, maximum, minimum, reset
 from .snapshot_common import (
     Observation,
     make_signal,
@@ -75,7 +76,7 @@ class GM1Strategy(EventStrategy):
         snapshot: MarketSnapshot,
     ) -> list[SignalEvent]:
 
-        out = []
+        out = []; reset(self)
 
         for symbol, quote in snapshot.quotes.items():
             state = self._state[symbol]
@@ -110,6 +111,8 @@ class GM1Strategy(EventStrategy):
 
             if not detection.get("detected"):
                 continue
+
+            consider(self, symbol, snapshot.timestamp, float(quote.price), [maximum("zscore", detection["zscore"], MAX_ZSCORE), minimum("rebound_from_recent_low_pct", detection["rebound_from_recent_low_pct"], MIN_REBOUND_FROM_RECENT_LOW_PCT, "%")])
 
             if (
                 detection["zscore"] > MAX_ZSCORE
