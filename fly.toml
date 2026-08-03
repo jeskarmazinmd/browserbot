@@ -8,7 +8,8 @@ primary_region = "lax"
 
 [[vm]]
   memory = "2gb"
-  cpus = 2
+  cpu_kind = "shared"
+  cpus = 8
 
 [mounts]
   source = "schwab_data"
