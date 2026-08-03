@@ -12,7 +12,6 @@ from trendline_scanner_v25_live_schwab import (
     get_schwab_client,
     fetch_schwab_quotes,
     is_us_regular_market_open,
-    touch_both_schwab_tokens,
 )
 
 DATA_DIR = Path("/data/tapes")
@@ -27,7 +26,6 @@ MAINTENANCE_SECONDS = 60
 
 LOCAL_DATA_DIR = Path("data/tapes")
 POLL_SECONDS = 1
-TOKEN_TOUCH_SECONDS = 600
 UNIVERSE_STATUS_PATH = Path("/data/research_universe_status.json")
 UNIVERSE_REFRESH_SCRIPT = Path("/app/refresh_eligible_symbols.py")
 
@@ -284,11 +282,6 @@ def main():
     client = get_schwab_client()
     print("Connected to Schwab", flush=True)
 
-    # Immediately touch both Schwab tokens on collector startup,
-    # then repeat every TOKEN_TOUCH_SECONDS.
-    touch_both_schwab_tokens()
-    last_token_touch = time.time()
-
     path = tape_path()
     print(f"Writing tape to {path}", flush=True)
 
@@ -320,10 +313,6 @@ def main():
             trim_tape_file(old_path)
             prune_old_tapes(active_path=path)
             last_maintenance = time.time()
-
-        if time.time() - last_token_touch > TOKEN_TOUCH_SECONDS:
-            touch_both_schwab_tokens()
-            last_token_touch = time.time()
 
         # Run expensive tape maintenance periodically, not after every write.
         if time.time() - last_maintenance > MAINTENANCE_SECONDS:

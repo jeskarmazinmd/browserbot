@@ -6,6 +6,11 @@ primary_region = "lax"
 [processes]
   app = "python -u supervisor.py"
 
+[env]
+  # A 2 GB Fly volume exposes roughly 1.9 GB as usable filesystem capacity.
+  # supervisor.py refuses startup on a silently replaced undersized volume.
+  MIN_DATA_VOLUME_USABLE_MB = "1800"
+
 [[vm]]
   memory = "2gb"
   cpu_kind = "shared"

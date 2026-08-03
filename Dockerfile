@@ -22,6 +22,7 @@ COPY paper_outcome_tracker.py .
 COPY strategy_diagnostics.py .
 COPY strategy_diagnostics_report.py .
 COPY quote_source.py .
+COPY schwab_token_guard.py .
 COPY supervisor.py .
 COPY refresh_eligible_symbols.py .
 COPY universe_tags.py .

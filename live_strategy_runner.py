@@ -25,6 +25,15 @@ from strategies.registry import (
 from regime_logger import log_regime, latest_regime
 from paper_outcome_tracker import PaperOutcomeTracker
 from strategy_diagnostics import diagnostics
+from schwab_token_guard import (
+    ManualReauthRequired,
+    atomic_write_json,
+    clear_auth_failure,
+    is_terminal_refresh_error,
+    manual_reauth_required,
+    mark_manual_reauth_required,
+    token_file_lock,
+)
 
 RUN_MODE = os.environ.get("RUN_MODE", "LIVE")
 REPLAY_TAPE_PATH = os.environ.get("REPLAY_TAPE_PATH")
@@ -145,39 +154,53 @@ def explicit_refresh_schwab_token(token_path, app_key, app_secret):
     import requests
 
     path = Path(token_path)
-    data = json.loads(path.read_text())
-    tok = data.get("token", data)
-    refresh_token = tok.get("refresh_token")
-    if not refresh_token:
-        raise RuntimeError("missing refresh_token")
+    status_path = DATA_ROOT / "trading_auth_status.json"
+    with token_file_lock(path):
+        # Another owner may have refreshed while this process waited.
+        current_minutes = token_minutes_left(path)
+        if current_minutes >= 20:
+            return current_minutes
 
-    basic = base64.b64encode(f"{app_key}:{app_secret}".encode()).decode()
-    r = requests.post(
-        "https://api.schwabapi.com/v1/oauth/token",
-        headers={
-            "Authorization": f"Basic {basic}",
-            "Content-Type": "application/x-www-form-urlencoded",
-        },
-        data={
-            "grant_type": "refresh_token",
-            "refresh_token": refresh_token,
-        },
-        timeout=20,
-    )
-    if r.status_code != 200:
-        raise RuntimeError(f"refresh failed status={r.status_code} body={r.text[:500]}")
+        data = json.loads(path.read_text())
+        tok = data.get("token", data)
+        refresh_token = tok.get("refresh_token")
+        if not refresh_token:
+            error = RuntimeError("missing refresh_token")
+            mark_manual_reauth_required(path, status_path, error)
+            raise ManualReauthRequired(str(error))
 
-    new_tok = r.json()
-    now = time.time()
-    new_tok["expires_at"] = now + float(new_tok.get("expires_in", 1800))
+        basic = base64.b64encode(f"{app_key}:{app_secret}".encode()).decode()
+        r = requests.post(
+            "https://api.schwabapi.com/v1/oauth/token",
+            headers={
+                "Authorization": f"Basic {basic}",
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            data={
+                "grant_type": "refresh_token",
+                "refresh_token": refresh_token,
+            },
+            timeout=20,
+        )
+        if r.status_code != 200:
+            error = RuntimeError(
+                f"refresh failed status={r.status_code} body={r.text[:500]}"
+            )
+            if is_terminal_refresh_error(error):
+                mark_manual_reauth_required(path, status_path, error)
+                raise ManualReauthRequired(str(error))
+            raise error
 
-    # Preserve refresh token if Schwab does not return a new one.
-    if "refresh_token" not in new_tok:
-        new_tok["refresh_token"] = refresh_token
+        new_tok = r.json()
+        now = time.time()
+        new_tok["expires_at"] = now + float(new_tok.get("expires_in", 1800))
+        if "refresh_token" not in new_tok:
+            new_tok["refresh_token"] = refresh_token
 
-    data["token"] = new_tok
-    path.write_text(json.dumps(data, indent=2))
-    return token_minutes_left(path)
+        data["token"] = new_tok
+        atomic_write_json(path, data)
+        clear_auth_failure(status_path)
+        return token_minutes_left(path)
 
 VOLUME_METRIC_KEYS = (
     "volume_data_status_flash",
@@ -790,16 +813,18 @@ def make_trader():
     if not app_key or not app_secret:
         raise RuntimeError("SCHWAB_TRADING_APP_KEY/SCHWAB_TRADING_SECRET missing")
 
+    status_path = DATA_ROOT / "trading_auth_status.json"
     token_data = json.loads(token_path.read_text())
     token_obj = token_data.get("token", {})
     token = token_obj.get("access_token") if isinstance(token_obj, dict) else token_data.get("access_token")
 
-    # schwab-py refreshes token file if needed before/while calling API.
-    # If trading auth is bad, disable trading instead of crashing/restarting Fly.
     try:
-        client = client_from_token_file(str(token_path), app_key, app_secret)
-        r = client.get_account_numbers()
+        with token_file_lock(token_path):
+            client = client_from_token_file(str(token_path), app_key, app_secret)
+            r = client.get_account_numbers()
     except Exception as e:
+        if is_terminal_refresh_error(e):
+            mark_manual_reauth_required(token_path, status_path, e)
         print(f"TRADING_DISABLED Schwab account lookup failed: {type(e).__name__}: {e}", flush=True)
         t = SchwabTradeClient(token or "", "TRADING_DISABLED")
         t.enabled = False
@@ -824,9 +849,11 @@ def make_trader():
 
     account_id = body[0]["hashValue"]
 
-    token_data = json.loads(token_path.read_text())
-    token_data["account_hash"] = account_id
-    token_path.write_text(json.dumps(token_data, indent=2))
+    with token_file_lock(token_path):
+        token_data = json.loads(token_path.read_text())
+        token_data["account_hash"] = account_id
+        atomic_write_json(token_path, token_data)
+    clear_auth_failure(status_path)
 
     print(f"TOKEN_PRESENT={bool(token)} ACCOUNT_PRESENT={bool(account_id)} TOKEN_PATH={token_path}", flush=True)
     return SchwabTradeClient(
@@ -1641,7 +1668,26 @@ def main():
                 trade_token_path = "/data/schwab_trade_token.json"
                 trade_min_left = token_minutes_left(trade_token_path)
 
-                if trade_min_left < 20 and now_ts - last_trading_token_touch >= 60:
+                trade_auth_blocked = manual_reauth_required(
+                    trade_token_path,
+                    DATA_ROOT / "trading_auth_status.json",
+                )
+                trader_enabled = bool(getattr(trader, "enabled", True))
+                if (
+                    not trader_enabled
+                    and not trade_auth_blocked
+                    and now_ts - last_trading_token_touch >= 60
+                ):
+                    last_trading_token_touch = now_ts
+                    recovered = make_trader()
+                    if bool(getattr(recovered, "enabled", True)):
+                        trader = recovered
+                        print("TRADING_AUTH_RECOVERED account lookup succeeded", flush=True)
+                elif (
+                    trade_min_left < 20
+                    and not trade_auth_blocked
+                    and now_ts - last_trading_token_touch >= 60
+                ):
                     last_trading_token_touch = now_ts
                     try:
                         after_min_left = explicit_refresh_schwab_token(

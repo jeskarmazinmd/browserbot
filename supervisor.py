@@ -10,6 +10,7 @@ from pathlib import Path
 import json
 import os
 import signal
+import shutil
 import subprocess
 import sys
 import time
@@ -33,6 +34,10 @@ WORKERS = {
 }
 EXIT_LOG = Path("/data/worker_supervisor.jsonl")
 ELIGIBILITY_REFRESH = [sys.executable, "-u", "refresh_eligible_symbols.py"]
+DATA_VOLUME_PATH = Path("/data")
+MIN_DATA_VOLUME_USABLE_MB = int(
+    os.environ.get("MIN_DATA_VOLUME_USABLE_MB", "1800")
+)
 
 
 def record(event, **details):
@@ -63,7 +68,29 @@ def terminate_all(processes):
             proc.kill()
 
 
+def data_volume_total_mb(path=DATA_VOLUME_PATH):
+    return shutil.disk_usage(path).total / (1024 * 1024)
+
+
 def main():
+    try:
+        volume_total_mb = data_volume_total_mb()
+    except OSError as exc:
+        record("data_volume_check_failed", error=f"{type(exc).__name__}: {exc}")
+        return 1
+    if volume_total_mb < MIN_DATA_VOLUME_USABLE_MB:
+        record(
+            "data_volume_too_small",
+            total_mb=round(volume_total_mb, 1),
+            minimum_mb=MIN_DATA_VOLUME_USABLE_MB,
+        )
+        return 1
+    record(
+        "data_volume_check_ok",
+        total_mb=round(volume_total_mb, 1),
+        minimum_mb=MIN_DATA_VOLUME_USABLE_MB,
+    )
+
     today = datetime.now(timezone.utc).strftime("%Y%m%d")
     eligibility_cache = Path(f"/data/eligible_symbols_{today}.csv")
 
