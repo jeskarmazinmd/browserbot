@@ -86,6 +86,14 @@ STRATEGY_CLASSES = [
     ("strategy_gr1", "GR1Strategy"),
     ("strategy_gt1", "GT1Strategy"),
     ("strategy_or1", "OR1Strategy"),
+    ("strategy_spy_or5", "SPYOR5Strategy"),
+    ("strategy_spy_or15", "SPYOR15Strategy"),
+    ("strategy_spy_or30", "SPYOR30Strategy"),
+    ("strategy_spy_mom1", "SPYMOM1Strategy"),
+    ("strategy_spy_mr1", "SPYMR1Strategy"),
+    ("strategy_spy_br1", "SPYBR1Strategy"),
+    ("strategy_spy_xa1", "SPYXA1Strategy"),
+    ("strategy_spy_ens1", "SPYENS1Strategy"),
 ]
 
 

@@ -92,16 +92,16 @@ class MinuteCadencePipelineTests(unittest.TestCase):
         tick_ids = strategy_ids(TICK_STRATEGIES)
         minute_ids = strategy_ids(MINUTE_STRATEGIES)
 
-        self.assertEqual(30, len(all_ids))
+        self.assertEqual(38, len(all_ids))
         self.assertEqual(4, len(flash_ids))
         self.assertEqual(0, len(tick_ids))
-        self.assertEqual(30, len(minute_ids))
+        self.assertEqual(38, len(minute_ids))
         self.assertEqual(
             set(all_ids),
             set(tick_ids) | set(minute_ids),
         )
         self.assertEqual(
-            34,
+            42,
             len(set(flash_ids) | set(all_ids)),
         )
         self.assertFalse(set(flash_ids) & set(tick_ids))

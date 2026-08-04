@@ -1,5 +1,6 @@
 from __future__ import annotations
 import json, math, os, sys, tempfile, unittest
+from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -82,15 +83,15 @@ EXPLICIT={
 }
 
 class AcceptanceTests(unittest.TestCase):
-    def test_01_manifest_has_exactly_65_unique_modules(self):
-        self.assertEqual(65, len(STRATEGY_MANIFEST))
-        self.assertEqual(65, len(set(STRATEGY_MANIFEST)))
+    def test_01_manifest_has_exactly_73_unique_modules(self):
+        self.assertEqual(73, len(STRATEGY_MANIFEST))
+        self.assertEqual(73, len(set(STRATEGY_MANIFEST)))
 
     def test_02_expected_architecture_split(self):
         self.assertEqual(4, len(FLASH_STRATEGY_MODULES))
-        self.assertEqual(30, len(ENABLED_STRATEGIES))
+        self.assertEqual(38, len(ENABLED_STRATEGIES))
         self.assertEqual(31, len(REPORTING_STRATEGY_MODULES))
-        self.assertEqual(65, 4 + 30 + 31)
+        self.assertEqual(73, 4 + 38 + 31)
 
     def test_03_all_derived_variants_have_metadata_and_config(self):
         for sid,module in REPORTING_STRATEGY_MODULES.items():
@@ -191,6 +192,16 @@ class AcceptanceTests(unittest.TestCase):
                 "GP1",
                 "GR1",
                 "GT1",
+                # Covered by tests/test_spy_family.py because these strategies
+                # require SPY-specific multi-symbol session fixtures.
+                "SPY_OR5",
+                "SPY_OR15",
+                "SPY_OR30",
+                "SPY_MOM1",
+                "SPY_MR1",
+                "SPY_BR1",
+                "SPY_XA1",
+                "SPY_ENS1",
             },
             uncovered,
         )
@@ -243,7 +254,11 @@ class AcceptanceTests(unittest.TestCase):
             on_snapshot=fail,
         )
 
-        signals, errors = _evaluate(object(), [bad, good])
+        snapshot = SimpleNamespace(
+            timestamp=datetime.now(timezone.utc),
+            quotes={},
+        )
+        signals, errors = _evaluate(snapshot, [bad, good])
 
         self.assertEqual(["good"], signals)
         self.assertEqual("BAD", errors[0][0])
