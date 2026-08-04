@@ -22,6 +22,7 @@ from strategies.registry import (
     refresh_flash_entry,
     validate_flash_entry,
 )
+from strategies.capacity_filters import apply_capacity_filters
 from regime_logger import log_regime, latest_regime
 from paper_outcome_tracker import PaperOutcomeTracker
 from strategy_diagnostics import diagnostics
@@ -896,7 +897,12 @@ def minute_prices(g):
     # Convert each raw quote to New York time and keep only today's
     # regular session: 09:30:00 <= ET < 16:00:00.
     ny = ZoneInfo("America/New_York")
-    now_et = datetime.now(timezone.utc).astimezone(ny)
+    session_clock = (
+        pd.Timestamp(quote_source.now())
+        if RUN_MODE == "REPLAY"
+        else pd.Timestamp.now(tz="UTC")
+    )
+    now_et = session_clock.to_pydatetime().astimezone(ny)
     et = data["timestamp"].dt.tz_convert(ny)
 
     same_session_date = et.dt.date == now_et.date()
@@ -938,7 +944,11 @@ def measure_latest_flash(sym, g, prices=None):
     # This prevents the final window from being re-scored after the close or
     # from using stale data if collection has stopped.
     latest_minute = window.index[-1]
-    now_utc = pd.Timestamp.now(tz="UTC")
+    now_utc = (
+        pd.Timestamp(quote_source.now())
+        if RUN_MODE == "REPLAY"
+        else pd.Timestamp.now(tz="UTC")
+    )
     if latest_minute.tzinfo is None:
         latest_minute = latest_minute.tz_localize("UTC")
     else:
@@ -1885,8 +1895,12 @@ def main():
                 if warming_minute_pipeline:
                     continue
 
-                for signal in minute_signals:
-                    independent = snapshot_signal_payload(signal)
+                minute_payloads = apply_capacity_filters([
+                    snapshot_signal_payload(signal)
+                    for signal in minute_signals
+                ])
+
+                for independent in minute_payloads:
                     strategy_id = independent["strategy_id"]
                     symbol = independent["symbol"]
                     entry_price = float(
@@ -2055,7 +2069,12 @@ def main():
                                 latest = latest.tz_localize("UTC")
                             else:
                                 latest = latest.tz_convert("UTC")
-                            age = (pd.Timestamp.now(tz="UTC") - latest).total_seconds()
+                            freshness_clock = (
+                                pd.Timestamp(quote_source.now())
+                                if RUN_MODE == "REPLAY"
+                                else pd.Timestamp.now(tz="UTC")
+                            )
+                            age = (freshness_clock - latest).total_seconds()
                             if age > MAX_QUOTE_AGE_SECONDS:
                                 scan_stats["stale_windows"] += 1
                             else:
@@ -2429,28 +2448,60 @@ def main():
                         flush=True
                     )
 
-                if near_events:
-                    top_drop = max(near_events, key=lambda e: e.get("flash_drop_pct", 0))
-                    top_pre_ret = max(near_events, key=lambda e: e.get("pre_return_pct", 0))
-                    top_pre_slope = max(near_events, key=lambda e: e.get("pre_slope_pct_per_hour", 0))
-                    best_composite = min(near_events, key=lambda e: e.get("miss_score", 999))
+                # Raw measurements are retained in near_events. Dashboard output
+                # must use the strategy-specific scored candidates.
+                dashboard_nearest = list(flash_nearest.values())
+
+                if dashboard_nearest:
+                    top_drop = max(
+                        dashboard_nearest,
+                        key=lambda e: e.get("flash_drop_pct", 0),
+                    )
+                    top_pre_ret = max(
+                        dashboard_nearest,
+                        key=lambda e: e.get("pre_return_pct", 0),
+                    )
+                    top_pre_slope = max(
+                        dashboard_nearest,
+                        key=lambda e: e.get(
+                            "pre_slope_pct_per_hour",
+                            0,
+                        ),
+                    )
+                    best_composite = min(
+                        dashboard_nearest,
+                        key=lambda e: e.get("miss_score", 999),
+                    )
 
                     log_diag("TOP_DROP", top_drop)
                     log_diag("TOP_PRE_RET", top_pre_ret)
                     log_diag("TOP_PRE_SLOPE", top_pre_slope)
-                    log_diag("BEST_COMPOSITE", best_composite, include_score=True)
+                    log_diag(
+                        "BEST_COMPOSITE",
+                        best_composite,
+                        include_score=True,
+                    )
                 else:
                     print("NO_DIAGNOSTIC_CANDIDATES", flush=True)
 
-                # Rank all near misses globally across the full symbol universe.
-                # Lower miss_score means closer to satisfying all trigger conditions.
-                near_events.sort(
+                # Rank scored near misses globally across the full universe.
+                dashboard_nearest.sort(
                     key=lambda e: float(e.get("miss_score", 999))
                 )
 
                 # Threshold candidates were already logged above, independently of
                 # whether this scan also produced full signals.
-                write_bot_output(status="no_trigger", triggers=[], nearest=[e for e in near_events if 0.0 < float(e.get("miss_score", 999)) <= NEAR_MISS_SCORE_CUTOFF][:25])
+                write_bot_output(
+                    status="no_trigger",
+                    triggers=[],
+                    nearest=[
+                        e
+                        for e in dashboard_nearest
+                        if 0.0
+                        < float(e.get("miss_score", 999))
+                        <= NEAR_MISS_SCORE_CUTOFF
+                    ][:25],
+                )
 
             for strategy_id, parent_id in derived_parents.items():
                 diagnostics.parent_state(
