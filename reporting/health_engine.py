@@ -15,6 +15,7 @@ import os
 from pathlib import Path
 import shutil
 import time
+from zoneinfo import ZoneInfo
 
 
 RUN_MODE = os.environ.get("RUN_MODE", "LIVE")
@@ -32,6 +33,8 @@ OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
 SUMMARY_TXT = OUTPUT_ROOT / "bot_output.txt"
 PERFORMANCE_TXT = OUTPUT_ROOT / "strategy_performance_table.txt"
 HEARTBEAT_JSON = OUTPUT_ROOT / "reporting_health.json"
+RESOURCE_PEAKS_JSON = OUTPUT_ROOT / "resource_daily_peaks.json"
+MAINTENANCE_STATUS_JSON = OUTPUT_ROOT / "data_maintenance_status.json"
 ERRORS_JSONL = OUTPUT_ROOT / "reporting_errors.jsonl"
 EVENTS_JSONL = OUTPUT_ROOT / "bot_events.jsonl"
 HISTORY_JSONL = OUTPUT_ROOT / "bot_history.jsonl"
@@ -85,6 +88,33 @@ def atomic_write_text(path: Path, text: str) -> None:
 
 def atomic_write_json(path: Path, payload: dict) -> None:
     atomic_write_text(path, json.dumps(payload, indent=2, sort_keys=True) + "\n")
+
+
+def update_resource_peaks(snapshot: dict) -> dict:
+    """Persist bounded daily high-water marks from the reporter samples."""
+    day = utc_now().astimezone(ZoneInfo("America/New_York")).date().isoformat()
+    try:
+        payload = json.loads(RESOURCE_PEAKS_JSON.read_text())
+    except (OSError, ValueError, TypeError):
+        payload = {"days": {}}
+    days = payload.setdefault("days", {})
+    current = days.setdefault(day, {})
+    measures = {
+        "cpu_pressure_pct": snapshot["cpu"].get("pressure_estimate_pct"),
+        "load_1m": snapshot["cpu"].get("load_1m"),
+        "memory_used_pct": snapshot["memory"].get("used_pct"),
+        "storage_used_pct": snapshot["storage"].get("used_pct"),
+        "storage_used_bytes": snapshot["storage"].get("used_bytes"),
+    }
+    for key, value in measures.items():
+        if value is not None:
+            current[key] = max(float(value), float(current.get(key, value)))
+    current["last_sample_at"] = snapshot["timestamp"]
+    # Seven tiny daily records are enough for operational trend context.
+    payload["days"] = {key: days[key] for key in sorted(days)[-7:]}
+    payload["updated_at"] = snapshot["timestamp"]
+    atomic_write_json(RESOURCE_PEAKS_JSON, payload)
+    return current
 
 
 def record_error(stage: str, exc: BaseException) -> None:
@@ -185,7 +215,7 @@ def storage_status() -> dict:
         usage = shutil.disk_usage(target)
         pct = usage.used / usage.total * 100.0 if usage.total else 0.0
         return {
-            "status": "OK" if pct < 80 else ("HIGH" if pct < 90 else "CRITICAL"),
+            "status": "OK" if pct < 75 else ("HIGH" if pct < 85 else "CRITICAL"),
             "path": str(target),
             "total_bytes": usage.total,
             "used_bytes": usage.used,
@@ -385,6 +415,7 @@ def render_summary(snapshot: dict) -> str:
     cpu = snapshot["cpu"]
     memory = snapshot["memory"]
     storage = snapshot["storage"]
+    peaks = snapshot.get("resource_peaks", {})
     lines.extend([
         "",
         "RESOURCES",
@@ -397,6 +428,11 @@ def render_summary(snapshot: dict) -> str:
         f"storage: {storage.get('status')} | used={fmt_bytes(storage.get('used_bytes', 0))} / "
         f"{fmt_bytes(storage.get('total_bytes', 0))} ({storage.get('used_pct')}%) | "
         f"available={fmt_bytes(storage.get('available_bytes', 0))}",
+        "daily_peaks: "
+        f"cpu_pressure={peaks.get('cpu_pressure_pct')}% | "
+        f"load_1m={peaks.get('load_1m')} | "
+        f"memory={peaks.get('memory_used_pct')}% | "
+        f"storage={peaks.get('storage_used_pct')}%",
         "",
         "PERFORMANCE REPORTING",
         "status: DISABLED_DURING_REBUILD",
@@ -425,6 +461,7 @@ def render_performance_placeholder(snapshot: dict) -> str:
 
 def run_cycle() -> dict:
     snapshot = build_snapshot()
+    snapshot["resource_peaks"] = update_resource_peaks(snapshot)
     atomic_write_json(HEARTBEAT_JSON, snapshot)
     atomic_write_text(SUMMARY_TXT, render_summary(snapshot))
     atomic_write_text(PERFORMANCE_TXT, render_performance_placeholder(snapshot))

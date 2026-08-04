@@ -34,6 +34,7 @@ WORKERS = {
 }
 EXIT_LOG = Path("/data/worker_supervisor.jsonl")
 ELIGIBILITY_REFRESH = [sys.executable, "-u", "refresh_eligible_symbols.py"]
+DATA_MAINTENANCE = [sys.executable, "-u", "data_maintenance.py"]
 DATA_VOLUME_PATH = Path("/data")
 MIN_DATA_VOLUME_USABLE_MB = int(
     os.environ.get("MIN_DATA_VOLUME_USABLE_MB", "1800")
@@ -90,6 +91,20 @@ def main():
         total_mb=round(volume_total_mb, 1),
         minimum_mb=MIN_DATA_VOLUME_USABLE_MB,
     )
+
+    # Workers are not running yet, making this the only safe point to rotate
+    # append-only files. The maintenance script skips unless EOD is complete
+    # and the paper tracker reports zero active setups.
+    maintenance = subprocess.run(
+        DATA_MAINTENANCE,
+        cwd="/app",
+        env=os.environ.copy(),
+        check=False,
+    )
+    if maintenance.returncode != 0:
+        record("data_maintenance_failed", returncode=maintenance.returncode)
+        return 1
+    record("data_maintenance_checked")
 
     today = datetime.now(timezone.utc).strftime("%Y%m%d")
     eligibility_cache = Path(f"/data/eligible_symbols_{today}.csv")
