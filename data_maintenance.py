@@ -17,6 +17,8 @@ from pathlib import Path
 import shutil
 from zoneinfo import ZoneInfo
 
+from bounded_jsonl import compress_pending
+
 
 NY = ZoneInfo("America/New_York")
 MIN_ROTATE_BYTES = int(os.environ.get("DATA_ROTATE_MIN_BYTES", str(8 * 1024 * 1024)))
@@ -47,7 +49,9 @@ def _market_date(value) -> str:
 
 
 def _safe_json_lines(path: Path):
-    with path.open(errors="replace") as handle:
+    opener = gzip.open if path.suffix == ".gz" else Path.open
+    kwargs = {"mode": "rt", "errors": "replace"} if path.suffix == ".gz" else {"errors": "replace"}
+    with opener(path, **kwargs) as handle:
         for line in handle:
             try:
                 row = json.loads(line)
@@ -94,26 +98,29 @@ def _gzip_verified(path: Path, destination: Path) -> dict:
     }
 
 
-def _summarize_events(path: Path) -> dict:
+def _summarize_events(path: Path, additional_paths=()) -> dict:
     by_date = defaultdict(Counter)
     by_strategy = defaultdict(Counter)
     rows = 0
     invalid = 0
-    with path.open(errors="replace") as handle:
-        for line in handle:
-            try:
-                row = json.loads(line)
-                if not isinstance(row, dict):
-                    raise ValueError("not an object")
-            except (TypeError, ValueError):
-                invalid += 1
-                continue
-            rows += 1
-            day = _market_date(row.get("timestamp"))
-            event = str(row.get("event_type") or "UNKNOWN")
-            strategy = str(row.get("strategy_id") or "UNASSIGNED")
-            by_date[day][event] += 1
-            by_strategy[day][f"{strategy}|{event}"] += 1
+    for source in (path, *additional_paths):
+        opener = gzip.open if source.suffix == ".gz" else Path.open
+        kwargs = {"mode": "rt", "errors": "replace"} if source.suffix == ".gz" else {"errors": "replace"}
+        with opener(source, **kwargs) as handle:
+            for line in handle:
+                try:
+                    row = json.loads(line)
+                    if not isinstance(row, dict):
+                        raise ValueError("not an object")
+                except (TypeError, ValueError):
+                    invalid += 1
+                    continue
+                rows += 1
+                day = _market_date(row.get("timestamp"))
+                event = str(row.get("event_type") or "UNKNOWN")
+                strategy = str(row.get("strategy_id") or "UNASSIGNED")
+                by_date[day][event] += 1
+                by_strategy[day][f"{strategy}|{event}"] += 1
     return {
         "rows": rows,
         "invalid_rows": invalid,
@@ -124,18 +131,24 @@ def _summarize_events(path: Path) -> dict:
     }
 
 
-def _summarize_history(path: Path) -> dict:
+def _summarize_history(path: Path, additional_paths=()) -> dict:
     by_date = Counter()
     statuses = Counter()
     rows = 0
     invalid = 0
-    for row in _safe_json_lines(path):
-        rows += 1
-        by_date[_market_date(row.get("timestamp"))] += 1
-        statuses[str(row.get("status") or "UNKNOWN")] += 1
+    for source in (path, *additional_paths):
+        for row in _safe_json_lines(source):
+            rows += 1
+            by_date[_market_date(row.get("timestamp"))] += 1
+            statuses[str(row.get("status") or "UNKNOWN")] += 1
     # Count malformed lines separately without retaining their contents.
-    with path.open(errors="replace") as handle:
-        invalid = sum(1 for line in handle if line.strip()) - rows
+    total_lines = 0
+    for source in (path, *additional_paths):
+        opener = gzip.open if source.suffix == ".gz" else Path.open
+        kwargs = {"mode": "rt", "errors": "replace"} if source.suffix == ".gz" else {"errors": "replace"}
+        with opener(source, **kwargs) as handle:
+            total_lines += sum(1 for line in handle if line.strip())
+    invalid = total_lines - rows
     return {
         "rows": rows,
         "invalid_rows": max(0, invalid),
@@ -232,6 +245,22 @@ def _prune_archives(archive_root: Path) -> list[str]:
     return removed
 
 
+def _prune_intraday(archive_root: Path) -> list[str]:
+    root = archive_root / "intraday"
+    if not root.exists():
+        return []
+    directories = sorted(
+        (item for item in root.iterdir() if item.is_dir()),
+        key=lambda item: item.name,
+        reverse=True,
+    )
+    removed = []
+    for directory in directories[ARCHIVE_RETENTION_DAYS:]:
+        removed.append(str(directory))
+        shutil.rmtree(directory)
+    return removed
+
+
 def run(data_root="/data", now=None) -> dict:
     root = Path(data_root)
     now = now or datetime.now(timezone.utc)
@@ -242,6 +271,9 @@ def run(data_root="/data", now=None) -> dict:
         "status": "SKIPPED",
         "actions": {},
     }
+    # Workers are stopped when the supervisor calls us, so recover any segment
+    # whose compressor was interrupted even when it is not yet EOD.
+    report["recovered_intraday_segments"] = compress_pending(root / "archive" / "intraday")
     if (now_et.hour, now_et.minute) < (EOD_HOUR, EOD_MINUTE):
         report["reason"] = "before EOD cutoff"
         return report
@@ -279,17 +311,20 @@ def run(data_root="/data", now=None) -> dict:
         path = root / name
         if not path.exists() or path.stat().st_size < MIN_ROTATE_BYTES:
             continue
-        summary = summarizer(path)
+        segment_dir = archive / "intraday" / now_et.date().isoformat()
+        segments = sorted(segment_dir.glob(f"{path.stem}.*.jsonl.gz")) if segment_dir.exists() else []
+        summary = summarizer(path, segments)
         summary_path = archive / f"{name.removesuffix('.jsonl')}.{stamp}.summary.json"
         _atomic_json(summary_path, summary)
         destination = archive / f"{name.removesuffix('.jsonl')}.{stamp}.jsonl.gz"
         detail = _gzip_verified(path, destination)
         detail["summary"] = str(summary_path)
-        detail["rows"] = summary["rows"]
+        detail["daily_rows_including_intraday_segments"] = summary["rows"]
         report["actions"][name] = detail
         path.touch()
 
     report["removed_expired_archives"] = _prune_archives(archive)
+    report["removed_expired_intraday"] = _prune_intraday(archive)
     report["status"] = "COMPLETED"
     report["reason"] = "verified EOD maintenance complete"
     _atomic_json(marker, report)

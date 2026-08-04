@@ -78,6 +78,26 @@ class DataMaintenanceTests(unittest.TestCase):
         self.assertTrue(ledger.exists())
         self.assertGreater(ledger.stat().st_size, 0)
 
+    def test_eod_event_summary_includes_intraday_segments(self):
+        self.write_status(0)
+        event = {"timestamp": "2026-08-04T15:00:00+00:00", "event_type": "SIGNAL", "strategy_id": "A"}
+        segment = self.root / "archive" / "intraday" / "2026-08-04" / "bot_events.segment.jsonl.gz"
+        segment.parent.mkdir(parents=True)
+        with gzip.open(segment, "wt") as handle:
+            handle.write(json.dumps(event) + "\n")
+            handle.write(json.dumps(event) + "\n")
+        (self.root / "bot_events.jsonl").write_text(json.dumps(event) + "\n")
+        old_minimum = data_maintenance.MIN_ROTATE_BYTES
+        data_maintenance.MIN_ROTATE_BYTES = 1
+        try:
+            result = data_maintenance.run(self.root, self.after_eod)
+        finally:
+            data_maintenance.MIN_ROTATE_BYTES = old_minimum
+        summary_path = Path(result["actions"]["bot_events.jsonl"]["summary"])
+        summary = json.loads(summary_path.read_text())
+        self.assertEqual(summary["rows"], 3)
+        self.assertEqual(summary["event_counts_by_market_date"]["2026-08-04"]["SIGNAL"], 3)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -17,6 +17,7 @@ COPY reauth_trade.py .
 COPY trade_logger.py .
 COPY leaderboard_writer.py .
 COPY bot_output.py .
+COPY bounded_jsonl.py .
 COPY live_strategy_runner.py .
 COPY paper_outcome_tracker.py .
 COPY strategy_diagnostics.py .
