@@ -1993,6 +1993,9 @@ def main():
                     confirmed_event = refresh_event_for_entry(
                         pending["initial_signal"], px, strategy_id
                     )
+                    # The paper outcome tracker requires the confirmed entry time.
+                    # Initial flash events do not carry a normalized timestamp.
+                    confirmed_event["timestamp"] = now_utc.isoformat()
                     original_flash_start = float(confirmed_event["flash_start_price"])
                     full_recovery_distance = original_flash_start - running_low
                     recovery_fraction = (
