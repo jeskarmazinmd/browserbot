@@ -49,6 +49,39 @@ class PaperOutcomeTrackerTests(unittest.TestCase):
         self.assertEqual(stopped[0]["exit_reason"], "STOP")
         self.assertAlmostEqual(stopped[0]["pnl"], -50)
 
+    def test_c1_activates_then_exits_on_trailing_pullback(self):
+        c1 = signal("c1-trail")
+        c1.update({
+            "strategy_id": "C1F1",
+            "exit_model": "c1",
+            "activation_gain_pct": 0.3,
+            "pullback_from_high_pct": 0.2,
+            "stop_loss_fraction": 0.02,
+        })
+        self.assertTrue(self.tracker.register(c1))
+
+        # +0.31% activates the trailing state machine without exiting.
+        rows = self.tracker.update(
+            {"XYZ": 100.31},
+            datetime(2026, 8, 3, 14, 1, tzinfo=timezone.utc),
+        )
+        self.assertEqual(rows, [])
+
+        # Establish a new post-activation high.
+        rows = self.tracker.update(
+            {"XYZ": 101.00},
+            datetime(2026, 8, 3, 14, 2, tzinfo=timezone.utc),
+        )
+        self.assertEqual(rows, [])
+
+        # 100.79 is >0.20% below 101.00, so C1 must trail out.
+        rows = self.tracker.update(
+            {"XYZ": 100.79},
+            datetime(2026, 8, 3, 14, 3, tzinfo=timezone.utc),
+        )
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["exit_reason"], "TRAIL_PULLBACK")
+
     def test_eod_marks_to_observed_quote(self):
         self.tracker.register(signal())
         rows = self.tracker.update(

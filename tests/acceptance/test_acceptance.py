@@ -83,15 +83,15 @@ EXPLICIT={
 }
 
 class AcceptanceTests(unittest.TestCase):
-    def test_01_manifest_has_exactly_73_unique_modules(self):
-        self.assertEqual(73, len(STRATEGY_MANIFEST))
-        self.assertEqual(73, len(set(STRATEGY_MANIFEST)))
+    def test_01_manifest_has_exactly_74_unique_modules(self):
+        self.assertEqual(74, len(STRATEGY_MANIFEST))
+        self.assertEqual(74, len(set(STRATEGY_MANIFEST)))
 
     def test_02_expected_architecture_split(self):
-        self.assertEqual(4, len(FLASH_STRATEGY_MODULES))
+        self.assertEqual(5, len(FLASH_STRATEGY_MODULES))
         self.assertEqual(38, len(ENABLED_STRATEGIES))
         self.assertEqual(31, len(REPORTING_STRATEGY_MODULES))
-        self.assertEqual(73, 4 + 38 + 31)
+        self.assertEqual(74, 5 + 38 + 31)
 
     def test_03_all_derived_variants_have_metadata_and_config(self):
         for sid,module in REPORTING_STRATEGY_MODULES.items():
@@ -120,6 +120,18 @@ class AcceptanceTests(unittest.TestCase):
                 ok,reason=module.validate_confirmed_entry(bad,0.10)
                 self.assertFalse(ok)
                 self.assertIn(reason,{'target_reached_before_entry','insufficient_remaining_upside'})
+
+    def test_04b_c1f1_has_frozen_pre_r2_boundary(self):
+        module = FLASH_STRATEGY_MODULES["C1F1"]
+        base = {
+            "flash_drop_pct": 1.20,
+            "target_price": 101.0,
+            "pre_slope_pct_per_hour": 2.0,
+        }
+        below = dict(base, pre_r2=0.49)
+        boundary = dict(base, pre_r2=0.50)
+        self.assertFalse(module.accepts_flash(below, 12.0))
+        self.assertTrue(module.accepts_flash(boundary, 12.0))
 
     def test_05_fixture_backed_snapshot_scanners_generate_expected_signal(self):
         uncovered = set()

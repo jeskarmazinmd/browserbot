@@ -7,13 +7,16 @@ from strategy_diagnostics import diagnostics
 
 from . import strategy_a
 from . import strategy_b
+from . import strategy_c1f1
 from . import strategy_d
 from . import strategy_h
 
 
 FLASH_STRATEGY_MODULES = {
     module.STRATEGY_ID: module
-    for module in (strategy_a, strategy_b, strategy_d, strategy_h)
+    for module in (
+        strategy_a, strategy_b, strategy_c1f1, strategy_d, strategy_h
+    )
 }
 
 

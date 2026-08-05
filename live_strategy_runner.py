@@ -2165,6 +2165,7 @@ def main():
             events_b = [e for e in events if e.get("strategy_id") == STRATEGY_B]
             events_d = [e for e in events if e.get("strategy_id") == STRATEGY_D]
             events_h = [e for e in events if e.get("strategy_id") == STRATEGY_H]
+            events_c1f1 = [e for e in events if e.get("strategy_id") == "C1F1"]
 
             # Prospective threshold-defined near-miss populations. Log every first
             # qualifying symbol/day observation, regardless of whether other symbols
@@ -2234,6 +2235,7 @@ def main():
                 (STRATEGY_B, events_b),
                 (STRATEGY_D, events_d),
                 (STRATEGY_H, events_h),
+                ("C1F1", events_c1f1),
             ):
                 diagnostics.evaluated(
                     strategy_id,
