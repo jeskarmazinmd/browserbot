@@ -18,10 +18,17 @@ class SchwabTradeClient:
         self.account_id = account_id
         self.sdk_client = sdk_client
         self.base = "https://api.schwabapi.com"
-        self.enabled = True  # SAFE MODE FLAG
+        self.enabled = False  # Real order placement is explicitly armed.
 
 
     def _post_order(self, payload):
+        if not self.enabled:
+            return {
+                "ok": False,
+                "status": "SAFE_MODE_BLOCKED",
+                "payload": payload,
+            }
+
         url = f"{self.base}/trader/v1/accounts/{self.account_id}/orders"
         headers = {
             "Authorization": f"Bearer {self.token}",

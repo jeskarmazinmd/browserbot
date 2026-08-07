@@ -866,11 +866,13 @@ def make_trader():
     clear_auth_failure(status_path)
 
     print(f"TOKEN_PRESENT={bool(token)} ACCOUNT_PRESENT={bool(account_id)} TOKEN_PATH={token_path}", flush=True)
-    return SchwabTradeClient(
+    trader = SchwabTradeClient(
         token,
         account_id,
         sdk_client=client,
     )
+    trader.enabled = live_order_placement_enabled()
+    return trader
 
 def latest_prices(df):
     return df.groupby("symbol")["price"].last().to_dict()
