@@ -38,6 +38,15 @@ from schwab_token_guard import (
 
 RUN_MODE = os.environ.get("RUN_MODE", "LIVE")
 REPLAY_TAPE_PATH = os.environ.get("REPLAY_TAPE_PATH")
+
+
+def live_order_placement_enabled():
+    """Fail-closed master switch for real broker order submission."""
+    return os.environ.get(
+        "LIVE_ORDER_PLACEMENT_ENABLED",
+        "0",
+    ).strip() == "1"
+
 RUN_ID = os.environ.get("RUN_ID", "live")
 
 if RUN_MODE == "REPLAY":
@@ -2315,6 +2324,10 @@ def main():
 
                 for e in events_a:
                     sym = e["symbol"]
+
+                    # LIVE market data does not imply permission to trade.
+                    if RUN_MODE == "LIVE" and not live_order_placement_enabled():
+                        continue
 
                     if len(attempted) >= MAX_ORDER_ATTEMPTS_PER_BOOT:
                         print("MAX_ORDER_ATTEMPTS_PER_BOOT reached.", flush=True)
