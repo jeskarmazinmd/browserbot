@@ -12,7 +12,7 @@ primary_region = "lax"
   MIN_DATA_VOLUME_USABLE_MB = "1800"
 
 [[vm]]
-  memory = "2gb"
+  memory = "4gb"
   cpu_kind = "shared"
   cpus = 8
 
