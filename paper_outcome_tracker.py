@@ -16,6 +16,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from strategies import strategy_o
+
 
 NY = ZoneInfo("America/New_York")
 
@@ -206,6 +208,11 @@ class PaperOutcomeTracker:
             "strategy_id": strategy_id,
             "symbol": symbol,
             "signal_timestamp": timestamp.isoformat(),
+        "entry_timestamp": (
+            timestamp.isoformat()
+            if signal.get("entered", True) is not False
+            else None
+        ),
             "entry_price": entry,
             "target_price": target,
             "stop_price": stop,
@@ -374,25 +381,10 @@ class PaperOutcomeTracker:
         return None, None
 
     def _update_second_leg(self, record, price, now):
-        source_entry = float(record.get("source_entry_price", record["entry_price"]))
-        high = max(float(record.get("first_high", source_entry)), price)
-        record["first_high"] = high
-        pullback_low = record.get("pullback_low")
-        if pullback_low is None:
-            if high > source_entry and price <= high * (1.0 - float(record.get("pullback_from_first_high_pct", 0.1)) / 100.0):
-                record["pullback_low"] = price
-        else:
-            pullback_low = min(float(pullback_low), price)
-            record["pullback_low"] = pullback_low
-            if price >= pullback_low * (1.0 + float(record.get("rebound_from_pullback_low_pct", 0.1)) / 100.0):
-                record["entered"] = True
-                record["entry_price"] = price
-                record["target_price"] = max(float(record["original_target_price"]), price * 1.002)
-                record["stop_price"] = price * (1.0 - float(record.get("stop_loss_fraction", 0.02)))
-                record["highest_price"] = price
-                record["second_leg_entry_time"] = now.isoformat()
+        """Delegate O-specific delayed-entry behavior to strategy O."""
+        result = strategy_o.update_second_leg(record, price, now)
         self._dirty = True
-        return None, None
+        return result
 
     def _update_dynamic(self, record, price, now, model):
         """Advance one C-family exit state machine from the latest quote."""

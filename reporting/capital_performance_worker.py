@@ -25,6 +25,7 @@ HEALTH = ROOT / "capital_performance_health.json"
 ERRORS = ROOT / "capital_performance_errors.jsonl"
 
 NY = ZoneInfo("America/New_York")
+CALCULATION_VERSION = 2
 POLL_SECONDS = max(
     30.0,
     float(os.environ.get("CAPITAL_PERFORMANCE_POLL_SECONDS", "60")),
@@ -44,13 +45,13 @@ def atomic_json(path: Path, value: dict) -> None:
 def load_history() -> dict:
     try:
         value = json.loads(HISTORY.read_text())
-        if isinstance(value, dict):
+        if isinstance(value, dict) and value.get("version") == CALCULATION_VERSION:
             value.setdefault("days", {})
             value.setdefault("processed_archives", {})
             return value
     except (OSError, ValueError, TypeError):
         pass
-    return {"version": 1, "days": {}, "processed_archives": {}}
+    return {"version": CALCULATION_VERSION, "days": {}, "processed_archives": {}}
 
 
 def parse_time(value):
@@ -66,7 +67,7 @@ def market_day(row: dict):
 
 
 def compact_exit(row: dict, sequence):
-    return {
+    compact = {
         "setup_id": row.get("setup_id"),
         "strategy_id": row.get("strategy_id"),
         "signal_timestamp": row.get("signal_timestamp"),
@@ -76,6 +77,19 @@ def compact_exit(row: dict, sequence):
         "exit_price": row.get("exit_price"),
         "entry_sequence": sequence,
     }
+
+    # Presence matters: missing means legacy normal-entry semantics;
+    # explicit None means a delayed setup never actually entered.
+    for key in (
+        "entry_timestamp",
+        "second_leg_entry_time",
+        "exit_model",
+        "entered",
+    ):
+        if key in row:
+            compact[key] = row[key]
+
+    return compact
 
 
 def load_live_exits() -> list[dict]:

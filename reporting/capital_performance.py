@@ -22,6 +22,14 @@ def _timestamp(value):
         return None
 
 
+def _effective_entry_timestamp(row):
+    if "entry_timestamp" in row:
+        return _timestamp(row.get("entry_timestamp"))
+    if row.get("exit_model") == "second_leg":
+        return _timestamp(row.get("second_leg_entry_time"))
+    return _timestamp(row.get("signal_timestamp"))
+
+
 def simulate_day(
     rows,
     starting_cash=STARTING_CASH,
@@ -31,7 +39,7 @@ def simulate_day(
     prepared = []
 
     for fallback_sequence, row in enumerate(rows):
-        entry_time = _timestamp(row.get("signal_timestamp"))
+        entry_time = _effective_entry_timestamp(row)
         exit_time = _timestamp(row.get("exit_timestamp"))
         try:
             entry = float(row["entry_price"])

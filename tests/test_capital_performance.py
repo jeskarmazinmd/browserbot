@@ -39,5 +39,31 @@ class CapitalPerformanceTests(unittest.TestCase):
         self.assertEqual(result["skipped"], 0)
 
 
+
+    def test_effective_entry_timestamp_controls_hold_time(self):
+        t = datetime(2026, 8, 7, 14, 0, tzinfo=timezone.utc)
+        row = self.trade(1, t)
+        row["entry_timestamp"] = (t + timedelta(minutes=10)).isoformat()
+        row["exit_timestamp"] = (t + timedelta(minutes=15)).isoformat()
+
+        result = simulate_day([row])
+
+        self.assertEqual(result["signals"], 1)
+        self.assertEqual(result["median_hold_seconds"], 300)
+
+    def test_never_entered_delayed_setup_uses_no_capital(self):
+        t = datetime(2026, 8, 7, 14, 0, tzinfo=timezone.utc)
+        row = self.trade(1, t)
+        row.update({
+            "entry_timestamp": None,
+            "exit_model": "second_leg",
+            "entered": False,
+        })
+
+        result = simulate_day([row])
+
+        self.assertEqual(result["signals"], 0)
+        self.assertEqual(result["taken"], 0)
+
 if __name__ == "__main__":
     unittest.main()

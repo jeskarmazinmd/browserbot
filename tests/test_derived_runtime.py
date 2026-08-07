@@ -119,6 +119,8 @@ class DerivedRuntimeTests(unittest.TestCase):
             tracker = PaperOutcomeTracker(root)
             o = next(s for s in derive_signals(parent("A")) if s["strategy_id"] == "O")
             tracker.register(o)
+            initial = next(iter(tracker.active.values()))
+            self.assertIsNone(initial.get("entry_timestamp"))
             start = datetime(2026, 8, 3, 14, tzinfo=timezone.utc)
             tracker.update({"XYZ": 100.3}, start + timedelta(seconds=5))
             tracker.update({"XYZ": 100.1}, start + timedelta(seconds=10))
@@ -126,6 +128,10 @@ class DerivedRuntimeTests(unittest.TestCase):
             record = next(iter(tracker.active.values()))
             self.assertTrue(record["entered"])
             self.assertAlmostEqual(record["entry_price"], 100.21)
+            self.assertEqual(
+                record["entry_timestamp"],
+                (start + timedelta(seconds=15)).isoformat(),
+            )
 
     def test_ls_filters_reject_failed_thresholds(self):
         cases = {

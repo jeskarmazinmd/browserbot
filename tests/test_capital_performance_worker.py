@@ -36,5 +36,33 @@ class CapitalPerformanceWorkerTests(unittest.TestCase):
             self.assertEqual(by_setup["C3|SECOND"], 1)
 
 
+
+    def test_compaction_preserves_legacy_entry_timestamp_absence(self):
+        row = {
+            "setup_id": "C3|LEGACY",
+            "strategy_id": "C3",
+            "signal_timestamp": "2026-08-06T14:00:00+00:00",
+            "entry_price": 10.0,
+            "stop_price": 9.8,
+            "exit_timestamp": "2026-08-06T14:05:00+00:00",
+            "exit_price": 10.1,
+        }
+
+        compact = worker.compact_exit(row, 0)
+
+        self.assertNotIn("entry_timestamp", compact)
+
+    def test_compaction_preserves_explicit_never_entered_marker(self):
+        row = {
+            "setup_id": "O|NOENTRY",
+            "strategy_id": "O",
+            "entry_timestamp": None,
+        }
+
+        compact = worker.compact_exit(row, 0)
+
+        self.assertIn("entry_timestamp", compact)
+        self.assertIsNone(compact["entry_timestamp"])
+
 if __name__ == "__main__":
     unittest.main()
