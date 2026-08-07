@@ -159,6 +159,7 @@ def _summarize_history(path: Path, additional_paths=()) -> dict:
 
 def _compact_outcomes(path: Path, destination: Path) -> dict:
     entries = set()
+    entry_sequence = {}
     exit_setups = set()
     invalid = 0
     strategies = Counter()
@@ -176,6 +177,8 @@ def _compact_outcomes(path: Path, destination: Path) -> dict:
                 continue
             event = row.get("event_type")
             if event == "PAPER_ENTRY":
+                if setup not in entries:
+                    entry_sequence[setup] = len(entry_sequence)
                 entries.add(setup)
                 continue
             if event != "PAPER_EXIT":
@@ -192,6 +195,8 @@ def _compact_outcomes(path: Path, destination: Path) -> dict:
             pnl[strategy] += value
             wins[strategy] += value > 0
             losses[strategy] += value < 0
+            row = dict(row)
+            row["entry_sequence"] = entry_sequence.get(setup)
             handle.write(json.dumps(row, separators=(",", ":"), default=str) + "\n")
 
     missing_exits = entries - exit_setups

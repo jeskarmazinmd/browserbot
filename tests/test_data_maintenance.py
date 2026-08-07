@@ -65,6 +65,7 @@ class DataMaintenanceTests(unittest.TestCase):
             rows = [json.loads(line) for line in handle]
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["setup_id"], setup)
+        self.assertEqual(rows[0]["entry_sequence"], 0)
         event_archive = next((self.root / "archive").glob("bot_events.*.jsonl.gz"))
         with gzip.open(event_archive, "rt") as handle:
             self.assertEqual(handle.read(), event_text)

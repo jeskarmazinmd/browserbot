@@ -19,6 +19,7 @@ import time
 WORKERS = {
     "collector": [sys.executable, "-u", "live_quote_collector.py"],
     "leaderboard": [sys.executable, "-u", "leaderboard_writer.py"],
+    "performance": [sys.executable, "-u", "-m", "reporting.capital_performance_worker"],
     "strategy": [sys.executable, "-u", "live_strategy_runner.py"],
     "dashboard": [
         sys.executable,

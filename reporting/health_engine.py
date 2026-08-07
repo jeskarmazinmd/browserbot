@@ -47,6 +47,7 @@ EXPECTED_WORKERS = {
     "collector": "live_quote_collector.py",
     "strategy": "live_strategy_runner.py",
     "reporter": "leaderboard_writer.py",
+    "performance": "reporting.capital_performance_worker",
     "dashboard": "schwab_bot_dashboard.dashboard.app:app",
     "supervisor": "supervisor.py",
 }
@@ -435,8 +436,9 @@ def render_summary(snapshot: dict) -> str:
         f"storage={peaks.get('storage_used_pct')}%",
         "",
         "PERFORMANCE REPORTING",
-        "status: DISABLED_DURING_REBUILD",
-        "Existing signal and outcome ledgers are preserved. No new P/L is calculated by this health process.",
+        "capital_constrained: ISOLATED_WORKER",
+        "history: /data/capital_constrained_history.txt",
+        "legacy_signal_table: DISABLED_DURING_REBUILD",
     ])
 
     if snapshot["warnings"]:
