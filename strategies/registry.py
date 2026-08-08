@@ -105,7 +105,6 @@ STRATEGY_CLASSES = [
     ("strategy_vt1", "VT1Strategy"),
     ("strategy_pd1", "PD1Strategy"),
     ("strategy_bo1", "BO1Strategy"),
-    ("strategy_ge1", "GE1Strategy"),
     ("strategy_gm1", "GM1Strategy"),
     ("strategy_gp1", "GP1Strategy"),
     ("strategy_gr1", "GR1Strategy"),
@@ -147,8 +146,8 @@ REPORTING_STRATEGY_MODULES = {}
 # from definitions that remain reporting-only.
 DERIVED_RUNTIME_STRATEGY_IDS = frozenset({
     "C1", "C2", "C3", "C4", "E", "F", "G", "I",
-    "J1", "J2", "J3", "J4", "J5", "J6",
-    "K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8", "K9",
+    "J2", "J5", "J6",
+    "K9",
     "L", "M", "N", "O", "P", "Q", "R", "S",
 })
 

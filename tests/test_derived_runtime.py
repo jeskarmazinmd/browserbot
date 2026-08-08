@@ -33,11 +33,14 @@ def parent(strategy_id):
 class DerivedRuntimeTests(unittest.TestCase):
     def test_parent_routes(self):
         a_ids = {s["strategy_id"] for s in derive_signals(parent("A"))}
-        self.assertTrue({"E", "I", "K1", "K9", "L", "M", "N", "O", "P", "Q", "R", "S"} <= a_ids)
+        self.assertTrue({"E", "I", "K9", "L", "M", "N", "O", "P", "Q", "R", "S"} <= a_ids)
+        self.assertFalse(
+            {"K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8"} & a_ids
+        )
         self.assertEqual({s["strategy_id"] for s in derive_signals(parent("D"))}, {"F"})
         self.assertEqual(
             {s["strategy_id"] for s in derive_signals(parent("B"))},
-            {"C1", "C2", "C3", "C4", "G", "J1", "J2", "J3", "J4", "J5", "J6"},
+            {"C1", "C2", "C3", "C4", "G", "J2", "J5", "J6"},
         )
 
     def test_overlays_reject_missing_metrics(self):
@@ -51,9 +54,9 @@ class DerivedRuntimeTests(unittest.TestCase):
     def test_j_checkpoint_exit(self):
         with tempfile.TemporaryDirectory() as root:
             tracker = PaperOutcomeTracker(root)
-            j3 = next(s for s in derive_signals(parent("B")) if s["strategy_id"] == "J3")
-            tracker.register(j3)
-            rows = tracker.update({"XYZ": 99.9}, datetime(2026, 8, 3, 14, 0, 16, tzinfo=timezone.utc))
+            j6 = next(s for s in derive_signals(parent("B")) if s["strategy_id"] == "J6")
+            tracker.register(j6)
+            rows = tracker.update({"XYZ": 99.9}, datetime(2026, 8, 3, 14, 0, 31, tzinfo=timezone.utc))
             self.assertEqual(rows[0]["exit_reason"], "NO_PROGRESS_CHECKPOINT")
 
     def test_c1_activates_then_trails(self):
@@ -82,27 +85,45 @@ class DerivedRuntimeTests(unittest.TestCase):
             rows = restarted.update({"XYZ": 100.1}, start + timedelta(seconds=10))
             self.assertEqual(rows[0]["exit_reason"], "TRAIL_PULLBACK")
 
-    def test_k_fixed_and_conditional_rules(self):
+    def test_k9_fixed_exit_and_restart(self):
         with tempfile.TemporaryDirectory() as root:
             tracker = PaperOutcomeTracker(root)
-            derived = {s["strategy_id"]: s for s in derive_signals(parent("A"))}
-            tracker.register(derived["K1"])
-            tracker.register(derived["K4"])
-            now = datetime(2026, 8, 3, 14, 0, 31, tzinfo=timezone.utc)
-            rows = tracker.update({"XYZ": 100.1}, now)
-            self.assertEqual({row["strategy_id"] for row in rows}, {"K1"})
-            self.assertIn("K4", {row["strategy_id"] for row in tracker.active.values()})
+            derived = {
+                s["strategy_id"]: s
+                for s in derive_signals(parent("A"))
+            }
+            self.assertIn("K9", derived)
+            self.assertFalse(
+                {"K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8"}
+                & set(derived)
+            )
 
-    def test_k_passed_checkpoint_survives_restart(self):
-        with tempfile.TemporaryDirectory() as root:
-            tracker = PaperOutcomeTracker(root)
-            k4 = next(s for s in derive_signals(parent("A")) if s["strategy_id"] == "K4")
-            tracker.register(k4)
-            tracker.update({"XYZ": 100.1}, datetime(2026, 8, 3, 14, 0, 31, tzinfo=timezone.utc))
+            tracker.register(derived["K9"])
+
+            before = datetime(
+                2026, 8, 3, 14, 29, 59,
+                tzinfo=timezone.utc,
+            )
+            self.assertEqual(
+                tracker.update({"XYZ": 100.1}, before),
+                [],
+            )
+
             tracker.checkpoint(force=True)
             restarted = PaperOutcomeTracker(root)
-            rows = restarted.update({"XYZ": 99.9}, datetime(2026, 8, 3, 14, 0, 40, tzinfo=timezone.utc))
-            self.assertEqual(rows, [])
+
+            after = datetime(
+                2026, 8, 3, 14, 30, 1,
+                tzinfo=timezone.utc,
+            )
+            rows = restarted.update({"XYZ": 100.1}, after)
+
+            self.assertEqual(len(rows), 1)
+            self.assertEqual(rows[0]["strategy_id"], "K9")
+            self.assertEqual(
+                rows[0]["exit_reason"],
+                "FIXED_EXIT_1800S",
+            )
 
     def test_n_adaptive_trail(self):
         with tempfile.TemporaryDirectory() as root:
