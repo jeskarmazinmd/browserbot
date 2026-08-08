@@ -714,28 +714,9 @@ def touch_both_schwab_tokens():
 
 
 def extract_last_price(payload):
-    if not isinstance(payload, dict):
-        return None
-
-    containers = [payload]
-    for key in ["quote", "regular", "extended", "reference"]:
-        if isinstance(payload.get(key), dict):
-            containers.append(payload[key])
-
-    price_keys = [
-        "lastPrice", "mark", "regularMarketLastPrice",
-        "closePrice", "bidPrice", "askPrice"
-    ]
-
-    for obj in containers:
-        for k in price_keys:
-            v = obj.get(k)
-            try:
-                if v is not None and float(v) > 0:
-                    return float(v)
-            except Exception:
-                pass
-    return None
+    """Compatibility scalar price; strategy behavior must remain unchanged."""
+    from market_quotes import legacy_scalar_price
+    return legacy_scalar_price(payload)
 
 
 def fetch_quote_batch(client, batch):
@@ -781,6 +762,61 @@ def fetch_schwab_quotes(client, symbols):
             prices.update(future.result())
 
     return prices
+
+
+def fetch_quote_snapshot_batch(client, batch):
+    """Fetch normalized rich quotes without discarding execution evidence."""
+    from market_quotes import extract_quote_snapshot
+
+    snapshots = {}
+
+    try:
+        resp = client.get_quotes(batch)
+
+        if resp.status_code == 401:
+            print(
+                "  Schwab rich quote batch status: 401; "
+                "rebuilding client and retrying once",
+                flush=True,
+            )
+            client = get_schwab_client()
+            resp = client.get_quotes(batch)
+
+        if resp.status_code != 200:
+            print(
+                f"  Schwab rich quote batch status: {resp.status_code}",
+                flush=True,
+            )
+            return snapshots
+
+        data = resp.json()
+
+        for symbol, payload in data.items():
+            snapshot = extract_quote_snapshot(symbol, payload)
+            if snapshot.legacy_price is not None:
+                snapshots[snapshot.symbol] = snapshot
+
+    except Exception as e:
+        print(f"  Schwab rich quote batch failed: {e}", flush=True)
+
+    return snapshots
+
+
+def fetch_schwab_quote_snapshots(client, symbols):
+    """Fetch rich snapshots using the same batching/concurrency as legacy."""
+    snapshots = {}
+    batches = list(chunk_list(symbols, 500))
+
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        futures = [
+            executor.submit(fetch_quote_snapshot_batch, client, batch)
+            for batch in batches
+        ]
+
+        for future in as_completed(futures):
+            snapshots.update(future.result())
+
+    return snapshots
 
 
 def detect_live_flash_from_quotes(symbol, points, features):

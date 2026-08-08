@@ -10,7 +10,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 from trendline_scanner_v25_live_schwab import (
     get_schwab_client,
-    fetch_schwab_quotes,
+    fetch_schwab_quote_snapshots,
     is_us_regular_market_open,
 )
 
@@ -323,7 +323,12 @@ def main():
         ts = datetime.now(timezone.utc).isoformat()
 
         fetch_start = time.perf_counter()
-        prices = fetch_schwab_quotes(client, symbols)
+        snapshots = fetch_schwab_quote_snapshots(client, symbols)
+        prices = {
+            symbol: snapshot.legacy_price
+            for symbol, snapshot in snapshots.items()
+            if snapshot.legacy_price is not None
+        }
         fetch_elapsed = time.perf_counter() - fetch_start
 
         write_start = time.perf_counter()
