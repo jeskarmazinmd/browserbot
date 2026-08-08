@@ -186,6 +186,31 @@ BUILTIN_DIMENSIONS = (
         ("winner_failure_mining","strategy_source_introspection"),
     ),
     SearchDimension(
+        "cross_symbol_lead_lag","cross_symbol",
+        "Dynamically discover whether recent movement in one population predicts later movement in another.",
+        ("path_dependent_entry_exit_replay",),
+    ),
+    SearchDimension(
+        "cross_symbol_divergence","cross_symbol",
+        "Trade convergence or continuation after dynamically identified relationships diverge.",
+        ("path_dependent_entry_exit_replay",),
+    ),
+    SearchDimension(
+        "cross_symbol_peer_basket","cross_symbol",
+        "Construct adaptive peer baskets whose past-known movement predicts a target symbol.",
+        ("path_dependent_entry_exit_replay",),
+    ),
+    SearchDimension(
+        "cross_symbol_residual","cross_symbol",
+        "Trade residual movement after removing dynamically estimated market, sector or peer effects.",
+        ("path_dependent_entry_exit_replay",),
+    ),
+    SearchDimension(
+        "cross_symbol_regime_adaptation","cross_symbol",
+        "Allow dynamically selected cross-symbol relationships to vary with market regime.",
+        ("path_dependent_entry_exit_replay","regime_conditioning"),
+    ),
+    SearchDimension(
         "resource_efficiency","capacity",
         "Value of information and performance per compute/storage cost.",
         ("resource_capacity_model",),

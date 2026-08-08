@@ -134,7 +134,7 @@ def _roles(path: Path) -> set[str]:
         "near_miss": ("near_miss",),
         "regime": ("regime",),
         "resource": ("resource_",),
-        "minute_market_data": ("minute_quote","minute_cache"),
+        "minute_market_data": ("minute_quote","minute_cache","minute_market_quotes"),
         "diagnostics": ("diagnostic",),
     }
 
@@ -202,9 +202,15 @@ def inspect_source(
             sampled=1
             fields.update(_flatten(value))
 
-        elif path.suffix.lower()==".csv":
-            fmt="csv"
-            with path.open(newline="",errors="replace") as handle:
+        elif suffixes.endswith(".csv") or suffixes.endswith(".csv.gz"):
+            fmt="csv.gz" if suffixes.endswith(".csv.gz") else "csv"
+            opener=gzip.open if suffixes.endswith(".csv.gz") else open
+            with opener(
+                path,
+                "rt",
+                newline="",
+                errors="replace",
+            ) as handle:
                 reader=csv.reader(handle)
                 header=next(reader,[])
             fields.update(str(x) for x in header)
