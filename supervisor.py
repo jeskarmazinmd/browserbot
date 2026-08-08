@@ -41,6 +41,7 @@ WORKERS = {
 OPTIONAL_WORKERS = {
     "xs_shadow": [sys.executable, "-u", "xs_shadow_worker.py"],
     "options_shadow": [sys.executable, "-u", "options_shadow_worker.py"],
+    "futures_shadow": [sys.executable, "-u", "futures_shadow_worker.py"],
 }
 
 EXIT_LOG = Path("/data/worker_supervisor.jsonl")
