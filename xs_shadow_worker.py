@@ -48,6 +48,12 @@ def cache_path(now):
     return DATA_ROOT/f"minute_quote_cache_{day}.pkl"
 
 
+def cache_signature(path):
+    """Cheaply identify a cache revision without deserializing the pickle."""
+    stat=Path(path).stat()
+    return (str(Path(path)),stat.st_mtime_ns,stat.st_size)
+
+
 def load_minute_cache(path):
     frame=pd.read_pickle(path)
     required={"timestamp","symbol","price"}
@@ -176,6 +182,7 @@ def main():
     manifest=ensure_manifest(MANIFEST_PATH,specs,datetime.now(timezone.utc))
     process=psutil.Process()
     last_minute=None
+    last_cache_signature=None
     predictions_total=0
     paused_day=None
     print(f"XS_SHADOW starting experiments={len(specs)}",flush=True)
@@ -196,7 +203,12 @@ def main():
             continue
 
         try:
+            signature=cache_signature(path)
+            if signature==last_cache_signature:
+                time.sleep(POLL_SECONDS)
+                continue
             frame=load_minute_cache(path)
+            last_cache_signature=signature
             wide=complete_regular_prices(frame,now)
             if wide.empty:
                 _write_status(status="WAITING_REGULAR_HISTORY",experiments=len(specs))

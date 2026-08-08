@@ -36,6 +36,15 @@ class XSShadowWorkerTests(unittest.TestCase):
             self.assertEqual(first[name]["born_at"],second[name]["born_at"])
             self.assertEqual(len(json.loads(path.read_text())),1)
 
+    def test_cache_signature_changes_only_when_cache_revision_changes(self):
+        with tempfile.TemporaryDirectory() as root:
+            path=Path(root)/"minute.pkl"
+            path.write_bytes(b"one")
+            first=worker.cache_signature(path)
+            self.assertEqual(first,worker.cache_signature(path))
+            path.write_bytes(b"a different revision")
+            self.assertNotEqual(first,worker.cache_signature(path))
+
     def test_frozen_prediction_contains_no_realized_outcome(self):
         times=pd.date_range("2026-08-10T13:30:00Z",periods=40,freq="min")
         rng=np.random.default_rng(8)
