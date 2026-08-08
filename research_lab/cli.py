@@ -16,6 +16,7 @@ from research_lab.hypotheses import (
 from research_lab.memory import ResearchMemory
 from research_lab.search_space import coverage
 from research_lab.models import TemporalClass
+from research_lab.market_reality import audit_market_reality,gate_action
 
 
 def discover(args):
@@ -161,6 +162,43 @@ def propose(args):
         )
 
 
+def show_reality(args):
+    data_root=Path(args.data_root).resolve()
+
+    report=build_report(
+        Path(args.repo_root).resolve(),
+        data_root,
+        "sample",
+        2000,
+    )
+
+    print("BUILDING EVIDENCE FOR REALITY AUDIT...")
+    evidence=build_evidence(report.sources)
+
+    reality=audit_market_reality(
+        report,
+        evidence,
+        data_root/"capital_constrained_history.json",
+    )
+
+    print("\nMARKET REALITY AUDIT")
+    for name,check in reality.checks.items():
+        print(f"{check.state.value:10} {name:24} {check.reason}")
+        for gap in check.gaps:
+            print(f"{'':11} gap: {gap}")
+
+    print("\nLIFECYCLE GATES")
+    for action in (
+        "PAPER_EXPERIMENT",
+        "DISABLE_RUNTIME",
+        "LIVE_CAPITAL",
+    ):
+        gate=gate_action(reality,action)
+        status="ALLOWED" if gate.allowed else "BLOCKED"
+        blockers=",".join(gate.blockers) if gate.blockers else "-"
+        print(f"{status:8} {action:20} blockers={blockers}")
+
+
 def main():
     parser=argparse.ArgumentParser(prog="strategy-lab")
     sub=parser.add_subparsers(dest="command",required=True)
@@ -191,6 +229,11 @@ def main():
     p.add_argument("--max-records-per-source",type=int,default=None)
     p.add_argument("--show",type=int,default=20)
     p.set_defaults(func=propose)
+
+    r=sub.add_parser("reality")
+    r.add_argument("--repo-root",default=".")
+    r.add_argument("--data-root",default="research_data")
+    r.set_defaults(func=show_reality)
 
     args=parser.parse_args()
     args.func(args)

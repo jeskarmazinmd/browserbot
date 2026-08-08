@@ -459,6 +459,33 @@ class ResearchLabTests(unittest.TestCase):
         self.assertEqual(actual.skipped,expected["skipped"])
         self.assertAlmostEqual(actual.end_equity,expected["end_equity"],9)
 
+    def test_lifecycle_gate_fails_closed_on_market_uncertainty(self):
+        from research_lab.market_reality import (
+            MarketRealityReport,RealityCheck,RealityState,gate_action,
+        )
+
+        report=MarketRealityReport({
+            "paper_accounting":RealityCheck(
+                "paper_accounting",RealityState.VERIFIED,"matched"
+            ),
+            "market_path":RealityCheck(
+                "market_path",RealityState.MISSING,"missing"
+            ),
+            "executable_quotes":RealityCheck(
+                "executable_quotes",RealityState.MISSING,"missing"
+            ),
+            "prospective_oos":RealityCheck(
+                "prospective_oos",RealityState.MISSING,"missing"
+            ),
+            "live_fill_validation":RealityCheck(
+                "live_fill_validation",RealityState.MISSING,"missing"
+            ),
+        })
+
+        self.assertTrue(gate_action(report,"PAPER_EXPERIMENT").allowed)
+        self.assertFalse(gate_action(report,"DISABLE_RUNTIME").allowed)
+        self.assertFalse(gate_action(report,"LIVE_CAPITAL").allowed)
+
     def test_plugin_registry_is_open_ended(self):
         r=PluginRegistry()
         marker=object()
