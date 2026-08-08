@@ -409,6 +409,56 @@ class ResearchLabTests(unittest.TestCase):
         self.assertNotIn("quote_tape",_roles(outcome))
         self.assertIn("quote_tape",_roles(tape))
 
+    def test_research_capital_matches_production_accounting(self):
+        from datetime import datetime,timezone
+        from reporting.capital_performance import simulate_day as production
+        from research_lab.capital import simulate_day as research
+        from research_lab.evidence import TradeEvidence
+
+        rows=[]
+        trades=[]
+
+        for seq,(entry,stop,exit_price) in enumerate((
+            (100.0,98.0,101.0),
+            (50.0,49.0,49.5),
+            (25.0,24.5,26.0),
+        )):
+            start=datetime(2026,8,3,14,0,tzinfo=timezone.utc)
+            end=datetime(2026,8,3,14,10+seq,tzinfo=timezone.utc)
+            setup=f"S|{seq}"
+
+            rows.append({
+                "setup_id":setup,
+                "signal_timestamp":start.isoformat(),
+                "entry_price":entry,
+                "stop_price":stop,
+                "exit_timestamp":end.isoformat(),
+                "exit_price":exit_price,
+                "entry_sequence":seq,
+            })
+
+            trades.append(TradeEvidence(
+                strategy_id="S",
+                symbol=f"XYZ{seq}",
+                setup_id=setup,
+                entry_time=start,
+                signal_time=start,
+                outcome_pct=(exit_price/entry-1)*100,
+                entry_sequence=seq,
+                entry_price=entry,
+                stop_price=stop,
+                exit_price=exit_price,
+                exit_time=end,
+            ))
+
+        expected=production(rows)
+        actual=research(trades)
+
+        self.assertEqual(actual.signals,expected["signals"])
+        self.assertEqual(actual.taken,expected["taken"])
+        self.assertEqual(actual.skipped,expected["skipped"])
+        self.assertAlmostEqual(actual.end_equity,expected["end_equity"],9)
+
     def test_plugin_registry_is_open_ended(self):
         r=PluginRegistry()
         marker=object()

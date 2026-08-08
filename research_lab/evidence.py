@@ -66,6 +66,8 @@ class TradeEvidence:
     signal_time: datetime
     outcome_pct: float
     source_strategy_id: str | None=None
+    entry_sequence: int | None=None
+    entered: bool=True
     entry_price: float | None=None
     stop_price: float | None=None
     exit_price: float | None=None
@@ -210,6 +212,9 @@ def build_evidence(sources, *, max_records_per_source=None):
             continue
 
         count=0
+        sequence_by_setup={}
+        next_sequence=0
+
         for row in _records(source.path):
             if (
                 max_records_per_source is not None
@@ -217,6 +222,17 @@ def build_evidence(sources, *, max_records_per_source=None):
             ):
                 break
             count+=1
+
+            setup_for_sequence=str(row.get("setup_id") or "").strip()
+            event=row.get("event_type")
+
+            if (
+                event=="PAPER_ENTRY"
+                and setup_for_sequence
+                and setup_for_sequence not in sequence_by_setup
+            ):
+                sequence_by_setup[setup_for_sequence]=next_sequence
+                next_sequence+=1
 
             if "regime" in source.roles:
                 timestamp=parse_time(
@@ -254,11 +270,24 @@ def build_evidence(sources, *, max_records_per_source=None):
             strategy=str(row.get("strategy_id") or "").strip()
             symbol=str(row.get("symbol") or "").strip()
 
-            entry_time=parse_time(
-                row.get("entry_timestamp")
-                or row.get("signal_timestamp")
-                or row.get("timestamp")
-            )
+            entered=row.get("entered",True) is not False
+
+            if "entry_timestamp" in row:
+                explicit_entry=parse_time(row.get("entry_timestamp"))
+                if explicit_entry is None:
+                    entered=False
+                entry_time=explicit_entry
+            elif (
+                row.get("exit_model")=="second_leg"
+                and row.get("second_leg_entry_time")
+            ):
+                entry_time=parse_time(row.get("second_leg_entry_time"))
+            else:
+                entry_time=parse_time(
+                    row.get("signal_timestamp")
+                    or row.get("timestamp")
+                )
+
             signal_time=parse_time(
                 row.get("signal_timestamp")
                 or row.get("timestamp")
@@ -269,6 +298,7 @@ def build_evidence(sources, *, max_records_per_source=None):
                 outcome is None
                 or not strategy
                 or not symbol
+                or not entered
                 or entry_time is None
                 or signal_time is None
             ):
@@ -287,6 +317,14 @@ def build_evidence(sources, *, max_records_per_source=None):
                 if value is not None and safe_for_entry(key)
             }
 
+            sequence=row.get("entry_sequence")
+            if sequence is None:
+                sequence=sequence_by_setup.get(setup)
+            try:
+                sequence=int(sequence) if sequence is not None else None
+            except (TypeError,ValueError):
+                sequence=None
+
             key=(strategy,setup)
             existing=trades.get(key)
 
@@ -303,6 +341,8 @@ def build_evidence(sources, *, max_records_per_source=None):
                         if row.get("source_strategy_id")
                         else None
                     ),
+                    entry_sequence=sequence,
+                    entered=entered,
                     entry_price=(
                         _number(row,"entry_price")
                         if "entry_price" in row
@@ -325,6 +365,11 @@ def build_evidence(sources, *, max_records_per_source=None):
                 for name,value in safe.items():
                     existing.safe_fields.setdefault(name,value)
                 existing.source_paths.add(str(source.path))
+                if (
+                    existing.entry_sequence is None
+                    and sequence is not None
+                ):
+                    existing.entry_sequence=sequence
 
     regimes.sort(key=lambda x:x.timestamp)
     ordered_trades=tuple(sorted(
