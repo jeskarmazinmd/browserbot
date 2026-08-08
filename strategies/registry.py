@@ -22,12 +22,14 @@ from . import (
 )
 from . import strategy_d
 from . import strategy_h
+from . import strategy_c2t9, strategy_c2t35, strategy_c1t9, strategy_gt9, strategy_et29, strategy_pt325, strategy_pt325315, strategy_pmid, strategy_ht5, strategy_qmid, strategy_qv425, strategy_lt65
 
 
 FLASH_STRATEGY_MODULES = {
     module.STRATEGY_ID: module
     for module in (
         strategy_a, strategy_b, strategy_c1f1, strategy_d, strategy_h,
+        strategy_c2t9, strategy_c2t35, strategy_c1t9, strategy_gt9, strategy_et29, strategy_pt325, strategy_pt325315, strategy_pmid, strategy_ht5, strategy_qmid, strategy_qv425, strategy_lt65,
         strategy_c3sc,
         strategy_c3n20, strategy_c3n25, strategy_c3n30, strategy_c3n40, strategy_c3n50,
         strategy_c3n25a05, strategy_c3n25a10, strategy_c3n25a20, strategy_c3n25a50,
@@ -90,8 +92,6 @@ STRATEGY_CLASSES = [
     ("strategy_rs1", "RS1Strategy"),
     ("strategy_rs2", "RS2Strategy"),
     ("strategy_rs3", "RS3Strategy"),
-    ("strategy_ve1", "VE1Strategy"),
-    ("strategy_vr1", "VR1Strategy"),
     ("strategy_m1", "M1Strategy"),
     ("strategy_m2", "M2Strategy"),
     ("strategy_m3", "M3Strategy"),

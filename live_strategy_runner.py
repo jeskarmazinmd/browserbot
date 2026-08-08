@@ -2040,6 +2040,12 @@ def main():
                         "actual_rebound_pct": rebound_fraction * 100,
                         "recovery_fraction_at_entry": recovery_fraction,
                     })
+                    if strategy_id == "LT65":
+                        confirmed_event.update(fetch_rebound_volume_metrics(
+                            sym,
+                            pending["created_at"],
+                            confirmed_event.get("avg_volume_1m_pre30"),
+                        ))
                     valid, reject_reason = validate_confirmed_entry(confirmed_event)
                     if not valid:
                         append_strategy_event(strategy_id, "PENDING_REBOUND_CANCELLED_OVERSHOOT",
@@ -2050,9 +2056,10 @@ def main():
                         pending_entries[strategy_id].pop(sym, None)
                         continue
 
-                    confirmed_event.update(fetch_rebound_volume_metrics(
-                        sym, pending["created_at"], confirmed_event.get("avg_volume_1m_pre30")
-                    ))
+                    if strategy_id != "LT65":
+                        confirmed_event.update(fetch_rebound_volume_metrics(
+                            sym, pending["created_at"], confirmed_event.get("avg_volume_1m_pre30")
+                        ))
                     events.append(confirmed_event)
                     scan_stats["triggers"] += 1
                     pending_entries[strategy_id].pop(sym, None)
