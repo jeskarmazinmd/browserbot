@@ -277,16 +277,23 @@ BUILTIN_GENERATORS=(
 )
 
 
-def generate_proposals(strategies,profiles):
+def generate_proposals(strategies,profiles,evidence=None):
     proposals=[]
 
     for generator in BUILTIN_GENERATORS:
         proposals.extend(generator(strategies,profiles))
 
+    if evidence is not None:
+        from research_lab.broad_hypotheses import generate_broad_proposals
+        proposals.extend(
+            generate_broad_proposals(strategies,profiles,evidence)
+        )
+
     context={
         "strategies":strategies,
         "profiles":profiles,
         "proposals_so_far":tuple(proposals),
+        "evidence":evidence,
     }
 
     for name,generator in REGISTRY.all("hypothesis_generator").items():

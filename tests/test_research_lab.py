@@ -336,6 +336,67 @@ class ResearchLabTests(unittest.TestCase):
             1,
         )
 
+    def test_broad_generators_span_multiple_research_classes(self):
+        from datetime import datetime,timedelta,timezone
+        from research_lab.broad_hypotheses import generate_broad_proposals
+        from research_lab.evidence import EvidenceIndex,RegimeEvidence,TradeEvidence
+        from research_lab.features import FeatureProfile
+
+        start=datetime(2026,8,3,14,0,tzinfo=timezone.utc)
+        trades=[]
+        regimes=[]
+
+        for minute in range(5):
+            timestamp=start+timedelta(minutes=minute)
+            regimes.append(RegimeEvidence(
+                timestamp,
+                {"regime.returns.SPY.5m":float(minute)/10.0},
+                "regime.jsonl",
+            ))
+            for n in range(8):
+                trades.append(TradeEvidence(
+                    "TEST",
+                    f"XYZ{n}",
+                    f"TEST|{minute}|{n}",
+                    timestamp,
+                    timestamp,
+                    1.0 if n%2 else -1.0,
+                ))
+
+        evidence=EvidenceIndex(tuple(trades),tuple(regimes),())
+
+        profiles=[]
+        for name in ("alpha","beta","gamma"):
+            profiles.append(FeatureProfile(
+                strategy_id="TEST",
+                field=name,
+                kind="numeric",
+                count=40,
+                unique_count=40,
+                numeric_quantiles={
+                    "q10":1.0,"q20":2.0,"q40":4.0,
+                    "q50":5.0,"q60":6.0,"q80":8.0,"q90":9.0,
+                },
+                outcomes=40,
+            ))
+
+        proposals=generate_broad_proposals([],profiles,evidence)
+        dimensions={x.dimension for x in proposals}
+
+        expected={
+            "range_and_band_rules",
+            "pairwise_interactions",
+            "higher_order_interactions",
+            "time_of_day",
+            "market_direction_context",
+            "winner_cohort_mining",
+            "failure_mode_mining",
+            "loser_rescue",
+            "signal_sequence_and_waves",
+        }
+
+        self.assertTrue(expected<=dimensions,expected-dimensions)
+
     def test_plugin_registry_is_open_ended(self):
         r=PluginRegistry()
         marker=object()

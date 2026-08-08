@@ -8,6 +8,7 @@ from pathlib import Path
 
 from research_lab.discovery import build_report
 from research_lab.features import profile_sources
+from research_lab.evidence import build_evidence
 from research_lab.hypotheses import (
     generate_proposals,
     proposal_summary,
@@ -120,15 +121,22 @@ def propose(args):
         max_records_per_source=args.max_records_per_source,
     )
 
+    evidence=build_evidence(
+        report.sources,
+        max_records_per_source=args.max_records_per_source,
+    )
+
     proposals=generate_proposals(
         report.strategies,
         profiles,
+        evidence,
     )
     summary=proposal_summary(proposals)
 
     print("RESEARCH HYPOTHESIS UNIVERSE")
     print("strategies:",len(report.strategies))
     print("feature profiles:",len(profiles))
+    print("evidence trades:",len(evidence.trades))
     print("proposals before screening:",summary["total"])
 
     print("\nBY GENERATOR")
