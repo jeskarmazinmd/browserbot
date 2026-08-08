@@ -7,6 +7,11 @@ from collections import Counter
 from pathlib import Path
 
 from research_lab.discovery import build_report
+from research_lab.features import profile_sources
+from research_lab.hypotheses import (
+    generate_proposals,
+    proposal_summary,
+)
 from research_lab.memory import ResearchMemory
 from research_lab.search_space import coverage
 from research_lab.models import TemporalClass
@@ -102,6 +107,52 @@ def show_coverage(args):
             )
 
 
+def propose(args):
+    report=build_report(
+        Path(args.repo_root).resolve(),
+        Path(args.data_root).resolve(),
+        args.schema_mode,
+        args.sample_records,
+    )
+
+    profiles=profile_sources(
+        report.sources,
+        max_records_per_source=args.max_records_per_source,
+    )
+
+    proposals=generate_proposals(
+        report.strategies,
+        profiles,
+    )
+    summary=proposal_summary(proposals)
+
+    print("RESEARCH HYPOTHESIS UNIVERSE")
+    print("strategies:",len(report.strategies))
+    print("feature profiles:",len(profiles))
+    print("proposals before screening:",summary["total"])
+
+    print("\nBY GENERATOR")
+    for name,count in sorted(summary["by_generator"].items()):
+        print(f"{name:32} {count}")
+
+    print("\nBY DIMENSION")
+    for name,count in sorted(summary["by_dimension"].items()):
+        print(f"{name:32} {count}")
+
+    print("\nTOP STRATEGIES BY GENERATED IDEAS")
+    for name,count in summary["by_strategy"].most_common(20):
+        print(f"{name:16} {count}")
+
+    print("\nSAMPLE UNSCREENED IDEAS")
+    for item in proposals[:args.show]:
+        print(
+            f"{item.strategy_id:10} "
+            f"{item.dimension:28} "
+            f"{item.generator:28} "
+            f"{item.specification}"
+        )
+
+
 def main():
     parser=argparse.ArgumentParser(prog="strategy-lab")
     sub=parser.add_subparsers(dest="command",required=True)
@@ -123,6 +174,15 @@ def main():
         default="research_lab_state/hypothesis_memory.jsonl",
     )
     c.set_defaults(func=show_coverage)
+
+    p=sub.add_parser("propose")
+    p.add_argument("--repo-root",default=".")
+    p.add_argument("--data-root",default="replay")
+    p.add_argument("--schema-mode",choices=("sample","full"),default="sample")
+    p.add_argument("--sample-records",type=int,default=2000)
+    p.add_argument("--max-records-per-source",type=int,default=None)
+    p.add_argument("--show",type=int,default=20)
+    p.set_defaults(func=propose)
 
     args=parser.parse_args()
     args.func(args)

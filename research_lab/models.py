@@ -63,6 +63,17 @@ class ResearchCapability:
 
 
 @dataclass(frozen=True)
+class HypothesisProposal:
+    strategy_id: str
+    dimension: str
+    generator: str
+    specification: dict[str, Any]
+    rationale: str
+    evidence_fields: tuple[str, ...] = ()
+    historical_testability: str = "UNKNOWN"
+
+
+@dataclass(frozen=True)
 class SearchDimension:
     name: str
     category: str

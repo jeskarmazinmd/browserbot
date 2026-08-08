@@ -196,6 +196,84 @@ class ResearchLabTests(unittest.TestCase):
                 1,
             )
 
+
+    def test_hypothesis_generation_is_broad_and_entry_safe(self):
+        from research_lab.features import profile_sources
+        from research_lab.hypotheses import generate_proposals
+
+        with tempfile.TemporaryDirectory() as root:
+            root=Path(root)
+            folder=root/"strategies"
+            folder.mkdir()
+            data=root/"data"
+            data.mkdir()
+
+            (folder/"strategy_x.py").write_text(
+                'STRATEGY_ID="X"\n'
+                'PAPER_ONLY=True\n'
+                'CONFIG={"min_strength":1.0,"stop_loss_fraction":0.02}\n'
+                'EXIT_MODEL="c1"\n'
+            )
+
+            lines=[]
+            for i in range(40):
+                lines.append(json.dumps({
+                    "strategy_id":"X",
+                    "symbol":f"S{i}",
+                    "signal_timestamp":"2026-08-08T14:00:00+00:00",
+                    "research_metrics":{
+                        "strength":float(i),
+                        "shape":float(i%7),
+                    },
+                    "mfe_pct":99.0,
+                    "ret_pct":1.0 if i%2 else -1.0,
+                }))
+
+            (data/"signal_paper_outcomes_x.jsonl").write_text(
+                chr(10).join(lines)+chr(10)
+            )
+
+            report=build_report(root,data)
+            profiles=profile_sources(report.sources)
+            proposals=generate_proposals(report.strategies,profiles)
+
+            generators={x.generator for x in proposals}
+            self.assertIn("parameter_neighborhood",generators)
+            self.assertIn("source_ablation",generators)
+            self.assertIn("entry_feature_thresholds",generators)
+            self.assertIn("pair_transforms",generators)
+
+            serialized=" ".join(
+                repr(x.specification)
+                for x in proposals
+            )
+            self.assertNotIn("mfe_pct",serialized)
+
+    def test_hypothesis_generators_are_plugin_extensible(self):
+        from research_lab.hypotheses import generate_proposals
+        from research_lab.models import HypothesisProposal
+        from research_lab.plugins import REGISTRY
+
+        def generator(context):
+            return [HypothesisProposal(
+                "X",
+                "behavioral_novelty",
+                "unit_test_generator",
+                {"operator":"novel_test"},
+                "test extension",
+            )]
+
+        REGISTRY.register(
+            "hypothesis_generator",
+            "unit_test_generator",
+            generator,
+        )
+
+        generated=generate_proposals([],[])
+        self.assertTrue(
+            any(x.generator=="unit_test_generator" for x in generated)
+        )
+
     def test_plugin_registry_is_open_ended(self):
         r=PluginRegistry()
         marker=object()
