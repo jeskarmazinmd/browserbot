@@ -31,6 +31,8 @@ COPY options_shadow_worker.py .
 COPY options_paper_tracker.py .
 COPY futures_shadow_worker.py .
 COPY futures_paper_tracker.py .
+COPY forex_shadow_worker.py .
+COPY forex_paper_tracker.py .
 COPY schwab_token_guard.py .
 COPY supervisor.py .
 COPY data_maintenance.py .
@@ -43,6 +45,7 @@ COPY engine /app/engine
 COPY strategies /app/strategies
 COPY options_strategies /app/options_strategies
 COPY futures_strategies /app/futures_strategies
+COPY forex_strategies /app/forex_strategies
 COPY detectors /app/detectors
 COPY reporting /app/reporting
 COPY research_lab /app/research_lab
