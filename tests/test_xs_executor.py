@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from research_lab.xs_adaptive import generate_predictions
-from research_lab.xs_executor import generate_shared_predictions
+from research_lab.xs_executor import XSSharedRuntime, generate_shared_predictions
 from research_lab.xs_shadows import ready_shadow_specs
 
 
@@ -61,6 +61,20 @@ class XSExecutorTests(unittest.TestCase):
             telemetry.shared_fit_calls,
         )
         self.assertGreater(telemetry.fits_avoided,0)
+
+    def test_stateful_runtime_does_not_refit_before_refresh_is_due(self):
+        specs=tuple(
+            x for x in ready_shadow_specs()
+            if x.name in {"LL60H1K1","LL60H1K3"}
+        )
+        runtime=XSSharedRuntime(specs)
+        prices=market(rows=70)
+        first=runtime.update(prices.iloc[:-1])
+        calls=runtime.fit_calls
+        second=runtime.update(prices)
+        self.assertFalse(first.empty)
+        self.assertFalse(second.empty)
+        self.assertEqual(runtime.fit_calls,calls)
 
 
 if __name__=="__main__":

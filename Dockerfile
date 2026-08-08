@@ -23,6 +23,9 @@ COPY paper_outcome_tracker.py .
 COPY strategy_diagnostics.py .
 COPY strategy_diagnostics_report.py .
 COPY quote_source.py .
+COPY market_quotes.py .
+COPY market_evidence.py .
+COPY xs_shadow_worker.py .
 COPY schwab_token_guard.py .
 COPY supervisor.py .
 COPY data_maintenance.py .
@@ -35,6 +38,7 @@ COPY engine /app/engine
 COPY strategies /app/strategies
 COPY detectors /app/detectors
 COPY reporting /app/reporting
+COPY research_lab /app/research_lab
 COPY schwab_bot_dashboard /app/schwab_bot_dashboard
 
 CMD ["python", "-u", "supervisor.py"]

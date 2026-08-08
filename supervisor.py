@@ -1,8 +1,9 @@
-"""Run all bot workers as one failure domain.
+"""Run production workers with isolated optional research workers.
 
-If any worker exits (including an OOM SIGKILL), terminate its siblings and exit
-non-zero.  Fly then restarts a clean machine instead of leaving a partially
-working bot online with a stale tape.
+Critical worker failure remains a single failure domain: if any production
+worker exits, terminate its siblings and let Fly restart a clean machine.
+Optional research workers are isolated so an experimental failure cannot
+bring production down.
 """
 
 from datetime import datetime, timezone
@@ -33,6 +34,14 @@ WORKERS = {
         "8080",
     ],
 }
+
+# Research workers may observe production data, but they are never allowed to
+# become part of the production failure domain.  An optional worker that exits
+# stays stopped until the next normal machine restart/deploy.
+OPTIONAL_WORKERS = {
+    "xs_shadow": [sys.executable, "-u", "xs_shadow_worker.py"],
+}
+
 EXIT_LOG = Path("/data/worker_supervisor.jsonl")
 ELIGIBILITY_REFRESH = [sys.executable, "-u", "refresh_eligible_symbols.py"]
 DATA_MAINTENANCE = [sys.executable, "-u", "data_maintenance.py"]
@@ -74,6 +83,13 @@ def data_volume_total_mb(path=DATA_VOLUME_PATH):
     return shutil.disk_usage(path).total / (1024 * 1024)
 
 
+def worker_exit_is_fatal(name):
+    """Return whether a child exit must restart the production failure domain."""
+    if name in OPTIONAL_WORKERS:
+        return False
+    return name in WORKERS
+
+
 def main():
     try:
         volume_total_mb = data_volume_total_mb()
@@ -93,9 +109,6 @@ def main():
         minimum_mb=MIN_DATA_VOLUME_USABLE_MB,
     )
 
-    # Workers are not running yet, making this the only safe point to rotate
-    # append-only files. The maintenance script skips unless EOD is complete
-    # and the paper tracker reports zero active setups.
     maintenance = subprocess.run(
         DATA_MAINTENANCE,
         cwd="/app",
@@ -125,11 +138,16 @@ def main():
             return 1
         record("eligibility_refresh_complete", cache=str(eligibility_cache))
 
+    commands = {**WORKERS, **OPTIONAL_WORKERS}
     processes = {
         name: subprocess.Popen(command, env=os.environ.copy())
-        for name, command in WORKERS.items()
+        for name, command in commands.items()
     }
-    record("started", workers={name: proc.pid for name, proc in processes.items()})
+    record(
+        "started",
+        workers={name: proc.pid for name, proc in processes.items()},
+        optional_workers=sorted(OPTIONAL_WORKERS),
+    )
 
     stopping = False
 
@@ -143,9 +161,13 @@ def main():
     signal.signal(signal.SIGINT, handle_signal)
 
     while True:
-        for name, proc in processes.items():
+        for name, proc in list(processes.items()):
             code = proc.poll()
             if code is None:
+                continue
+            if not worker_exit_is_fatal(name):
+                record("optional_worker_exit", worker=name, returncode=code)
+                processes.pop(name, None)
                 continue
             record("worker_exit", worker=name, returncode=code)
             terminate_all(processes)

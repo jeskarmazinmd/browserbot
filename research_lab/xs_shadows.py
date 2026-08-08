@@ -56,8 +56,11 @@ def seed_shadow_specs():
         ("LL60H1K3",60,1,5,3,.30,.05),
         ("LL60H2K3",60,2,5,3,.30,.05),
         ("LL60H5K3",60,5,5,3,.30,.05),
-        ("LL120H1K3",120,1,15,3,.30,.05),
-        ("LL120H5K3",120,5,15,3,.30,.05),
+        # Stay within the production 75-minute cache for the first cohort.
+        # Longer-memory lanes remain a future mechanism, not silently-truncated
+        # experiments.
+        ("LL45H1K3",45,1,5,3,.30,.05),
+        ("LL45H2K3",45,2,5,3,.30,.05),
         ("LL60LOOSE",60,1,5,3,.20,.05),
         ("LL60STRICT",60,1,5,3,.40,.01),
     )

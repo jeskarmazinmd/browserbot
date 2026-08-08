@@ -26,6 +26,62 @@ class XSExecutionTelemetry:
         return self.equivalent_independent_fit_calls-self.shared_fit_calls
 
 
+class XSSharedRuntime:
+    """Stateful causal executor that refits each shared group only when due."""
+
+    def __init__(self,specs=None):
+        self.specs=ready_shadow_specs(specs)
+        self.groups=shared_fit_groups(self.specs)
+        self._models={}
+        self._fit_at={}
+        self.fit_calls=0
+
+    def update(self,prices):
+        if prices is None or prices.empty:
+            return pd.DataFrame()
+        prices=prices.sort_index().copy()
+        latest=prices.index[-1]
+        returns=prices.pct_change(fill_method=None)
+        current=returns.iloc[-1]
+        rows=[]
+
+        for key,members in self.groups.items():
+            exemplar=members[0].config
+            h=int(exemplar.horizon_minutes)
+            minimum=int(exemplar.lookback_minutes)+h+1
+            if len(prices) < minimum:
+                continue
+
+            last_fit=self._fit_at.get(key)
+            refresh_seconds=int(exemplar.refresh_minutes)*60
+            due=(
+                last_fit is None
+                or (latest-last_fit).total_seconds() >= refresh_seconds
+            )
+            if due:
+                stats=_fit_statistics(prices,len(prices)-1,exemplar)
+                self.fit_calls+=1
+                self._models[key]={
+                    spec.name:_models_from_statistics(stats,spec.config)
+                    for spec in members
+                }
+                self._fit_at[key]=latest
+
+            models_by_name=self._models.get(key,{})
+            for spec in members:
+                for model in models_by_name.get(spec.name,{}).values():
+                    row=_prediction_row(spec,model,current,latest)
+                    if row is not None:
+                        rows.append(row)
+
+        result=pd.DataFrame(rows)
+        if not result.empty:
+            result=result.sort_values(
+                ["shadow_name","decision_time","target"],kind="mergesort"
+            ).reset_index(drop=True)
+        return result
+
+
 def _prediction_row(spec,model,current,decision_time):
     values=[current.get(x) for x in model.leaders]
     if any(pd.isna(x) for x in values):
