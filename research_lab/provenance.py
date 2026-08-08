@@ -16,14 +16,19 @@ _POST_ENTRY = {
     "pnl", "pnl_usd", "ret_pct", "return_pct",
     "mfe_pct", "mae_pct", "holding_minutes",
     "time_to_mfe_minutes", "time_to_target_minutes",
-    "highest_price_time", "last_observed_price", "last_observed_at",
-    "stop_replay",
+    "highest_price", "highest_price_time",
+    "last_observed_price", "last_observed_at",
+    "activated", "activation_time", "recent_samples",
+    "checkpoint_evaluated", "stop_replay",
 }
 
 _ENTRY = {
     "strategy_id", "symbol", "setup_id", "signal_timestamp",
+    "entry_timestamp",
     "entry", "entry_price", "target", "target_price",
     "stop", "stop_price", "notional", "paper_notional",
+    "original_target_price", "exit_model",
+    "source_strategy_id", "source_setup_id",
 }
 
 _PAST_HINTS = (

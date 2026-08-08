@@ -274,6 +274,68 @@ class ResearchLabTests(unittest.TestCase):
             any(x.generator=="unit_test_generator" for x in generated)
         )
 
+    def test_entry_timestamp_is_entry_safe(self):
+        from research_lab.provenance import safe_for_entry
+        self.assertTrue(safe_for_entry("entry_timestamp"))
+
+    def test_dynamic_outcome_state_is_never_entry_safe(self):
+        from research_lab.provenance import safe_for_entry
+        for field in (
+            "highest_price",
+            "activated",
+            "activation_time",
+            "recent_samples",
+            "checkpoint_evaluated",
+            "last_observed_price",
+        ):
+            with self.subTest(field=field):
+                self.assertFalse(safe_for_entry(field))
+
+    def test_evidence_index_joins_only_prior_regime(self):
+        from datetime import datetime,timezone
+        from research_lab.evidence import EvidenceIndex,RegimeEvidence,TradeEvidence
+
+        regime=RegimeEvidence(
+            datetime(2026,8,3,14,0,tzinfo=timezone.utc),
+            {"regime.trend.classification":"UP"},
+            "regime.jsonl",
+        )
+        trade=TradeEvidence(
+            "S","XYZ","S|XYZ",
+            datetime(2026,8,3,14,5,tzinfo=timezone.utc),
+            datetime(2026,8,3,14,5,tzinfo=timezone.utc),
+            1.0,
+        )
+        index=EvidenceIndex((trade,),(regime,),())
+        self.assertEqual(
+            index.regime_at(trade.entry_time).fields[
+                "regime.trend.classification"
+            ],
+            "UP",
+        )
+        self.assertIsNone(
+            index.regime_at(
+                datetime(2026,8,3,13,59,tzinfo=timezone.utc)
+            )
+        )
+
+    def test_evidence_index_detects_matched_siblings(self):
+        from datetime import datetime,timezone
+        from research_lab.evidence import EvidenceIndex,TradeEvidence
+
+        now=datetime(2026,8,3,14,0,tzinfo=timezone.utc)
+        trades=(
+            TradeEvidence("C1","XYZ","C1|XYZ",now,now,1.0,"B"),
+            TradeEvidence("C2","XYZ","C2|XYZ",now,now,2.0,"B"),
+        )
+        index=EvidenceIndex(trades,(),())
+        self.assertEqual(len(index.coincident_groups()),1)
+        self.assertEqual(len(index.controlled_sibling_groups()),1)
+        self.assertEqual(
+            index.controlled_sibling_overlap_counts()[("C1","C2")],
+            1,
+        )
+
     def test_plugin_registry_is_open_ended(self):
         r=PluginRegistry()
         marker=object()
