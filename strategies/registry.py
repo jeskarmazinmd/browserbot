@@ -8,6 +8,18 @@ from strategy_diagnostics import diagnostics
 from . import strategy_a
 from . import strategy_b
 from . import strategy_c1f1
+from . import (
+    strategy_c3sc,
+    strategy_c3n20, strategy_c3n25, strategy_c3n30, strategy_c3n40, strategy_c3n50,
+    strategy_c3n25a05, strategy_c3n25a10, strategy_c3n25a20, strategy_c3n25a50,
+    strategy_c3n25t15, strategy_c3n25t60,
+    strategy_c3n25s10, strategy_c3n25s15, strategy_c3n25s25,
+    strategy_c3n25be,
+    strategy_c3n25w20, strategy_c3n25w30,
+    strategy_c3p25, strategy_c3l25,
+    strategy_c3l25q2, strategy_c3l25q4,
+    strategy_c3l25d05, strategy_c3l25d20,
+)
 from . import strategy_d
 from . import strategy_h
 
@@ -15,7 +27,17 @@ from . import strategy_h
 FLASH_STRATEGY_MODULES = {
     module.STRATEGY_ID: module
     for module in (
-        strategy_a, strategy_b, strategy_c1f1, strategy_d, strategy_h
+        strategy_a, strategy_b, strategy_c1f1, strategy_d, strategy_h,
+        strategy_c3sc,
+        strategy_c3n20, strategy_c3n25, strategy_c3n30, strategy_c3n40, strategy_c3n50,
+        strategy_c3n25a05, strategy_c3n25a10, strategy_c3n25a20, strategy_c3n25a50,
+        strategy_c3n25t15, strategy_c3n25t60,
+        strategy_c3n25s10, strategy_c3n25s15, strategy_c3n25s25,
+    strategy_c3n25be,
+    strategy_c3n25w20, strategy_c3n25w30,
+        strategy_c3p25, strategy_c3l25,
+    strategy_c3l25q2, strategy_c3l25q4,
+    strategy_c3l25d05, strategy_c3l25d20,
     )
 }
 

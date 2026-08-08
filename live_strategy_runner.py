@@ -2005,7 +2005,13 @@ def main():
                     pending["lowest_price"] = running_low
                     rebound_fraction = (px / running_low) - 1.0
 
-                    if age_seconds >= PENDING_REBOUND_TIMEOUT_SECONDS:
+                    pending_timeout_seconds = float(
+                        cfg.get(
+                            "pending_rebound_timeout_seconds",
+                            PENDING_REBOUND_TIMEOUT_SECONDS,
+                        )
+                    )
+                    if age_seconds >= pending_timeout_seconds:
                         append_strategy_event(strategy_id, "PENDING_REBOUND_CANCELLED_TIMEOUT",
                             symbol=sym, current_price=px, lowest_price=running_low,
                             waiting_seconds=age_seconds, rebound_pct=rebound_fraction * 100)
@@ -2141,7 +2147,10 @@ def main():
                         append_strategy_event(strategy_id, "PENDING_REBOUND_CREATED",
                             symbol=sym, current_price=current_price,
                             required_rebound_pct=cfg["rebound_confirmation_pct"] * 100,
-                            timeout_seconds=PENDING_REBOUND_TIMEOUT_SECONDS, signal=strategy_event)
+                            timeout_seconds=float(cfg.get(
+                                "pending_rebound_timeout_seconds",
+                                PENDING_REBOUND_TIMEOUT_SECONDS,
+                            )), signal=strategy_event)
                         created_any = True
                     if created_any or strategies_processed_pending:
                         continue
@@ -2176,7 +2185,14 @@ def main():
             events_b = [e for e in events if e.get("strategy_id") == STRATEGY_B]
             events_d = [e for e in events if e.get("strategy_id") == STRATEGY_D]
             events_h = [e for e in events if e.get("strategy_id") == STRATEGY_H]
-            events_c1f1 = [e for e in events if e.get("strategy_id") == "C1F1"]
+            events_by_flash_strategy = {
+                strategy_id: []
+                for strategy_id in STRATEGY_CONFIGS
+            }
+            for event in events:
+                strategy_id = event.get("strategy_id")
+                if strategy_id in events_by_flash_strategy:
+                    events_by_flash_strategy[strategy_id].append(event)
 
             # Prospective threshold-defined near-miss populations. Log every first
             # qualifying symbol/day observation, regardless of whether other symbols
@@ -2241,13 +2257,7 @@ def main():
                         extra_thresholds=extra_thresholds,
                     )
 
-            for strategy_id, signal_rows in (
-                (STRATEGY_A, events_a),
-                (STRATEGY_B, events_b),
-                (STRATEGY_D, events_d),
-                (STRATEGY_H, events_h),
-                ("C1F1", events_c1f1),
-            ):
+            for strategy_id, signal_rows in events_by_flash_strategy.items():
                 diagnostics.evaluated(
                     strategy_id,
                     now_utc.isoformat(),

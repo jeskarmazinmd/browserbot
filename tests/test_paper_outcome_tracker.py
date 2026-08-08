@@ -82,6 +82,35 @@ class PaperOutcomeTrackerTests(unittest.TestCase):
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["exit_reason"], "TRAIL_PULLBACK")
 
+    def test_c2_breakeven_protection_after_activation(self):
+        c2 = signal("c2-breakeven")
+        c2.update({
+            "strategy_id": "C3N25BE",
+            "exit_model": "c2",
+            "activation_gain_pct": 0.3,
+            "no_new_high_seconds": 30.0,
+            "stop_loss_fraction": 0.02,
+            "stop_price": 98.0,
+            "breakeven_after_activation": True,
+        })
+        self.assertTrue(self.tracker.register(c2))
+
+        rows = self.tracker.update(
+            {"XYZ": 100.40},
+            datetime(2026, 8, 3, 14, 1, tzinfo=timezone.utc),
+        )
+        self.assertEqual(rows, [])
+
+        rows = self.tracker.update(
+            {"XYZ": 99.90},
+            datetime(2026, 8, 3, 14, 1, 10, tzinfo=timezone.utc),
+        )
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["exit_reason"], "BREAKEVEN_PROTECT")
+        self.assertAlmostEqual(rows[0]["exit_price"], 100.0)
+        self.assertAlmostEqual(rows[0]["pnl"], 0.0)
+        self.assertAlmostEqual(rows[0]["stop_price"], 98.0)
+
     def test_eod_marks_to_observed_quote(self):
         self.tracker.register(signal())
         rows = self.tracker.update(

@@ -36,6 +36,7 @@ OPTIONAL_FIELDS = (
     "first_high", "pullback_low", "original_target_price",
     "flash_drop_volatility_units",
     "last_observed_price", "last_observed_at",
+    "breakeven_after_activation",
 )
 
 
@@ -404,6 +405,12 @@ class PaperOutcomeTracker:
             record["recent_samples"] = [[now.isoformat(), price]]
             self._dirty = True
             return None, None
+
+        if (
+            record.get("breakeven_after_activation")
+            and price <= float(record["entry_price"])
+        ):
+            return "BREAKEVEN_PROTECT", float(record["entry_price"])
 
         samples = list(record.get("recent_samples") or [])
         samples.append([now.isoformat(), price])
