@@ -40,6 +40,7 @@ WORKERS = {
 # stays stopped until the next normal machine restart/deploy.
 OPTIONAL_WORKERS = {
     "xs_shadow": [sys.executable, "-u", "xs_shadow_worker.py"],
+    "options_shadow": [sys.executable, "-u", "options_shadow_worker.py"],
 }
 
 EXIT_LOG = Path("/data/worker_supervisor.jsonl")
