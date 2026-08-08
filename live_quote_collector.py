@@ -8,6 +8,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 from datetime import datetime, timezone
+from market_evidence import MinuteMarketArchive
 from trendline_scanner_v25_live_schwab import (
     get_schwab_client,
     fetch_schwab_quote_snapshots,
@@ -285,6 +286,13 @@ def main():
     path = tape_path()
     print(f"Writing tape to {path}", flush=True)
 
+    research_archive = MinuteMarketArchive(
+        Path("/data/research_market")
+        if Path("/data").exists()
+        else Path("research_data/market"),
+        max_files=7,
+    )
+
     prune_old_tapes(active_path=path)
     last_maintenance = time.time()
 
@@ -330,6 +338,12 @@ def main():
             if snapshot.legacy_price is not None
         }
         fetch_elapsed = time.perf_counter() - fetch_start
+
+        research_archive.update(
+            datetime.now(timezone.utc),
+            snapshots,
+            is_us_regular_market_open(),
+        )
 
         write_start = time.perf_counter()
         append_quotes(path, ts, prices)
