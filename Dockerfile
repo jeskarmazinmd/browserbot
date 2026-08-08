@@ -20,6 +20,7 @@ COPY bot_output.py .
 COPY bounded_jsonl.py .
 COPY live_strategy_runner.py .
 COPY paper_outcome_tracker.py .
+COPY multi_leg_paper_tracker.py .
 COPY strategy_diagnostics.py .
 COPY strategy_diagnostics_report.py .
 COPY quote_source.py .

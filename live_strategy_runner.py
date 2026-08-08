@@ -25,6 +25,7 @@ from strategies.registry import (
 from strategies.capacity_filters import apply_capacity_filters
 from regime_logger import log_regime, latest_regime
 from paper_outcome_tracker import PaperOutcomeTracker
+from multi_leg_paper_tracker import MultiLegPaperTracker
 from strategy_diagnostics import diagnostics
 from schwab_token_guard import (
     ManualReauthRequired,
@@ -1601,6 +1602,16 @@ def main():
         f"active={len(paper_outcomes.active)} seen={len(paper_outcomes.seen)}",
         flush=True,
     )
+    multi_leg_outcomes = MultiLegPaperTracker(
+        DATA_ROOT,
+        eod_hour=EOD_EXIT_HOUR_ET,
+        eod_minute=EOD_EXIT_MINUTE_ET,
+    )
+    print(
+        "MULTI_LEG_PAPER_TRACKER_ONLINE "
+        f"active={len(multi_leg_outcomes.active)} seen={len(multi_leg_outcomes.seen)}",
+        flush=True,
+    )
     print(
         "DERIVED_STRATEGIES_ONLINE " + ",".join(sorted(DERIVED_STRATEGY_IDS)),
         flush=True,
@@ -1746,6 +1757,13 @@ def main():
                 print(
                     "PAPER_OUTCOME "
                     f"strategy={outcome['strategy_id']} symbol={outcome['symbol']} "
+                    f"reason={outcome['exit_reason']} pnl={outcome['pnl']:+.2f}",
+                    flush=True,
+                )
+            for outcome in multi_leg_outcomes.update(prices_now, now_utc):
+                print(
+                    "MULTI_LEG_PAPER_OUTCOME "
+                    f"strategy={outcome['strategy_id']} group={outcome['group_id']} "
                     f"reason={outcome['exit_reason']} pnl={outcome['pnl']:+.2f}",
                     flush=True,
                 )
@@ -1906,9 +1924,39 @@ def main():
                 if warming_minute_pipeline:
                     continue
 
+                multi_leg_signals = [
+                    signal
+                    for signal in minute_signals
+                    if signal.signal_type == "MULTI_LEG"
+                ]
+                single_leg_signals = [
+                    signal
+                    for signal in minute_signals
+                    if signal.signal_type != "MULTI_LEG"
+                ]
+
+                for signal in multi_leg_signals:
+                    multi_payload = {
+                        "strategy_id": str(signal.strategy_id),
+                        "timestamp": pd.Timestamp(signal.timestamp).isoformat(),
+                        **dict(signal.data or {}),
+                    }
+                    if multi_leg_outcomes.register(multi_payload):
+                        append_strategy_event(
+                            str(signal.strategy_id),
+                            "MULTI_LEG_SIGNAL",
+                            group=multi_payload,
+                            signal_regime=latest_regime(),
+                            thresholds={
+                                "LIVE_ORDER_PLACEMENT": False,
+                                "CADENCE": "minute",
+                                "ACCOUNTING": "coordinated_group",
+                            },
+                        )
+
                 minute_payloads = apply_capacity_filters([
                     snapshot_signal_payload(signal)
-                    for signal in minute_signals
+                    for signal in single_leg_signals
                 ])
 
                 for independent in minute_payloads:
