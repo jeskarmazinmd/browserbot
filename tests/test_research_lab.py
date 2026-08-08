@@ -397,6 +397,18 @@ class ResearchLabTests(unittest.TestCase):
 
         self.assertTrue(expected<=dimensions,expected-dimensions)
 
+    def test_lower_quotes_outcome_is_not_a_quote_tape(self):
+        from pathlib import Path
+        from research_lab.discovery import _roles
+
+        outcome=Path(
+            "signal_paper_outcomes_strategy_c3_lower_quotes_v1.jsonl"
+        )
+        tape=Path("tapes/quotes_20260808.csv")
+
+        self.assertNotIn("quote_tape",_roles(outcome))
+        self.assertIn("quote_tape",_roles(tape))
+
     def test_plugin_registry_is_open_ended(self):
         r=PluginRegistry()
         marker=object()

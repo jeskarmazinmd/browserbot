@@ -135,13 +135,21 @@ def _roles(path: Path) -> set[str]:
         "regime": ("regime",),
         "resource": ("resource_",),
         "minute_market_data": ("minute_quote","minute_cache"),
-        "quote_tape": ("quotes_","quote_tape","tape"),
         "diagnostics": ("diagnostic",),
     }
 
     for role,needles in patterns.items():
         if any(x in name for x in needles):
             roles.add(role)
+
+    # Market-path roles need stricter filename semantics. Strategy names such
+    # as "c3_lower_quotes" must never masquerade as raw quote tapes.
+    if (
+        name.startswith("quotes_")
+        or "quote_tape" in name
+        or path.parent.name.lower()=="tapes"
+    ):
+        roles.add("quote_tape")
 
     return roles or {"unclassified"}
 
