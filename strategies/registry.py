@@ -8,6 +8,8 @@ from strategy_diagnostics import diagnostics
 from . import strategy_a
 from . import strategy_b
 from . import strategy_c1f1
+from . import strategy_c1f1mid, strategy_c1f1r65, strategy_c1f1pb15
+from . import strategy_j2t15, strategy_j2mid, strategy_j2rb30
 from . import (
     strategy_c3sc,
     strategy_c3n20, strategy_c3n25, strategy_c3n30, strategy_c3n40, strategy_c3n50,
@@ -29,6 +31,8 @@ FLASH_STRATEGY_MODULES = {
     module.STRATEGY_ID: module
     for module in (
         strategy_a, strategy_b, strategy_c1f1, strategy_d, strategy_h,
+        strategy_c1f1mid, strategy_c1f1r65, strategy_c1f1pb15,
+        strategy_j2t15, strategy_j2mid, strategy_j2rb30,
         strategy_c2t9, strategy_c2t35, strategy_c1t9, strategy_gt9, strategy_et29, strategy_pt325, strategy_pt325315, strategy_pmid, strategy_ht5, strategy_qmid, strategy_qv425, strategy_lt65,
         strategy_c3sc,
         strategy_c3n20, strategy_c3n25, strategy_c3n30, strategy_c3n40, strategy_c3n50,
@@ -84,6 +88,9 @@ def validate_flash_entry(
 
 STRATEGY_CLASSES = [
     ("strategy_ema1", "EMA1Strategy"),
+    ("strategy_ema1t50", "Strategy"),
+    ("strategy_ema1v15", "Strategy"),
+    ("strategy_ema1rr", "Strategy"),
     ("strategy_ema2", "EMA2Strategy"),
     ("strategy_ema3", "EMA3Strategy"),
     ("strategy_sma1", "SMA1Strategy"),
