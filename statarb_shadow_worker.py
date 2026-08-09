@@ -9,6 +9,7 @@ from statarb_paper_tracker import StatArbPaperTracker
 NY=ZoneInfo("America/New_York")
 SYMBOLS=("SPY","QQQ","IWM","DIA","XLK","XLF","XLE","XLV","XLY","XLP","XLI","XLU","XLC","SMH","IYT","GLD","SLV","USO","TLT","NVDA","AMD","AVGO","MSFT","AAPL","GOOGL","META","AMZN","TSLA","NFLX","ORCL","CRM","MU","INTC","JPM","BAC","GS","WMT")
 STRATEGIES=("STBETA1","STPAIR1","STLEAD1","STSECTOR1","STBREAK1","STRESMOM1")
+STRATEGIES2=("STCINT2","STHALF2","STHEDGE2","STLEAD2")
 QUOTE_URL="https://api.schwabapi.com/marketdata/v1/quotes";TOKEN_PATH=Path(os.environ.get("STATARB_MARKET_TOKEN","/data/schwab_token.json"));DATA_ROOT=Path(os.environ.get("STATARB_DATA_ROOT","/data"));POLL_SECONDS=float(os.environ.get("STATARB_POLL_SECONDS","60"));MAX_AGE=float(os.environ.get("STATARB_MAX_QUOTE_AGE_SECONDS","180"));STATUS=DATA_ROOT/"statarb_shadow_status.json"
 def regular_market(now):
  et=now.astimezone(NY);m=et.hour*60+et.minute;return et.weekday()<5 and 570<=m<960
@@ -36,8 +37,9 @@ def archive(now,quotes):
  for old in files[:-5]:old.unlink(missing_ok=True)
 def load_strategies():
  out=[]
- for sid in STRATEGIES:
-  m=importlib.import_module(f"statarb_strategies.strategy_{sid.lower()}");assert m.PAPER_ONLY is True and m.LIVE_ORDER_PLACEMENT is False;out.append(m.Strategy())
+ for package,ids in (("statarb_strategies",STRATEGIES),("statarb2_strategies",STRATEGIES2)):
+  for sid in ids:
+   m=importlib.import_module(f"{package}.strategy_{sid.lower()}");assert m.PAPER_ONLY is True and m.LIVE_ORDER_PLACEMENT is False;out.append(m.Strategy())
  return out
 def main():
  tracker=StatArbPaperTracker(DATA_ROOT);strategies=load_strategies();decisions_total=0;errors=0;requests_total=0
