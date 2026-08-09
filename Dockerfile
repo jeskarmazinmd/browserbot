@@ -44,6 +44,7 @@ COPY statarb_paper_tracker.py .
 COPY schwab_token_guard.py .
 COPY supervisor.py .
 COPY data_maintenance.py .
+COPY system_load_test.py .
 COPY refresh_eligible_symbols.py .
 COPY universe_tags.py .
 COPY regime_detector.py .
