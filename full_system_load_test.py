@@ -64,9 +64,13 @@ def curves(step,now):
 def report(queue,family,modules,cycles,errors,latencies,started):
     queue.put({"family":family,"modules":modules,"cycles":cycles,"errors":errors,"wall_seconds":time.perf_counter()-started,"p95_ms":1000*p95(latencies),"max_ms":1000*max(latencies,default=0),"peak_rss_mb":rss_mb()})
 
-def run_evaluators(strategies,builder,interval,duration,multiplier,warm,queue,family):
+def warm_steps(warm,prewarm_mode):
+    """Return exhaustive history steps or one history-rich terminal snapshot."""
+    return range(warm) if prewarm_mode=="replay" else (() if warm<=0 else (warm-1,))
+
+def run_evaluators(strategies,builder,interval,duration,multiplier,warm,queue,family,prewarm_mode):
     errors=cycles=0;lat=[];started=time.perf_counter();now=datetime(2026,8,10,14,30,tzinfo=timezone.utc)
-    for step in range(warm):
+    for step in warm_steps(warm,prewarm_mode):
         snap=builder(step,now+timedelta(seconds=step))
         for strategy in strategies:
             try:strategy.evaluate(snap)
@@ -81,7 +85,7 @@ def run_evaluators(strategies,builder,interval,duration,multiplier,warm,queue,fa
         lat.append(time.perf_counter()-t);cycles+=1;step+=1;deadline+=interval/multiplier
     report(queue,family,len(strategies),cycles,errors,lat,started)
 
-def family_entry(family,multiplier,duration,count,temp,queue):
+def family_entry(family,multiplier,duration,count,temp,queue,prewarm_mode="snapshot"):
     sys.addaudithook(deny_external);os.environ["LIVE_ORDER_PLACEMENT_ENABLED"]="0";os.environ["RUN_MODE"]="REPLAY"
     try:
         if family=="collector":
@@ -101,7 +105,7 @@ def family_entry(family,multiplier,duration,count,temp,queue):
             registry.diagnostics=D();names=symbols(count);started=time.perf_counter();lat=[];errors=cycles=0;now=datetime(2026,8,10,14,30,tzinfo=timezone.utc)
             def minute(step):
                 raw=equity_quotes(names,step,now+timedelta(minutes=step));q={s:Quote(x["last"],x["totalVolume"],x["bid"],x["ask"]) for s,x in raw.items()};return MarketSnapshot(now+timedelta(minutes=step),q,len(q),len(q),0,{"source":"full_load_test"})
-            for i in range(75):
+            for i in warm_steps(75,prewarm_mode):
                 _,errs=registry.on_minute_snapshot(minute(i));errors+=len(errs)
             event={"symbol":"SPY","timestamp":now.isoformat(),"setup_id":"load","strategy_id":"A","entry_price":100.,"target_price":102.,"stop_price":95.,"flash_drop_pct":2.,"original_flash_drop_pct":2.,"remaining_upside_pct":2.,"pre_return_pct":2.,"pre_r2":.9,"pre30_return_std_pct":.2,"flash_dollar_volume_3m":1000000,"flash_volume_ratio":2.,"rebound_volume_ratio":1.,"distance_below_rolling_vwap_pct":1.,"confirmation_wait_seconds":1.,"volume_data_status_flash":"OK","market_5m_return_pct":.1,"market_1m_return_pct":.1}
             deadline=time.perf_counter();end=deadline+duration;step=75
@@ -123,26 +127,26 @@ def family_entry(family,multiplier,duration,count,temp,queue):
             specs=ready_shadow_specs();runtime=XSSharedRuntime(specs);cols=symbols(min(count,300));idx=pd.date_range("2026-08-10 13:30",periods=76,freq="min",tz="UTC");wide=pd.DataFrame(100*np.cumprod(1+np.random.default_rng(1).normal(0,.001,(76,len(cols))),axis=0),index=idx,columns=cols)
             class X:
                 def evaluate(self,snapshot):return runtime.update(snapshot)
-            run_evaluators([X()],lambda step,now:wide*(1+step*1e-6),60,duration,multiplier,0,queue,family);return
+            run_evaluators([X()],lambda step,now:wide*(1+step*1e-6),60,duration,multiplier,0,queue,family,prewarm_mode);return
         if family=="options":
             import options_shadow_worker as w
-            ss=w._load_strategies();run_evaluators(ss,lambda step,now:{"timestamp":now.isoformat(),"underlying":"SPY","underlyingPrice":100.,"isDelayed":False,"status":"SUCCESS","contracts":option_contracts("SPY",step)},120,duration,multiplier,12,queue,family);return
+            ss=w._load_strategies();run_evaluators(ss,lambda step,now:{"timestamp":now.isoformat(),"underlying":"SPY","underlyingPrice":100.,"isDelayed":False,"status":"SUCCESS","contracts":option_contracts("SPY",step)},120,duration,multiplier,12,queue,family,prewarm_mode);return
         if family=="options_rv":
             import options_rv_shadow_worker as w
             mods=w.load_strategies()
             class W:
                 def __init__(self,m):self.m=m
                 def evaluate(self,snap):return self.m.evaluate("SPY",snap["contracts"],snap["timestamp"])
-            ss=[W(m) for m in mods];run_evaluators(ss,lambda step,now:{"timestamp":now,"contracts":option_contracts("SPY",step)},300,duration,multiplier,12,queue,family);return
+            ss=[W(m) for m in mods];run_evaluators(ss,lambda step,now:{"timestamp":now,"contracts":option_contracts("SPY",step)},300,duration,multiplier,12,queue,family,prewarm_mode);return
         if family=="futures":
             import futures_shadow_worker as w
-            ss=w.load_strategies();run_evaluators(ss,lambda step,now:{"timestamp":now,"roots":futures_roots(step,now)},60,duration,multiplier,20,queue,family);return
+            ss=w.load_strategies();run_evaluators(ss,lambda step,now:{"timestamp":now,"roots":futures_roots(step,now)},60,duration,multiplier,20,queue,family,prewarm_mode);return
         if family=="futures_curve":
             import futures_curve_shadow_worker as w
-            ss=w.load_strategies();run_evaluators(ss,lambda step,now:{"timestamp":now,"curves":curves(step,now)},300,duration,multiplier,20,queue,family);return
+            ss=w.load_strategies();run_evaluators(ss,lambda step,now:{"timestamp":now,"curves":curves(step,now)},300,duration,multiplier,20,queue,family,prewarm_mode);return
         if family=="forex":
             import forex_shadow_worker as w
-            ss=w.load_strategies();run_evaluators(ss,lambda step,now:{"timestamp":now,"pairs":equity_quotes(w.PAIRS,step,now)},60,duration,multiplier,75,queue,family);return
+            ss=w.load_strategies();run_evaluators(ss,lambda step,now:{"timestamp":now,"pairs":equity_quotes(w.PAIRS,step,now)},60,duration,multiplier,75,queue,family,prewarm_mode);return
         module=__import__(f"{family}_shadow_worker")
         ss=module.load_strategies();names=getattr(module,"SYMBOLS",symbols(min(count,1500)))
         if family=="swing":
@@ -150,7 +154,7 @@ def family_entry(family,multiplier,duration,count,temp,queue):
             builder=lambda step,now:{"timestamp":now,"completed_daily_history":history,"quotes":equity_quotes(names,step,now)};interval=300;warm=2
         else:
             builder=lambda step,now:{"timestamp":now,"quotes":equity_quotes(names,step,now)};interval=5 if family=="microstructure" else 60;warm=75
-        run_evaluators(ss,builder,interval,duration,multiplier,warm,queue,family)
+        run_evaluators(ss,builder,interval,duration,multiplier,warm,queue,family,prewarm_mode)
     except Exception as exc:
         queue.put({"family":family,"modules":0,"cycles":0,"errors":1,"fatal":f"{type(exc).__name__}: {exc}","peak_rss_mb":rss_mb()})
 
@@ -160,9 +164,9 @@ def mem_available_mb():
     return 0
 
 def main(argv=None):
-    ap=argparse.ArgumentParser();ap.add_argument("--symbols",type=int,default=2700);ap.add_argument("--duration",type=float,default=15);ap.add_argument("--multipliers",default="1,2,4");ap.add_argument("--min-memory-mb",type=float,default=1024);ap.add_argument("--output",default="/tmp/full_system_load_test_report.json");args=ap.parse_args(argv);all_results=[]
+    ap=argparse.ArgumentParser();ap.add_argument("--symbols",type=int,default=2700);ap.add_argument("--duration",type=float,default=80,help="seconds per multiplier stage; 80 gives about five minutes total");ap.add_argument("--multipliers",default="1,2,4");ap.add_argument("--prewarm-mode",choices=("snapshot","replay"),default="snapshot",help="snapshot is the five-minute steady-state test; replay exhaustively rebuilds sequential history");ap.add_argument("--min-memory-mb",type=float,default=1024);ap.add_argument("--output",default="/tmp/full_system_load_test_report.json");args=ap.parse_args(argv);all_results=[]
     for mult in [int(x) for x in args.multipliers.split(",")]:
-        temp=tempfile.mkdtemp(prefix=f"full-load-{mult}x-",dir="/tmp");queue=mp.Queue();processes=[mp.Process(target=family_entry,args=(f,mult,args.duration,args.symbols,temp,queue),name=f"full-{f}") for f in FAMILIES];started=time.perf_counter();before=mem_available_mb()
+        temp=tempfile.mkdtemp(prefix=f"full-load-{mult}x-",dir="/tmp");queue=mp.Queue();processes=[mp.Process(target=family_entry,args=(f,mult,args.duration,args.symbols,temp,queue,args.prewarm_mode),name=f"full-{f}") for f in FAMILIES];started=time.perf_counter();before=mem_available_mb()
         print(f"FULL STAGE {mult}x families={len(processes)} memory_available={before:.0f}MiB",flush=True)
         for p in processes:p.start()
         aborted=None
@@ -183,6 +187,6 @@ def main(argv=None):
         print(f"  modules={result['modules_exercised']} errors={result['errors']} memory_after={result['memory_available_after_mb']:.0f}MiB aborted={aborted}",flush=True)
         import shutil;shutil.rmtree(temp,ignore_errors=True)
         if aborted:break
-    report={"role":"FULL_OFFLINE_REPLAY_NOT_TRADING_EVIDENCE","generated_at":datetime.now(timezone.utc).isoformat(),"stages":all_results,"guards":{"network":"audit denied","data_writes":"audit denied","broker_execution":"environment disabled"},"limitations":["synthetic snapshots rather than Schwab network responses","orchestration and paper-ledger I/O are not exact for every isolated worker"]};Path(args.output).write_text(json.dumps(report,indent=2,sort_keys=True)+"\n");print(f"REPORT {args.output}",flush=True);return 2 if any(x["aborted"] or x["errors"] for x in all_results) else 0
+    report={"role":"FULL_OFFLINE_REPLAY_NOT_TRADING_EVIDENCE","generated_at":datetime.now(timezone.utc).isoformat(),"prewarm_mode":args.prewarm_mode,"stages":all_results,"guards":{"network":"audit denied","data_writes":"audit denied","broker_execution":"environment disabled"},"limitations":["synthetic snapshots rather than Schwab network responses","snapshot prewarm does not reconstruct every stateful rolling window sequentially","orchestration and paper-ledger I/O are not exact for every isolated worker"]};Path(args.output).write_text(json.dumps(report,indent=2,sort_keys=True)+"\n");print(f"REPORT {args.output}",flush=True);return 2 if any(x["aborted"] or x["errors"] for x in all_results) else 0
 
 if __name__=="__main__":raise SystemExit(main())

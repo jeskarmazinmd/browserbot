@@ -21,5 +21,9 @@ class FullSystemLoadTests(unittest.TestCase):
         self.assertNotIn("import requests",source)
         self.assertNotIn("get_schwab_client",source)
         self.assertNotIn("SchwabTradeClient",source)
+    def test_snapshot_prewarm_collapses_history_to_terminal_state(self):
+        self.assertEqual(list(full.warm_steps(75,"snapshot")),[74])
+        self.assertEqual(list(full.warm_steps(0,"snapshot")),[])
+        self.assertEqual(list(full.warm_steps(3,"replay")),[0,1,2])
 
 if __name__=="__main__":unittest.main()
