@@ -46,19 +46,25 @@ def load_strategies():
 def status(payload):
     p=DATA_ROOT/"event_shadow_status.json";tmp=p.with_suffix(".tmp");tmp.write_text(json.dumps(payload,separators=(",",":"))+"\n");os.replace(tmp,p)
 def main():
-    strategies=load_strategies();tracker=EventPaperTracker(DATA_ROOT);handled=set();errors=decisions=0
+    strategies=load_strategies();tracker=EventPaperTracker(DATA_ROOT);handled=set();baselines={};errors=decisions=0
     while True:
         now=datetime.now(timezone.utc);events,rejected=load_events(now);symbols={e["symbol"] for e in events};qs={}
         try:qs=quotes(symbols) if regular(now) else {};tracker.update(now,qs)
         except Exception:errors+=1
         if regular(now):
             for e in events:
-                if e["event_id"] in handled or e["symbol"] not in qs:continue
+                if e["symbol"] not in qs:continue
+                q=qs[e["symbol"]];mid=(float(q["bid"])+float(q["ask"]))/2
+                baseline=baselines.setdefault(e["event_id"],{"timestamp":now,"mid":mid,"volume":float(q.get("totalVolume") or 0)})
+                enriched=dict(e);enriched["reaction_minutes"]=(now-baseline["timestamp"]).total_seconds()/60;enriched["reaction_return"]=mid/baseline["mid"]-1;enriched["reaction_volume"]=max(0,float(q.get("totalVolume") or 0)-baseline["volume"])
                 for strategy in strategies:
+                    key=f"{strategy.name}:{e['event_id']}"
+                    if key in handled:continue
                     try:
-                        for d in strategy.evaluate(e,qs[e["symbol"]]):decisions+=int(tracker.register(d))
+                        emitted=False
+                        for d in strategy.evaluate(enriched,q):emitted=True;decisions+=int(tracker.register(d))
+                        if emitted:handled.add(key)
                     except Exception:errors+=1
-                handled.add(e["event_id"])
         state="WAITING_EVENT_FEED" if not FEED.exists() else "WAITING_VALID_EVENTS" if not events else "RUNNING" if regular(now) else "WAITING_REGULAR_MARKET"
         status({"updated_at":now.isoformat(),"status":state,"strategies":len(strategies),"feed_path":str(FEED),"valid_events":len(events),"rejected_events":len(rejected),"rejection_sample":rejected[:5],"fresh_symbols":len(qs),"decisions":decisions,"errors":errors,"broker_execution_enabled":False,"causal_event_validation":True});time.sleep(POLL)
 if __name__=="__main__":main()

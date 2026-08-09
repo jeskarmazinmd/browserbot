@@ -44,6 +44,7 @@ COPY statarb_paper_tracker.py .
 COPY schwab_token_guard.py .
 COPY supervisor.py .
 COPY event_shadow_worker.py .
+COPY sec_event_adapter.py .
 COPY event_paper_tracker.py .
 COPY event_strategies /app/event_strategies
 
