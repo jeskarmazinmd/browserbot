@@ -48,6 +48,7 @@ OPTIONAL_WORKERS = {
     "crosssection_shadow": [sys.executable, "-u", "crosssection_shadow_worker.py"],
     "statarb_shadow": [sys.executable, "-u", "statarb_shadow_worker.py"],
     "swing_shadow": [sys.executable, "-u", "swing_shadow_worker.py"],
+    "futures_curve_shadow": [sys.executable, "-u", "futures_curve_shadow_worker.py"],
 }
 
 EXIT_LOG = Path("/data/worker_supervisor.jsonl")

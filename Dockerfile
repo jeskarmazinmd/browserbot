@@ -61,6 +61,9 @@ COPY statarb_strategies /app/statarb_strategies
 COPY swing_shadow_worker.py .
 COPY swing_paper_tracker.py .
 COPY swing_strategies /app/swing_strategies
+COPY futures_curve_shadow_worker.py .
+COPY futures_curve_paper_tracker.py .
+COPY futures_curve_strategies /app/futures_curve_strategies
 COPY detectors /app/detectors
 COPY reporting /app/reporting
 COPY research_lab /app/research_lab
