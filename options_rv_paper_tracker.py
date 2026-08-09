@@ -19,6 +19,7 @@ class OptionsRVTracker:
         self.active = self._load()
         self.seen = set(self.active)
         self.completed = 0
+        self._save()
 
     def _load(self):
         try:
