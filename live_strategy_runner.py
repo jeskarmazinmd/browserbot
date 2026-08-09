@@ -1739,19 +1739,10 @@ def main():
                     trade_token_path,
                     DATA_ROOT / "trading_auth_status.json",
                 )
-                trader_enabled = bool(getattr(trader, "enabled", True))
+
+                # Token maintenance is independent of whether live orders are enabled.
                 if (
-                    not trader_enabled
-                    and not trade_auth_blocked
-                    and now_ts - last_trading_token_touch >= 60
-                ):
-                    last_trading_token_touch = now_ts
-                    recovered = make_trader()
-                    if bool(getattr(recovered, "enabled", True)):
-                        trader = recovered
-                        print("TRADING_AUTH_RECOVERED account lookup succeeded", flush=True)
-                elif (
-                    trade_min_left < 20
+                    trade_min_left < TOKEN_REFRESH_THRESHOLD_MINUTES
                     and not trade_auth_blocked
                     and now_ts - last_trading_token_touch >= 60
                 ):
@@ -1764,17 +1755,69 @@ def main():
                             DATA_ROOT / "trading_auth_status.json",
                         )
                         if after_min_left < TOKEN_REFRESH_VERIFY_MINUTES:
-                            raise RuntimeError(f"persisted trading token lifetime too short: {after_min_left:.1f} minutes")
-                        refreshed = make_trader()
-                        if not bool(getattr(refreshed, "enabled", True)):
-                            raise RuntimeError("post-refresh trading account verification failed")
-                        trader = refreshed
-                        record_auth_event("trading_refresh_ok", before_min_left=round(trade_min_left, 3), after_min_left=round(after_min_left, 3), account_verification="enabled")
-                        print(f"TRADING_TOKEN_REFRESH OK before_min_left={trade_min_left:.1f} after_min_left={after_min_left:.1f} account_verification=enabled", flush=True)
-                    except Exception as e:
-                        record_auth_event("trading_refresh_error", before_min_left=round(trade_min_left, 3), error_type=type(e).__name__, error=str(e)[:500])
-                        print(f"TRADING_TOKEN_REFRESH error: {type(e).__name__}: {e}", flush=True)
+                            raise RuntimeError(
+                                f"persisted trading token lifetime too short: "
+                                f"{after_min_left:.1f} minutes"
+                            )
 
+                        refreshed = make_trader()
+                        account_verified = (
+                            getattr(refreshed, "account_id", "TRADING_DISABLED")
+                            != "TRADING_DISABLED"
+                        )
+                        if not account_verified:
+                            raise RuntimeError(
+                                "post-refresh trading account lookup failed"
+                            )
+
+                        trader = refreshed
+                        record_auth_event(
+                            "trading_refresh_ok",
+                            before_min_left=round(trade_min_left, 3),
+                            after_min_left=round(after_min_left, 3),
+                            account_verification="account_hash_resolved",
+                            live_order_placement=bool(
+                                getattr(refreshed, "enabled", False)
+                            ),
+                        )
+                        print(
+                            "TRADING_TOKEN_REFRESH OK "
+                            f"before_min_left={trade_min_left:.1f} "
+                            f"after_min_left={after_min_left:.1f} "
+                            "account_verification=account_hash_resolved "
+                            f"live_order_placement="
+                            f"{bool(getattr(refreshed, 'enabled', False))}",
+                            flush=True,
+                        )
+                    except Exception as e:
+                        record_auth_event(
+                            "trading_refresh_error",
+                            before_min_left=round(trade_min_left, 3),
+                            error_type=type(e).__name__,
+                            error=str(e)[:500],
+                        )
+                        print(
+                            f"TRADING_TOKEN_REFRESH error: "
+                            f"{type(e).__name__}: {e}",
+                            flush=True,
+                        )
+
+                # Recovery is relevant only when live placement is intended.
+                trader_enabled = bool(getattr(trader, "enabled", True))
+                if (
+                    live_order_placement_enabled()
+                    and not trader_enabled
+                    and not trade_auth_blocked
+                    and now_ts - last_trading_token_touch >= 60
+                ):
+                    last_trading_token_touch = now_ts
+                    recovered = make_trader()
+                    if bool(getattr(recovered, "enabled", True)):
+                        trader = recovered
+                        print(
+                            "TRADING_AUTH_RECOVERED account lookup succeeded",
+                            flush=True,
+                        )
             df = quote_source.read_data()
 
             if RUN_MODE == "REPLAY":
