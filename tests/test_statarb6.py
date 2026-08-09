@@ -20,6 +20,10 @@ class StatArb6Tests(unittest.TestCase):
    t=StatArbPaperTracker(root,1000);now=datetime(2026,8,10,14,0,tzinfo=timezone.utc);d={"strategy_id":"X","timestamp":now,"legs":[{"symbol":"AAA","side":"LONG","bid":99.9,"ask":100,"weight":1},{"symbol":"BBB","side":"SHORT","bid":50,"ask":50.1,"weight":1}],"target_pct":10,"stop_pct":10,"max_hold_minutes":1}
    self.assertEqual(t.open_decisions([d]),1);row=next(iter(t.active.values()));self.assertEqual(row["legs"][0]["shares"],5);self.assertEqual(row["legs"][1]["shares"],10)
    t.update(now+timedelta(minutes=2),{"AAA":{"bid":101,"ask":101.1},"BBB":{"bid":48.9,"ask":49}});rows=[json.loads(x) for x in Path(root,"statarb_paper_outcomes.jsonl").read_text().splitlines()];self.assertAlmostEqual(rows[-1]["pnl"],15.0);self.assertAlmostEqual(rows[-1]["return_pct_on_gross_notional"],1.5)
+ def test_default_group_notional_allows_whole_share_spy_hedge(self):
+  with tempfile.TemporaryDirectory() as root:
+   t=StatArbPaperTracker(root);now=datetime(2026,8,10,14,0,tzinfo=timezone.utc);d={"strategy_id":"X","timestamp":now,"legs":[{"symbol":"XYZ","side":"LONG","bid":99.9,"ask":100,"weight":1},{"symbol":"SPY","side":"SHORT","bid":773,"ask":773.1,"weight":1}],"target_pct":1,"stop_pct":1,"max_hold_minutes":30}
+   self.assertEqual(t.open_decisions([d]),1);row=next(iter(t.active.values()));spy=next(x for x in row["legs"] if x["symbol"]=="SPY");self.assertGreaterEqual(spy["shares"],1);self.assertEqual(t.group_notional,5000.0)
  def test_all_strategies_survive_dynamic_synthetic_stream(self):
   mods=[importlib.import_module(f"statarb_strategies.strategy_{s.lower()}").Strategy() for s in STRATEGIES];start=datetime(2026,8,10,14,0,tzinfo=timezone.utc)
   for minute in range(55):

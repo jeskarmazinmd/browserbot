@@ -13,7 +13,7 @@ def _atomic(path,payload):
     path=Path(path);path.parent.mkdir(parents=True,exist_ok=True);tmp=path.with_suffix(path.suffix+".tmp");tmp.write_text(json.dumps(payload,separators=(",",":"))+"\n");tmp.replace(path)
 
 class StatArbPaperTracker:
-    def __init__(self,root="/data",group_notional=1000.0):
+    def __init__(self,root="/data",group_notional=5000.0):
         self.root=Path(root);self.group_notional=float(group_notional);self.ledger=self.root/"statarb_paper_outcomes.jsonl";self.status_path=self.root/"statarb_paper_status.json";self.active={};self.seen=set();self.completed=0;self._restore();self._status()
     def _restore(self):
         if not self.ledger.exists():return
