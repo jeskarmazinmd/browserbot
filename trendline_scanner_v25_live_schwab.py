@@ -681,7 +681,7 @@ def get_schwab_client():
 
     mins = token_minutes_left(TOKEN_PATH)
     if mins < 15:
-        print(f"market token low ({mins:.1f} min left); rebuilding Schwab client proactively", flush=True)
+        print(f"market token below owner threshold ({mins:.1f} min left); strategy runner owns explicit refresh", flush=True)
 
     return client_from_token_file(str(TOKEN_PATH), SCHWAB_APP_KEY, SCHWAB_SECRET)
 
