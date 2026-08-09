@@ -40,6 +40,7 @@ WORKERS = {
 # stays stopped until the next normal machine restart/deploy.
 OPTIONAL_WORKERS = {
     "xs_shadow": [sys.executable, "-u", "xs_shadow_worker.py"],
+    "event_shadow": [sys.executable, "-u", "event_shadow_worker.py"],
     "options_shadow": [sys.executable, "-u", "options_shadow_worker.py"],
     "futures_shadow": [sys.executable, "-u", "futures_shadow_worker.py"],
     "forex_shadow": [sys.executable, "-u", "forex_shadow_worker.py"],
