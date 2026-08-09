@@ -43,6 +43,7 @@ OPTIONAL_WORKERS = {
     "options_shadow": [sys.executable, "-u", "options_shadow_worker.py"],
     "futures_shadow": [sys.executable, "-u", "futures_shadow_worker.py"],
     "forex_shadow": [sys.executable, "-u", "forex_shadow_worker.py"],
+    "short_shadow": [sys.executable, "-u", "short_shadow_worker.py"],
 }
 
 EXIT_LOG = Path("/data/worker_supervisor.jsonl")
