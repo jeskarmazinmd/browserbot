@@ -22,6 +22,9 @@ class FuturesCurveTests(unittest.TestCase):
  def test_curve_selection_sorts_by_expiration(self):
   quotes={"a":q("/MESZ26",101,102,expiration=2000),"b":q("/MESU26",100,101,expiration=1000),"c":q("/MESH27",102,103,expiration=3000)}
   self.assertEqual([x["symbol"] for x in worker.curves(quotes)["/MES"]],["/MESU26","/MESZ26","/MESH27"])
+ def test_curve_selection_rejects_illiquid_early_contract(self):
+  quotes={"bad":q("/MGCQ26",3893.3,4535,10,1000),"front":q("/MGCV26",4362.4,4370,10,2000),"back":q("/MGCZ26",4393.7,4404.7,10,3000)}
+  self.assertEqual([x["symbol"] for x in worker.curves(quotes)["/MGC"]],["/MGCV26","/MGCZ26"])
  def test_weekly_futures_session_gate(self):
   self.assertFalse(worker.futures_session(datetime(2026,8,9,20,tzinfo=timezone.utc)))
   self.assertTrue(worker.futures_session(datetime(2026,8,9,23,tzinfo=timezone.utc)))

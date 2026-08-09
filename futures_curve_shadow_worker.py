@@ -7,7 +7,7 @@ from zoneinfo import ZoneInfo
 import requests
 from futures_curve_paper_tracker import FuturesCurvePaperTracker
 
-NY=ZoneInfo("America/New_York");ROOT_MONTHS={"/MES":"HMUZ","/MNQ":"HMUZ","/MCL":"FGHJKMNQUVXZ","/MGC":"GJMQVZ","/M6E":"HMUZ"};STRATEGIES=("FCMES1","FCMNQ1","FCOIL1","FCOILM1","FCGOLD1","FCFX1");BASE="https://api.schwabapi.com/marketdata/v1/quotes";TOKEN_PATH=Path(os.environ.get("FUTURES_CURVE_MARKET_TOKEN","/data/schwab_token.json"));DATA_ROOT=Path(os.environ.get("FUTURES_CURVE_DATA_ROOT","/data"));POLL_SECONDS=int(os.environ.get("FUTURES_CURVE_POLL_SECONDS","300"));MAX_AGE=int(os.environ.get("FUTURES_CURVE_MAX_QUOTE_AGE","360"));STATUS=DATA_ROOT/"futures_curve_shadow_status.json"
+NY=ZoneInfo("America/New_York");ROOT_MONTHS={"/MES":"HMUZ","/MNQ":"HMUZ","/MCL":"FGHJKMNQUVXZ","/MGC":"GJMQVZ","/M6E":"HMUZ"};MAX_LEG_SPREAD_DOLLARS={"/MES":100.,"/MNQ":200.,"/MCL":250.,"/MGC":200.,"/M6E":50.};STRATEGIES=("FCMES1","FCMNQ1","FCOIL1","FCOILM1","FCGOLD1","FCFX1");BASE="https://api.schwabapi.com/marketdata/v1/quotes";TOKEN_PATH=Path(os.environ.get("FUTURES_CURVE_MARKET_TOKEN","/data/schwab_token.json"));DATA_ROOT=Path(os.environ.get("FUTURES_CURVE_DATA_ROOT","/data"));POLL_SECONDS=int(os.environ.get("FUTURES_CURVE_POLL_SECONDS","300"));MAX_AGE=int(os.environ.get("FUTURES_CURVE_MAX_QUOTE_AGE","360"));STATUS=DATA_ROOT/"futures_curve_shadow_status.json"
 
 def futures_session(now):
  et=now.astimezone(NY);w=et.weekday();m=et.hour*60+et.minute
@@ -38,7 +38,12 @@ def fresh(q,now):
 def curves(quotes):
  out={}
  for root in ROOT_MONTHS:
-  rows=[q for q in quotes.values() if q["symbol"].startswith(root)];rows.sort(key=lambda q:float(q["expiration_ms"]));out[root]=rows[:3]
+  rows=[]
+  for q in quotes.values():
+   if not q["symbol"].startswith(root):continue
+   spread_dollars=(float(q["ask"])-float(q["bid"]))*float(q["multiplier"])
+   if spread_dollars<=MAX_LEG_SPREAD_DOLLARS[root]:rows.append(q)
+  rows.sort(key=lambda q:float(q["expiration_ms"]));out[root]=rows[:3]
  return out
 def _atomic(payload):
  STATUS.parent.mkdir(parents=True,exist_ok=True);tmp=STATUS.with_suffix(".json.tmp");tmp.write_text(json.dumps(payload,separators=(",",":"))+"\n");tmp.replace(STATUS)
