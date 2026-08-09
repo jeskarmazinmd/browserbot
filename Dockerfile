@@ -64,6 +64,9 @@ COPY swing_strategies /app/swing_strategies
 COPY futures_curve_shadow_worker.py .
 COPY futures_curve_paper_tracker.py .
 COPY futures_curve_strategies /app/futures_curve_strategies
+COPY options_rv_shadow_worker.py .
+COPY options_rv_paper_tracker.py .
+COPY options_rv_strategies /app/options_rv_strategies
 COPY detectors /app/detectors
 COPY reporting /app/reporting
 COPY research_lab /app/research_lab

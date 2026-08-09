@@ -49,6 +49,7 @@ OPTIONAL_WORKERS = {
     "statarb_shadow": [sys.executable, "-u", "statarb_shadow_worker.py"],
     "swing_shadow": [sys.executable, "-u", "swing_shadow_worker.py"],
     "futures_curve_shadow": [sys.executable, "-u", "futures_curve_shadow_worker.py"],
+    "options_rv_shadow": [sys.executable, "-u", "options_rv_shadow_worker.py"],
 }
 
 EXIT_LOG = Path("/data/worker_supervisor.jsonl")
