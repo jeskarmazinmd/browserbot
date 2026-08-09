@@ -37,6 +37,8 @@ COPY short_shadow_worker.py .
 COPY short_paper_tracker.py .
 COPY microstructure_shadow_worker.py .
 COPY microstructure_paper_tracker.py .
+COPY crosssection_shadow_worker.py .
+COPY crosssection_paper_tracker.py .
 COPY schwab_token_guard.py .
 COPY supervisor.py .
 COPY data_maintenance.py .
@@ -52,6 +54,7 @@ COPY futures_strategies /app/futures_strategies
 COPY forex_strategies /app/forex_strategies
 COPY short_strategies /app/short_strategies
 COPY microstructure_strategies /app/microstructure_strategies
+COPY crosssection_strategies /app/crosssection_strategies
 COPY detectors /app/detectors
 COPY reporting /app/reporting
 COPY research_lab /app/research_lab
