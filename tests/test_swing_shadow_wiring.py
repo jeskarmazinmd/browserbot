@@ -9,8 +9,8 @@ class SwingWiringTests(unittest.TestCase):
         self.assertNotIn("place_order", source)
         self.assertNotIn("get_schwab_client", source)
         gate = source.index("if not regular_market(now)")
-        self.assertLess(gate, source.index("load_history(now)", gate))
-        self.assertLess(gate, source.index("fetch_quotes()", gate))
+        self.assertLess(gate, source.index("load_history(now,symbols)", gate))
+        self.assertLess(gate, source.index("fetch_quotes(symbols)", gate))
 
     def test_supervisor_and_docker_are_optional_worker_wired(self):
         supervisor = Path("supervisor.py").read_text()

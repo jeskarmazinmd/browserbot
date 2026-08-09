@@ -51,10 +51,36 @@ class Swing6Tests(unittest.TestCase):
             if symbol == "QQQ":
                 raise RuntimeError("temporary")
             return [("2026-08-07", 100.0)]
-        with patch.object(worker, "fetch_history", side_effect=fake):
-            rows, failures = worker.load_history(now)
+        with tempfile.TemporaryDirectory() as root, \
+             patch.object(worker, "DATA_ROOT", Path(root)), \
+             patch.object(worker, "HISTORY_PACE_SECONDS", 0), \
+             patch.object(worker, "fetch_history", side_effect=fake):
+            rows, failures, requests = worker.load_history(now, ("SPY", "QQQ", "IWM"))
         self.assertTrue(rows["SPY"])
         self.assertIn("QQQ", failures)
+        self.assertEqual(requests, 3)
+
+    def test_dynamic_universe_is_500_and_not_alphabetic_first_n(self):
+        now = datetime(2026, 8, 10, 15, 0, tzinfo=timezone.utc)
+        with tempfile.TemporaryDirectory() as root, patch.object(worker, "DATA_ROOT", Path(root)):
+            path = Path(root, "research_universe_20260810.csv")
+            path.write_text("symbol\n" + "\n".join(f"S{i:04d}" for i in range(1200)) + "\n")
+            symbols = worker.load_universe(now)
+        self.assertEqual(len(symbols), 500)
+        self.assertTrue(set(worker.ANCHORS) <= set(symbols))
+        self.assertTrue(any(int(x[1:]) > 500 for x in symbols if x.startswith("S") and x[1:].isdigit()))
+
+    def test_daily_history_cache_prevents_repeat_api_warmup(self):
+        now = datetime(2026, 8, 10, 15, 0, tzinfo=timezone.utc)
+        with tempfile.TemporaryDirectory() as root, \
+             patch.object(worker, "DATA_ROOT", Path(root)), \
+             patch.object(worker, "HISTORY_PACE_SECONDS", 0), \
+             patch.object(worker, "fetch_history", return_value=[("2026-08-07", 100.0)]) as fetch:
+            first = worker.load_history(now, ("SPY", "QQQ"))
+            second = worker.load_history(now, ("SPY", "QQQ"))
+        self.assertEqual(first[2], 2)
+        self.assertEqual(second[2], 0)
+        self.assertEqual(fetch.call_count, 2)
 
     def test_tracker_holds_across_sessions_then_times_out(self):
         with tempfile.TemporaryDirectory() as root:
