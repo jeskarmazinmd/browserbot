@@ -117,6 +117,16 @@ def main():
     print(f"MICROSTRUCTURE_SHADOW starting strategies={len(strategies)} symbols={len(SYMBOLS)} poll={POLL_SECONDS}s", flush=True)
     while True:
         started = time.monotonic(); now = datetime.now(timezone.utc)
+        if not regular_market(now):
+            _atomic({
+                "updated_at": now.isoformat(), "status": "WAITING_REGULAR_MARKET",
+                "strategies": len(strategies), "symbols": len(SYMBOLS), "fresh_symbols": 0,
+                "active_paper_positions": len(tracker.active), "decisions": decisions_total,
+                "errors": errors_total, "requests": requests_total, "poll_seconds": POLL_SECONDS,
+                "broker_execution_enabled": False,
+            })
+            time.sleep(30)
+            continue
         try:
             raw = fetch_quotes(); requests_total += 1
             quotes = {symbol: normalize(symbol, payload) for symbol, payload in raw.items() if symbol in SYMBOLS}

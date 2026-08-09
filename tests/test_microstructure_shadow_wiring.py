@@ -20,6 +20,13 @@ class MicrostructureShadowWiringTests(unittest.TestCase):
         self.assertIn("COPY microstructure_paper_tracker.py .", src)
         self.assertIn("COPY microstructure_strategies /app/microstructure_strategies", src)
 
+    def test_closed_market_check_precedes_quote_request(self):
+        src = pathlib.Path("microstructure_shadow_worker.py").read_text()
+        loop = src.index("while True:")
+        closed = src.index("if not regular_market(now):", loop)
+        fetch = src.index("raw = fetch_quotes()", loop)
+        self.assertLess(closed, fetch)
+
 
 if __name__ == "__main__":
     unittest.main()
