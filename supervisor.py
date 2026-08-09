@@ -47,6 +47,7 @@ OPTIONAL_WORKERS = {
     "microstructure_shadow": [sys.executable, "-u", "microstructure_shadow_worker.py"],
     "crosssection_shadow": [sys.executable, "-u", "crosssection_shadow_worker.py"],
     "statarb_shadow": [sys.executable, "-u", "statarb_shadow_worker.py"],
+    "swing_shadow": [sys.executable, "-u", "swing_shadow_worker.py"],
 }
 
 EXIT_LOG = Path("/data/worker_supervisor.jsonl")

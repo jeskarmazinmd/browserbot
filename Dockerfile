@@ -58,6 +58,9 @@ COPY short_strategies /app/short_strategies
 COPY microstructure_strategies /app/microstructure_strategies
 COPY crosssection_strategies /app/crosssection_strategies
 COPY statarb_strategies /app/statarb_strategies
+COPY swing_shadow_worker.py .
+COPY swing_paper_tracker.py .
+COPY swing_strategies /app/swing_strategies
 COPY detectors /app/detectors
 COPY reporting /app/reporting
 COPY research_lab /app/research_lab
