@@ -47,7 +47,12 @@ class Strategy(EventStrategy):
             stamp = stamp.replace(tzinfo=timezone.utc)
         if stamp.astimezone(timezone.utc) < birth:
             return signals
-        volume_provider = snapshot.metadata.get("confirm_recent_volume_ratio")
+        scalar_volume_provider = snapshot.metadata.get("confirm_recent_volume_ratio")
+        batch_volume_provider = snapshot.metadata.get("confirm_recent_volume_ratios")
+        volume_provider_available = callable(batch_volume_provider) or callable(
+            scalar_volume_provider
+        )
+        crossovers = []
 
         for symbol, quote in snapshot.quotes.items():
             state = self._state.setdefault(symbol, _State())
@@ -73,14 +78,30 @@ class Strategy(EventStrategy):
             )
             consider(self, symbol, snapshot.timestamp, price, [
                 boolean("bullish_ema_crossover", crossed),
-                boolean("volume_provider_available", callable(volume_provider)),
+                boolean("volume_provider_available", volume_provider_available),
             ])
-            if not crossed or not callable(volume_provider):
+            if not crossed or not volume_provider_available:
                 continue
+            crossovers.append((symbol, price, state))
+
+        if callable(batch_volume_provider):
             try:
-                latest_volume_ratio = volume_provider(symbol)
+                volume_ratios = batch_volume_provider(
+                    [symbol for symbol, _, _ in crossovers],
+                    snapshot.timestamp,
+                )
             except Exception:
-                latest_volume_ratio = None
+                volume_ratios = {}
+        else:
+            volume_ratios = {}
+            for symbol, _, _ in crossovers:
+                try:
+                    volume_ratios[symbol] = scalar_volume_provider(symbol)
+                except Exception:
+                    volume_ratios[symbol] = None
+
+        for symbol, price, state in crossovers:
+            latest_volume_ratio = volume_ratios.get(symbol)
             consider(self, symbol, snapshot.timestamp, price, [
                 minimum("volume_ratio", latest_volume_ratio, MIN_VOLUME_RATIO),
             ])

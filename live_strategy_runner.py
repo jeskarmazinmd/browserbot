@@ -1,4 +1,5 @@
 import os, glob, time, json, math
+import threading
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -23,6 +24,7 @@ from strategies.registry import (
     validate_flash_entry,
 )
 from strategies.capacity_filters import apply_capacity_filters
+from strategies.ema_volume_batch import BoundedVolumeConfirmation
 from regime_logger import log_regime, latest_regime
 from paper_outcome_tracker import PaperOutcomeTracker
 from multi_leg_paper_tracker import MultiLegPaperTracker
@@ -260,6 +262,17 @@ VOLUME_METRIC_KEYS = (
 )
 
 
+_MARKET_DATA_CLIENT_LOCAL = threading.local()
+_EMA_VOLUME_REQUEST_TIMEOUT_SECONDS = float(
+    os.environ.get("EMA_VOLUME_REQUEST_TIMEOUT_SECONDS", "5")
+)
+_EMA_VOLUME_CONFIRMATION = BoundedVolumeConfirmation(
+    max_workers=os.environ.get("EMA_VOLUME_MAX_WORKERS", "4"),
+    max_symbols=os.environ.get("EMA_VOLUME_MAX_SYMBOLS_PER_MINUTE", "24"),
+    timeout_seconds=os.environ.get("EMA_VOLUME_BATCH_TIMEOUT_SECONDS", "18"),
+)
+
+
 def _market_data_client():
     """Build the existing Schwab market-data client without touching the quote tape."""
     from schwab.auth import client_from_token_file
@@ -268,11 +281,17 @@ def _market_data_client():
     app_secret = os.environ.get("SCHWAB_MARKET_SECRET") or os.environ.get("SCHWAB_SECRET")
     if not app_key or not app_secret:
         raise RuntimeError("Schwab market-data app key/secret missing")
-    return client_from_token_file(
-        "/data/schwab_token.json",
-        app_key,
-        app_secret,
-    )
+    client = getattr(_MARKET_DATA_CLIENT_LOCAL, "client", None)
+    if client is None:
+        client = client_from_token_file(
+            "/data/schwab_token.json",
+            app_key,
+            app_secret,
+        )
+        if hasattr(client, "set_timeout"):
+            client.set_timeout(_EMA_VOLUME_REQUEST_TIMEOUT_SECONDS)
+        _MARKET_DATA_CLIENT_LOCAL.client = client
+    return client
 
 
 def _minute_candles(symbol, lookback_minutes=45):
@@ -307,8 +326,8 @@ def _minute_candles(symbol, lookback_minutes=45):
     return pd.DataFrame(rows).sort_values("timestamp").drop_duplicates("timestamp", keep="last")
 
 
-def _confirm_recent_volume_ratio(symbol, lookback_minutes=30):
-    """Fetch volume only after an EMA1 price crossover exists."""
+def _confirm_recent_volume_ratio_uncached(symbol, lookback_minutes=30):
+    """Fetch one EMA volume ratio, with failures represented as unavailable."""
     try:
         candles = _minute_candles(
             symbol,
@@ -334,6 +353,20 @@ def _confirm_recent_volume_ratio(symbol, lookback_minutes=30):
 
     except Exception:
         return None
+
+
+def _confirm_recent_volume_ratios(symbols, timestamp=None):
+    """Confirm a bounded set once per minute and share it across EMA modules."""
+    return _EMA_VOLUME_CONFIRMATION.confirm(
+        symbols,
+        timestamp,
+        _confirm_recent_volume_ratio_uncached,
+    )
+
+
+def _confirm_recent_volume_ratio(symbol, lookback_minutes=30):
+    """Compatibility wrapper for callers that still request one symbol."""
+    return _confirm_recent_volume_ratios([symbol]).get(str(symbol))
 
 
 def fetch_flash_volume_metrics(symbol):
@@ -2037,6 +2070,9 @@ def main():
                             **minute_snapshot.metadata,
                             "confirm_recent_volume_ratio": (
                                 _confirm_recent_volume_ratio
+                            ),
+                            "confirm_recent_volume_ratios": (
+                                _confirm_recent_volume_ratios
                             ),
                         },
                     )
