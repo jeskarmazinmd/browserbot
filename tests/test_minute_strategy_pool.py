@@ -70,6 +70,62 @@ class MinuteStrategyPoolTests(unittest.TestCase):
             serial.close()
             parallel.close()
 
+    def test_dead_shard_is_restarted_without_terminating_pool(self):
+        pool = MinuteStrategyPool(shard_count=2, timeout_seconds=30)
+        try:
+            failed_shard = list(pool.workers[0][2])
+            old_process = pool.workers[0][0]
+            old_process.terminate()
+            old_process.join(timeout=2)
+
+            signals, errors = pool.evaluate(snapshots(1)[0])
+
+            self.assertIsInstance(signals, list)
+            self.assertEqual(
+                {strategy_id for strategy_id, _ in errors},
+                {spec[0] for spec in failed_shard},
+            )
+            self.assertTrue(pool.workers[0][0].is_alive())
+            self.assertNotEqual(pool.workers[0][0].pid, old_process.pid)
+            self.assertFalse(pool.closed)
+        finally:
+            pool.close()
+
+    def test_timeout_restarts_shards_without_system_exit(self):
+        pool = MinuteStrategyPool(shard_count=2, timeout_seconds=0)
+        try:
+            signals, errors = pool.evaluate(snapshots(1)[0])
+
+            self.assertEqual(signals, [])
+            self.assertEqual(
+                {strategy_id for strategy_id, _ in errors},
+                {spec[0] for spec in pool.specs},
+            )
+            self.assertTrue(all(process.is_alive() for process, _, _ in pool.workers))
+            self.assertFalse(pool.closed)
+        finally:
+            pool.close()
+
+    def test_broken_pipe_restarts_only_affected_shard(self):
+        pool = MinuteStrategyPool(shard_count=2, timeout_seconds=30)
+        try:
+            failed_shard = list(pool.workers[0][2])
+            old_process = pool.workers[0][0]
+            pool.workers[0][1].close()
+
+            signals, errors = pool.evaluate(snapshots(1)[0])
+
+            self.assertIsInstance(signals, list)
+            self.assertEqual(
+                {strategy_id for strategy_id, _ in errors},
+                {spec[0] for spec in failed_shard},
+            )
+            self.assertTrue(pool.workers[0][0].is_alive())
+            self.assertNotEqual(pool.workers[0][0].pid, old_process.pid)
+            self.assertFalse(pool.closed)
+        finally:
+            pool.close()
+
 
 if __name__ == "__main__":
     unittest.main()

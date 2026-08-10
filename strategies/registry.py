@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib
 import multiprocessing
+from multiprocessing.connection import wait
 import os
 import time
 from strategy_diagnostics import diagnostics
@@ -421,6 +422,10 @@ def _minute_worker(connection, specs):
     connection.close()
 
 
+class MinuteStrategyShardError(RuntimeError):
+    """Recoverable infrastructure failure affecting one strategy shard."""
+
+
 class MinuteStrategyPool:
     """Persistent process shards for stateful completed-minute strategies."""
 
@@ -443,6 +448,7 @@ class MinuteStrategyPool:
         self.sequence = 0
         self.closed = False
         self.workers = []
+        self.restart_counts = {}
 
         shard_count = max(1, min(requested, len(self.specs)))
         if shard_count == 1:
@@ -450,22 +456,62 @@ class MinuteStrategyPool:
             return
 
         self.local_strategies = None
-        context = multiprocessing.get_context("fork")
+        self.context = multiprocessing.get_context("fork")
         for index, shard in enumerate(_balanced_shards(self.specs, shard_count)):
-            parent, child = context.Pipe()
-            process = context.Process(
-                target=_minute_worker,
-                args=(child, shard),
-                name=f"minute-strategy-{index}",
-                daemon=True,
-            )
-            process.start()
-            child.close()
-            self.workers.append((process, parent, shard))
+            self.workers.append(self._spawn_worker(index, shard))
 
     @property
     def shard_count(self):
         return len(self.workers) or 1
+
+    def _spawn_worker(self, index, shard):
+        parent, child = self.context.Pipe()
+        process = self.context.Process(
+            target=_minute_worker,
+            args=(child, shard),
+            name=f"minute-strategy-{index}",
+            daemon=True,
+        )
+        process.start()
+        child.close()
+        return process, parent, shard
+
+    @staticmethod
+    def _stop_worker(worker):
+        process, connection, _ = worker
+        try:
+            connection.close()
+        except OSError:
+            pass
+        if process.is_alive():
+            process.terminate()
+        process.join(timeout=2.0)
+        if process.is_alive():
+            process.kill()
+            process.join(timeout=2.0)
+
+    def _replace_worker(self, index, reason):
+        process, _, shard = self.workers[index]
+        strategy_ids = [spec[0] for spec in shard]
+        self._stop_worker(self.workers[index])
+        self.workers[index] = self._spawn_worker(index, shard)
+        restart_count = self.restart_counts.get(index, 0) + 1
+        self.restart_counts[index] = restart_count
+        message = (
+            f"shard={index} worker={process.name} reason={reason} "
+            f"strategies={','.join(strategy_ids)} restart_count={restart_count}"
+        )
+        print(f"MINUTE_STRATEGY_SHARD_RESTART {message}", flush=True)
+        return [
+            {
+                "strategy_id": strategy_id,
+                "signals": [],
+                "error": f"MinuteStrategyShardError: {message}",
+                "nearest_miss": None,
+                "elapsed_seconds": 0.0,
+            }
+            for strategy_id in strategy_ids
+        ]
 
     def evaluate(self, snapshot):
         if self.closed:
@@ -475,37 +521,54 @@ class MinuteStrategyPool:
 
         self.sequence += 1
         sequence = self.sequence
-        for process, connection, _ in self.workers:
+        pending = {}
+        results = []
+        for index, (process, connection, _) in enumerate(list(self.workers)):
             if not process.is_alive():
-                self.close()
-                raise SystemExit(f"minute strategy worker exited: {process.name}")
-            connection.send((sequence, snapshot))
+                results.extend(self._replace_worker(index, "worker_exited_before_send"))
+                continue
+            try:
+                connection.send((sequence, snapshot))
+            except (BrokenPipeError, EOFError, OSError) as exc:
+                results.extend(self._replace_worker(
+                    index,
+                    f"send_failed:{type(exc).__name__}:{exc}",
+                ))
+                continue
+            pending[connection] = index
 
         deadline = time.monotonic() + self.timeout_seconds
-        results = []
-        for process, connection, _ in self.workers:
+        while pending:
             remaining = deadline - time.monotonic()
-            if remaining <= 0 or not connection.poll(remaining):
-                self.close()
-                raise SystemExit(
-                    f"minute strategy worker timed out: {process.name} "
-                    f"after {self.timeout_seconds:.1f}s"
-                )
-            try:
-                returned_sequence, rows = connection.recv()
-            except (EOFError, OSError) as exc:
-                self.close()
-                raise SystemExit(
-                    f"minute strategy worker communication failed: "
-                    f"{process.name}: {type(exc).__name__}: {exc}"
-                ) from exc
-            if returned_sequence != sequence:
-                self.close()
-                raise SystemExit(
-                    f"minute strategy worker sequence mismatch: "
-                    f"expected={sequence} received={returned_sequence}"
-                )
-            results.extend(rows)
+            if remaining <= 0:
+                break
+            ready = wait(list(pending), timeout=remaining)
+            if not ready:
+                break
+            for connection in ready:
+                index = pending.pop(connection)
+                try:
+                    returned_sequence, rows = connection.recv()
+                except (EOFError, OSError) as exc:
+                    results.extend(self._replace_worker(
+                        index,
+                        f"receive_failed:{type(exc).__name__}:{exc}",
+                    ))
+                    continue
+                if returned_sequence != sequence:
+                    results.extend(self._replace_worker(
+                        index,
+                        "sequence_mismatch:"
+                        f"expected={sequence}:received={returned_sequence}",
+                    ))
+                    continue
+                results.extend(rows)
+
+        for connection, index in list(pending.items()):
+            results.extend(self._replace_worker(
+                index,
+                f"timeout_after_{self.timeout_seconds:.1f}s",
+            ))
 
         results.sort(key=lambda row: self.order[row["strategy_id"]])
         signals = []
@@ -524,7 +587,12 @@ class MinuteStrategyPool:
             )
             signals.extend(row_signals)
             if error:
-                errors.append((strategy_id, RuntimeError(error)))
+                error_type = (
+                    MinuteStrategyShardError
+                    if error.startswith("MinuteStrategyShardError:")
+                    else RuntimeError
+                )
+                errors.append((strategy_id, error_type(error)))
         return signals, errors
 
     def close(self):
@@ -536,9 +604,5 @@ class MinuteStrategyPool:
                 connection.send(None)
             except (BrokenPipeError, EOFError, OSError):
                 pass
-        for process, connection, _ in self.workers:
-            process.join(timeout=5.0)
-            if process.is_alive():
-                process.terminate()
-                process.join(timeout=2.0)
-            connection.close()
+        for worker in self.workers:
+            self._stop_worker(worker)
