@@ -1,0 +1,36 @@
+app = "schwab-executor"
+primary_region = "lax"
+
+[build]
+  dockerfile = "Dockerfile.executor"
+
+[env]
+  EXECUTOR_MODE = "READ_ONLY"
+  LIVE_EXECUTION_ENABLED = "false"
+  EXECUTOR_MAX_QUANTITY = "1"
+  EXECUTOR_MAX_POSITIONS = "1"
+  EXECUTOR_MAX_SIGNAL_AGE_SECONDS = "30"
+  EXECUTOR_ALLOWED_SYMBOLS = ""
+  EXECUTOR_ALLOWED_STRATEGIES = ""
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
+
+[mounts]
+  source = "schwab_executor_data"
+  destination = "/data"
+
+[[http_service.checks]]
+  interval = "15s"
+  timeout = "2s"
+  grace_period = "10s"
+  method = "GET"
+  path = "/health"
+
+[http_service]
+  internal_port = 8080
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1

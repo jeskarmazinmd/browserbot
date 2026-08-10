@@ -1,0 +1,9 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY executor_service.py .
+
+RUN mkdir -p /data
+
+CMD ["python", "-u", "executor_service.py"]
