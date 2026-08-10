@@ -17,11 +17,11 @@ from trendline_scanner_v25_live_schwab import (
 
 DATA_DIR = Path("/data/tapes")
 SAVE_TAPES = True
-MAX_TAPE_MB = 200
-MAX_TAPE_ROWS = 900000
+MAX_TAPE_MB = 300
+MAX_TAPE_ROWS = 4_000_000
 
 # Overall tape retention limits.
-MAX_TOTAL_TAPE_MB = 250
+MAX_TOTAL_TAPE_MB = 400
 MAX_TAPE_FILES = 10
 MAINTENANCE_SECONDS = 60
 
