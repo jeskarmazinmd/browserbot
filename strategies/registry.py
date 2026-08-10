@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import importlib
+import multiprocessing
+import os
+import time
 from strategy_diagnostics import diagnostics
 
 from . import strategy_a
@@ -344,3 +347,198 @@ def on_minute_snapshot(snapshot):
 def on_tick_snapshot(snapshot):
     """Evaluate tick/hybrid strategies after tick routing is activated."""
     return _evaluate(snapshot, TICK_STRATEGIES)
+
+
+# Approximate warmed-up CPU seconds per full-universe minute.  These values are
+# used only to balance persistent worker shards; they do not alter strategy
+# behavior, thresholds, symbols, or signal ordering.
+_MINUTE_STRATEGY_WEIGHTS = {
+    "GP1": 1.40, "GT1": 1.15, "QTD1X": 0.79, "GTMX": 0.79,
+    "M3": 0.63, "VT1": 0.50, "GM1": 0.46, "GE1": 0.45,
+    "PTD1X": 0.39, "TL1": 0.39, "MC1": 0.38, "AV1": 0.36,
+    "CV1": 0.34, "M2": 0.28, "GR1": 0.23, "M1": 0.15,
+    "SH1": 0.15, "HL1": 0.14, "SMA1": 0.13, "VWEMA1": 0.12,
+    "PD1": 0.11, "EMA2": 0.07, "TF1": 0.06, "EMA3": 0.05,
+    "BO1": 0.04,
+}
+
+
+def _minute_strategy_specs():
+    # Shard only strategies that the registry successfully loaded.
+    return [
+        (
+            _strategy_id(strategy),
+            type(strategy).__module__.rsplit(".", 1)[-1],
+            type(strategy).__name__,
+        )
+        for strategy in MINUTE_STRATEGIES
+    ]
+
+
+def _balanced_shards(specs, shard_count):
+    shards = [[] for _ in range(shard_count)]
+    totals = [0.0] * shard_count
+    weighted = sorted(
+        specs,
+        key=lambda spec: _MINUTE_STRATEGY_WEIGHTS.get(spec[0], 0.01),
+        reverse=True,
+    )
+    for spec in weighted:
+        index = min(range(shard_count), key=totals.__getitem__)
+        shards[index].append(spec)
+        totals[index] += _MINUTE_STRATEGY_WEIGHTS.get(spec[0], 0.01)
+    return shards
+
+
+def _minute_worker(connection, specs):
+    strategies = []
+    for strategy_id, module_name, class_name in specs:
+        module = importlib.import_module(f".{module_name}", __package__)
+        strategies.append((strategy_id, getattr(module, class_name)()))
+
+    while True:
+        command = connection.recv()
+        if command is None:
+            break
+        sequence, snapshot = command
+        rows = []
+        for strategy_id, strategy in strategies:
+            started = time.perf_counter()
+            try:
+                result = strategy.on_snapshot(snapshot) or []
+                error = None
+            except Exception as exc:
+                result = []
+                error = f"{type(exc).__name__}: {exc}"
+            rows.append({
+                "strategy_id": strategy_id,
+                "signals": result,
+                "error": error,
+                "nearest_miss": getattr(strategy, "nearest_miss", None),
+                "elapsed_seconds": time.perf_counter() - started,
+            })
+        connection.send((sequence, rows))
+    connection.close()
+
+
+class MinuteStrategyPool:
+    """Persistent process shards for stateful completed-minute strategies."""
+
+    def __init__(self, shard_count=None, timeout_seconds=None):
+        requested = int(
+            shard_count
+            if shard_count is not None
+            else os.environ.get(
+                "MINUTE_STRATEGY_SHARDS",
+                str(min(8, max(1, os.cpu_count() or 1))),
+            )
+        )
+        self.timeout_seconds = float(
+            timeout_seconds
+            if timeout_seconds is not None
+            else os.environ.get("MINUTE_STRATEGY_TIMEOUT_SECONDS", "55")
+        )
+        self.specs = _minute_strategy_specs()
+        self.order = {spec[0]: index for index, spec in enumerate(self.specs)}
+        self.sequence = 0
+        self.closed = False
+        self.workers = []
+
+        shard_count = max(1, min(requested, len(self.specs)))
+        if shard_count == 1:
+            self.local_strategies = MINUTE_STRATEGIES
+            return
+
+        self.local_strategies = None
+        context = multiprocessing.get_context("fork")
+        for index, shard in enumerate(_balanced_shards(self.specs, shard_count)):
+            parent, child = context.Pipe()
+            process = context.Process(
+                target=_minute_worker,
+                args=(child, shard),
+                name=f"minute-strategy-{index}",
+                daemon=True,
+            )
+            process.start()
+            child.close()
+            self.workers.append((process, parent, shard))
+
+    @property
+    def shard_count(self):
+        return len(self.workers) or 1
+
+    def evaluate(self, snapshot):
+        if self.closed:
+            raise RuntimeError("minute strategy pool is closed")
+        if self.local_strategies is not None:
+            return _evaluate(snapshot, self.local_strategies)
+
+        self.sequence += 1
+        sequence = self.sequence
+        for process, connection, _ in self.workers:
+            if not process.is_alive():
+                self.close()
+                raise SystemExit(f"minute strategy worker exited: {process.name}")
+            connection.send((sequence, snapshot))
+
+        deadline = time.monotonic() + self.timeout_seconds
+        results = []
+        for process, connection, _ in self.workers:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0 or not connection.poll(remaining):
+                self.close()
+                raise SystemExit(
+                    f"minute strategy worker timed out: {process.name} "
+                    f"after {self.timeout_seconds:.1f}s"
+                )
+            try:
+                returned_sequence, rows = connection.recv()
+            except (EOFError, OSError) as exc:
+                self.close()
+                raise SystemExit(
+                    f"minute strategy worker communication failed: "
+                    f"{process.name}: {type(exc).__name__}: {exc}"
+                ) from exc
+            if returned_sequence != sequence:
+                self.close()
+                raise SystemExit(
+                    f"minute strategy worker sequence mismatch: "
+                    f"expected={sequence} received={returned_sequence}"
+                )
+            results.extend(rows)
+
+        results.sort(key=lambda row: self.order[row["strategy_id"]])
+        signals = []
+        errors = []
+        for row in results:
+            strategy_id = row["strategy_id"]
+            row_signals = row["signals"]
+            error = row["error"]
+            diagnostics.evaluated(
+                strategy_id,
+                snapshot.timestamp,
+                len(snapshot.quotes),
+                signal_count=len(row_signals),
+                error=error,
+                nearest_miss=row["nearest_miss"],
+            )
+            signals.extend(row_signals)
+            if error:
+                errors.append((strategy_id, RuntimeError(error)))
+        return signals, errors
+
+    def close(self):
+        if self.closed:
+            return
+        self.closed = True
+        for process, connection, _ in self.workers:
+            try:
+                connection.send(None)
+            except (BrokenPipeError, EOFError, OSError):
+                pass
+        for process, connection, _ in self.workers:
+            process.join(timeout=5.0)
+            if process.is_alive():
+                process.terminate()
+                process.join(timeout=2.0)
+            connection.close()

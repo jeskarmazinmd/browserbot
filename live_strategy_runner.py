@@ -15,10 +15,10 @@ from strategies.flash_nearest_miss import score as score_flash_window
 from strategies.registry import (
     DERIVED_RUNTIME_STRATEGY_IDS,
     MINUTE_STRATEGIES,
+    MinuteStrategyPool,
     REPORTING_STRATEGY_MODULES,
     flash_accepts,
     flash_strategy_configs,
-    on_minute_snapshot as run_minute_strategies,
     refresh_flash_entry,
     validate_flash_entry,
 )
@@ -962,6 +962,51 @@ def minute_prices(g):
         .last()
     )
 
+
+def flash_minute_price_matrix(df):
+    """Build every symbol's gap-preserving RTH minute series once per cycle."""
+    required = {"timestamp", "symbol", "price"}
+    if df is None or df.empty or not required.issubset(df.columns):
+        return pd.DataFrame()
+
+    data = df[["timestamp", "symbol", "price"]].copy()
+    data["timestamp"] = pd.to_datetime(data["timestamp"], utc=True, errors="coerce")
+    data["price"] = pd.to_numeric(data["price"], errors="coerce")
+    data = data.dropna(subset=["timestamp", "symbol", "price"])
+    if data.empty:
+        return pd.DataFrame()
+
+    ny = ZoneInfo("America/New_York")
+    session_clock = (
+        pd.Timestamp(quote_source.now())
+        if RUN_MODE == "REPLAY"
+        else pd.Timestamp.now(tz="UTC")
+    )
+    now_et = session_clock.to_pydatetime().astimezone(ny)
+    et = data["timestamp"].dt.tz_convert(ny)
+    minute_of_day = et.dt.hour * 60 + et.dt.minute
+    data = data[
+        (et.dt.date == now_et.date())
+        & (minute_of_day >= 9 * 60 + 30)
+        & (minute_of_day < 16 * 60)
+    ]
+    if data.empty:
+        return pd.DataFrame()
+
+    data["timestamp"] = data["timestamp"].dt.floor("min")
+    matrix = (
+        data.sort_values("timestamp")
+        .drop_duplicates(subset=["timestamp", "symbol"], keep="last")
+        .pivot(index="timestamp", columns="symbol", values="price")
+        .sort_index()
+    )
+    complete_index = pd.date_range(
+        matrix.index.min(),
+        matrix.index.max(),
+        freq="1min",
+    )
+    return matrix.reindex(complete_index)
+
 def measure_latest_flash(sym, g, prices=None):
     """Return flash-window measurements once the complete, current window exists."""
     if prices is None:
@@ -1635,6 +1680,13 @@ def main():
         f"active={len(multi_leg_outcomes.active)} seen={len(multi_leg_outcomes.seen)}",
         flush=True,
     )
+    minute_strategy_pool = MinuteStrategyPool()
+    print(
+        "MINUTE_STRATEGY_POOL_ONLINE "
+        f"shards={minute_strategy_pool.shard_count} "
+        f"strategies={len(MINUTE_STRATEGIES)}",
+        flush=True,
+    )
     print(
         "DERIVED_STRATEGIES_ONLINE " + ",".join(sorted(DERIVED_STRATEGY_IDS)),
         flush=True,
@@ -1950,6 +2002,8 @@ def main():
             }
             scan_error_samples = []
 
+            flash_price_matrix = flash_minute_price_matrix(df)
+
             minute_snapshots = completed_minute_snapshots(
                 df,
                 after_timestamp=last_minute_snapshot_timestamp,
@@ -1957,8 +2011,10 @@ def main():
             warming_minute_pipeline = (
                 last_minute_snapshot_timestamp is None
             )
+            minute_batch_started = time.perf_counter()
 
             for minute_snapshot in minute_snapshots:
+                minute_snapshot_started = time.perf_counter()
                 dispatch_snapshot = minute_snapshot
 
                 if (
@@ -1985,8 +2041,27 @@ def main():
                         },
                     )
 
-                minute_signals, minute_errors = run_minute_strategies(
+                minute_signals, minute_errors = minute_strategy_pool.evaluate(
                     dispatch_snapshot
+                )
+                minute_snapshot_seconds = (
+                    time.perf_counter() - minute_snapshot_started
+                )
+                minute_snapshot_lag_seconds = max(
+                    0.0,
+                    (
+                        pd.Timestamp(now_utc)
+                        - pd.Timestamp(minute_snapshot.timestamp)
+                    ).total_seconds(),
+                )
+                print(
+                    "MINUTE_STRATEGY_SNAPSHOT "
+                    f"timestamp={minute_snapshot.timestamp.isoformat()} "
+                    f"seconds={minute_snapshot_seconds:.3f} "
+                    f"lag_seconds={minute_snapshot_lag_seconds:.1f} "
+                    f"signals={len(minute_signals)} "
+                    f"warming={warming_minute_pipeline}",
+                    flush=True,
                 )
                 last_minute_snapshot_timestamp = (
                     minute_snapshot.timestamp
@@ -2113,6 +2188,14 @@ def main():
                     f"through={last_minute_snapshot_timestamp}",
                     flush=True,
                 )
+            if minute_snapshots:
+                print(
+                    "MINUTE_STRATEGY_BATCH "
+                    f"snapshots={len(minute_snapshots)} "
+                    f"seconds={time.perf_counter() - minute_batch_started:.3f} "
+                    f"through={last_minute_snapshot_timestamp}",
+                    flush=True,
+                )
 
             for sym, g in df.groupby("symbol"):
                 scan_stats["symbols_seen"] += 1
@@ -2203,7 +2286,11 @@ def main():
 
                 # Detect using the lowest configured threshold, then admit only the
                 # strategies whose own flash threshold is satisfied.
-                flash_prices = minute_prices(g)
+                flash_prices = (
+                    flash_price_matrix[sym]
+                    if sym in flash_price_matrix.columns
+                    else pd.Series(dtype=float)
+                )
                 flash_measurement = measure_latest_flash(sym, g, prices=flash_prices)
                 if flash_measurement is not None:
                     near_events.append(flash_measurement)
