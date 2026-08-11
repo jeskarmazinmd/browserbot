@@ -39,6 +39,12 @@ WORKERS = {
 # become part of the production failure domain.  An optional worker that exits
 # stays stopped until the next normal machine restart/deploy.
 OPTIONAL_WORKERS = {
+    "all_engine_performance": [
+        sys.executable,
+        "-u",
+        "-m",
+        "reporting.all_engine_performance_worker",
+    ],
     "xs_shadow": [sys.executable, "-u", "xs_shadow_worker.py"],
     "event_shadow": [sys.executable, "-u", "event_shadow_worker.py"],
     "sec_event_adapter": [sys.executable, "-u", "sec_event_adapter.py"],

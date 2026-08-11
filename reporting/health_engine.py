@@ -438,6 +438,9 @@ def render_summary(snapshot: dict) -> str:
         "PERFORMANCE REPORTING",
         "capital_constrained: ISOLATED_WORKER",
         "history: /data/capital_constrained_history.txt",
+        "all_engine_performance: OPTIONAL_ISOLATED_WORKER",
+        "live: /data/all_engine_performance_live.txt",
+        "all_engine_history: /data/all_engine_daily_history.txt",
         "legacy_signal_table: DISABLED_DURING_REBUILD",
     ])
 
