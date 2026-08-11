@@ -17,6 +17,7 @@ import heapq
 import json
 import math
 from pathlib import Path
+import zlib
 from zoneinfo import ZoneInfo
 
 from reporting.capital_performance import simulate_day
@@ -105,7 +106,7 @@ def last_gzip_json(path: Path, cutoff=None):
                 if cutoff is not None and timestamp is not None and timestamp > cutoff:
                     continue
                 result = row
-    except OSError:
+    except (OSError, EOFError, zlib.error):
         pass
     return result or {}
 
@@ -122,7 +123,7 @@ def all_gzip_json(path: Path, cutoff=None):
                 if cutoff is not None and timestamp is not None and timestamp > cutoff:
                     continue
                 yield row
-    except OSError:
+    except (OSError, EOFError, zlib.error):
         return
 
 

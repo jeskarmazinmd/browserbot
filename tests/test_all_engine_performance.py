@@ -1,4 +1,5 @@
 import json
+import gzip
 from pathlib import Path
 import tempfile
 import unittest
@@ -6,6 +7,7 @@ import unittest
 from reporting.all_engine_performance import (
     calculate,
     equity_quote,
+    last_gzip_json,
     options_rv_closed_pnl,
     simulate_slots,
 )
@@ -13,6 +15,17 @@ import reporting.all_engine_performance_worker as worker
 
 
 class AllEnginePerformanceTests(unittest.TestCase):
+    def test_live_gzip_reader_keeps_complete_rows_when_tail_is_unfinished(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "live.jsonl.gz"
+            compressed = gzip.compress(
+                b'{"timestamp":"2026-08-11T18:00:00+00:00","value":1}\n'
+                b'{"timestamp":"2026-08-11T18:01:00+00:00","value":2}\n'
+            )
+            path.write_bytes(compressed[:-4])
+
+            self.assertEqual(last_gzip_json(path)["value"], 2)
+
     def test_equity_quote_uses_main_tape_fallback(self):
         marks = {"equity": {}, "main_last": {"EMBC": 5.01}}
         self.assertEqual(equity_quote("EMBC", marks)["bid"], 5.01)
