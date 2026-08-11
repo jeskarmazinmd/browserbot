@@ -324,6 +324,26 @@ def closed_pnl(row):
     return None
 
 
+def options_rv_closed_pnl(row, commission_per_side=0.65):
+    """Return corrected P/L for both legacy and fixed options-RV rows.
+
+    Version-1 tracker rows stored a closing cash flow with opening transaction
+    signs.  Its magnitude still preserves the exit quotes, so the correct cash
+    flow can be recovered by reversing the premium signs and accounting for
+    the already-deducted closing commission.
+    """
+    if int(row.get("cash_flow_sign_version") or 1) >= 2:
+        return closed_pnl(row)
+    try:
+        opening = float(row["opening_cash_flow"])
+        stored_closing = float(row["closing_cash_flow"])
+        sides = int(row.get("exit_contract_sides") or row.get("entry_contract_sides"))
+        corrected_closing = -stored_closing - 2.0 * commission_per_side * sides
+        return opening + corrected_closing
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
 def simulate_slots(trades):
     active, total, taken, skipped = [], 0.0, 0, 0
     ordered = sorted(trades, key=lambda item: (item["opened"], item["id"]))
@@ -492,7 +512,7 @@ def calculate(root="/data", day=None, as_of=None):
         if market_day(row) == day and entry_time is not None and entry_time <= cutoff:
             recorded_close = parse_time(row.get("closed_at"))
             if recorded_close is not None and recorded_close <= cutoff:
-                pnl = closed_pnl(row)
+                pnl = options_rv_closed_pnl(row)
                 closed_at = recorded_close
             else:
                 pnl = close_options(row, marks["options"], rv=True)
@@ -520,7 +540,7 @@ def calculate(root="/data", day=None, as_of=None):
 
     ranked = sorted(modules.items(), key=lambda item: item[1]["return_pct"], reverse=True)
     return {
-        "calculation_version": 1,
+        "calculation_version": 2,
         "day": day,
         "as_of": cutoff.isoformat(),
         "starting_cash": STARTING_CASH,

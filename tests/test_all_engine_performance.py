@@ -3,7 +3,12 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from reporting.all_engine_performance import calculate, equity_quote, simulate_slots
+from reporting.all_engine_performance import (
+    calculate,
+    equity_quote,
+    options_rv_closed_pnl,
+    simulate_slots,
+)
 import reporting.all_engine_performance_worker as worker
 
 
@@ -49,6 +54,23 @@ class AllEnginePerformanceTests(unittest.TestCase):
             self.assertAlmostEqual(snapshot["modules"]["SWMOM2"]["pnl"], -3.96)
             self.assertAlmostEqual(snapshot["modules"]["SWMOM2"]["return_pct"], -0.0792)
             self.assertEqual(snapshot["diagnostics"]["unmarked_by_engine"], {})
+
+    def test_repairs_legacy_options_rv_closing_signs(self):
+        row = {
+            "opening_cash_flow": -993.3,
+            "closing_cash_flow": -960.3,
+            "exit_contract_sides": 2,
+            "pnl_dollars": -1953.6,
+        }
+        # Correct closing cash flow is +957.70 after $1.30 commission.
+        self.assertAlmostEqual(options_rv_closed_pnl(row), -35.6)
+
+    def test_accepts_fixed_options_rv_pnl(self):
+        row = {
+            "cash_flow_sign_version": 2,
+            "pnl_dollars": -35.6,
+        }
+        self.assertAlmostEqual(options_rv_closed_pnl(row), -35.6)
 
     def test_history_is_immutable_after_first_finalization(self):
         from datetime import datetime, timezone

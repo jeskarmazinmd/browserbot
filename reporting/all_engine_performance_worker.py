@@ -23,7 +23,7 @@ NY = ZoneInfo("America/New_York")
 POLL_SECONDS = max(60.0, float(os.environ.get("ALL_ENGINE_PERFORMANCE_POLL_SECONDS", "600")))
 FINALIZE_HOUR = int(os.environ.get("ALL_ENGINE_FINALIZE_HOUR_ET", "16"))
 FINALIZE_MINUTE = int(os.environ.get("ALL_ENGINE_FINALIZE_MINUTE_ET", "5"))
-VERSION = 1
+VERSION = 2
 BACKFILL_DAYS = max(1, int(os.environ.get("ALL_ENGINE_BACKFILL_DAYS", "30")))
 
 

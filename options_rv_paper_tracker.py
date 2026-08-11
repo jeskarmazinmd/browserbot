@@ -51,7 +51,13 @@ class OptionsRVTracker:
             px = self._price(leg, opening)
             if not math.isfinite(px) or px < 0:
                 raise ValueError("invalid option price")
-            cash += (1 if leg["side"] == "SELL" else -1) * px * 100 * qty
+            if opening:
+                direction = 1 if leg["side"] == "SELL" else -1
+            else:
+                # Closing reverses the opening transaction: long options are
+                # sold and short options are bought back.
+                direction = 1 if leg["side"] == "BUY" else -1
+            cash += direction * px * 100 * qty
             contracts += qty
         cash -= self.commission * contracts
         return cash, contracts
@@ -80,6 +86,7 @@ class OptionsRVTracker:
         row.update({
             "opened_at": now.isoformat(), "opening_cash_flow": opening_cf,
             "max_loss_dollars": max_loss, "entry_contract_sides": contracts,
+            "cash_flow_sign_version": 2,
         })
         self.active[key] = row
         self.seen.add(key)
@@ -134,4 +141,5 @@ class OptionsRVTracker:
             "margin_model": "strategy_declared_defined_risk",
             "broker_execution_enabled": False,
             "pricing": "all BUY legs open@ask close@bid; SELL legs open@bid close@ask",
+            "cash_flow_sign_version": 2,
         })
