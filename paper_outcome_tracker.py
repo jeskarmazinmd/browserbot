@@ -37,6 +37,8 @@ OPTIONAL_FIELDS = (
     "flash_drop_volatility_units",
     "last_observed_price", "last_observed_at",
     "breakeven_after_activation",
+    "capacity_filter_passed", "capacity_filter_audit",
+    "capacity_filter_version",
 )
 
 

@@ -2150,10 +2150,13 @@ def main():
                             },
                         )
 
-                minute_payloads = apply_capacity_filters([
-                    snapshot_signal_payload(signal)
-                    for signal in single_leg_signals
-                ])
+                minute_payloads = apply_capacity_filters(
+                    [
+                        snapshot_signal_payload(signal)
+                        for signal in single_leg_signals
+                    ],
+                    regime=latest_regime(),
+                )
 
                 for independent in minute_payloads:
                     strategy_id = independent["strategy_id"]

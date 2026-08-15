@@ -21,12 +21,12 @@ class CapacityFilterTests(unittest.TestCase):
         }
 
     def test_every_configured_strategy_has_exactly_one_rule(self):
-        self.assertEqual(22, len(CAPACITY_FILTERS))
-        self.assertEqual(22, len(set(CAPACITY_FILTERS)))
+        self.assertEqual(31, len(CAPACITY_FILTERS))
+        self.assertEqual(31, len(set(CAPACITY_FILTERS)))
         self.assertTrue(all("kind" in rule for rule in CAPACITY_FILTERS.values()))
 
     def test_unconfigured_strategy_passes_through(self):
-        payload = self.payload("AV1", "AAA")
+        payload = self.payload("PTD1X", "AAA")
         self.assertEqual([payload], apply_capacity_filters([payload]))
 
     def test_rule_is_prospective_only(self):
