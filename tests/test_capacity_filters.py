@@ -21,12 +21,12 @@ class CapacityFilterTests(unittest.TestCase):
         }
 
     def test_every_configured_strategy_has_exactly_one_rule(self):
-        self.assertEqual(31, len(CAPACITY_FILTERS))
-        self.assertEqual(31, len(set(CAPACITY_FILTERS)))
+        self.assertEqual(35, len(CAPACITY_FILTERS))
+        self.assertEqual(35, len(set(CAPACITY_FILTERS)))
         self.assertTrue(all("kind" in rule for rule in CAPACITY_FILTERS.values()))
 
     def test_unconfigured_strategy_passes_through(self):
-        payload = self.payload("PTD1X", "AAA")
+        payload = self.payload("UNCONFIGURED", "AAA")
         self.assertEqual([payload], apply_capacity_filters([payload]))
 
     def test_rule_is_prospective_only(self):
@@ -65,6 +65,49 @@ class CapacityFilterTests(unittest.TestCase):
     def test_missing_required_metric_is_rejected(self):
         payload = self.payload("PD1", "MISSING")
         self.assertEqual([], apply_capacity_filters([payload]))
+
+
+    def test_new_ema_family_regime_filter_is_forward_only(self):
+        regime = {
+            "timestamp": "2026-08-17T13:59:00+00:00",
+            "breadth": {"red_pct_5m": 35.0},
+        }
+        payloads = []
+        for strategy_id in ("EMA1RR", "EMA1T50", "EMA1V15"):
+            row = self.payload(strategy_id, f"{strategy_id}_KEEP")
+            row["timestamp"] = "2026-08-17T14:00:00+00:00"
+            payloads.append(row)
+
+        kept = apply_capacity_filters(payloads, regime=regime)
+        self.assertEqual(
+            {"EMA1RR_KEEP", "EMA1T50_KEEP", "EMA1V15_KEEP"},
+            {row["symbol"] for row in kept},
+        )
+        self.assertTrue(all(row["capacity_filter_passed"] for row in kept))
+
+    def test_new_ema_family_rejects_excess_red_breadth(self):
+        regime = {
+            "timestamp": "2026-08-17T13:59:00+00:00",
+            "breadth": {"red_pct_5m": 40.0},
+        }
+        payloads = []
+        for strategy_id in ("EMA1RR", "EMA1T50", "EMA1V15"):
+            row = self.payload(strategy_id, "DROP")
+            row["timestamp"] = "2026-08-17T14:00:00+00:00"
+            payloads.append(row)
+
+        self.assertEqual([], apply_capacity_filters(payloads, regime=regime))
+
+    def test_ptd1x_keeps_high_pre_r2_and_rejects_low_or_missing(self):
+        keep = self.payload("PTD1X", "KEEP", pre_r2=0.70)
+        low = self.payload("PTD1X", "DROP", pre_r2=0.60)
+        missing = self.payload("PTD1X", "MISSING")
+        for row in (keep, low, missing):
+            row["timestamp"] = "2026-08-17T14:00:00+00:00"
+
+        kept = apply_capacity_filters([keep, low, missing])
+        self.assertEqual({"KEEP"}, {row["symbol"] for row in kept})
+        self.assertTrue(kept[0]["capacity_filter_passed"])
 
 
 if __name__ == "__main__":
