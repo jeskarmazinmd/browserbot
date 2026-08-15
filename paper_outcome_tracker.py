@@ -41,6 +41,8 @@ OPTIONAL_FIELDS = (
     "capacity_filter_version",
     "exit_duration_sweep_seconds", "exit_duration_sweep_parent",
     "exit_duration_sweep_version",
+    "forward_start_utc", "paper_only",
+    "m2_family_variant", "m2_family_version",
 )
 
 

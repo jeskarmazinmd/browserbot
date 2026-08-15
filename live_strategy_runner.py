@@ -25,6 +25,7 @@ from strategies.registry import (
 )
 from strategies.capacity_filters import apply_capacity_filters
 from strategies.c3_exit_duration_sweep import derive_duration_signals
+from strategies.m2_forward_family import derive_m2_family_signals
 from strategies.ema_volume_batch import BoundedVolumeConfirmation
 from regime_logger import log_regime, latest_regime
 from paper_outcome_tracker import PaperOutcomeTracker
@@ -2599,6 +2600,37 @@ def main():
                             },
                         )
                         paper_outcomes.register(duration_signal)
+                    for m2_family_signal in derive_m2_family_signals(e):
+                        append_strategy_event(
+                            m2_family_signal["strategy_id"],
+                            "SIGNAL",
+                            symbol=m2_family_signal["symbol"],
+                            signal=m2_family_signal,
+                            signal_regime=latest_regime(),
+                            thresholds={
+                                "DERIVED_FROM": "M2",
+                                "LIVE_ORDER_PLACEMENT": False,
+                                "PAPER_ONLY": True,
+                                "FORWARD_START_UTC": (
+                                    m2_family_signal["forward_start_utc"]
+                                ),
+                                "EXIT_MODEL": (
+                                    m2_family_signal["exit_model"]
+                                ),
+                                "ACTIVATION_GAIN_PCT": (
+                                    m2_family_signal.get(
+                                        "activation_gain_pct"
+                                    )
+                                ),
+                                "NO_NEW_HIGH_SECONDS": (
+                                    m2_family_signal.get(
+                                        "no_new_high_seconds"
+                                    )
+                                ),
+                                "EXPERIMENT": "m2_forward_exit_family",
+                            },
+                        )
+                        paper_outcomes.register(m2_family_signal)
                     if e.get("strategy_id") in parent_signal_counts:
                         parent_signal_counts[e["strategy_id"]] += 1
                     for derived in derive_signals(e):
