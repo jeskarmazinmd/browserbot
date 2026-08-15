@@ -2,7 +2,7 @@ app = "schwab-c3-live"
 primary_region = "lax"
 
 [build]
-  dockerfile = "Dockerfile.c3live"
+  dockerfile = "Dockerfile.c3live.v2"
 
 [env]
   EXECUTION_MODE = "SHADOW"
