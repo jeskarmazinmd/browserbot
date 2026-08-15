@@ -33,6 +33,17 @@ WORKERS = {
         "--port",
         "8080",
     ],
+    "token_lease": [
+        sys.executable,
+        "-u",
+        "-m",
+        "uvicorn",
+        "schwab_bot_dashboard.dashboard.app:app",
+        "--host",
+        "::",
+        "--port",
+        "8081",
+    ],
 }
 
 # Research workers may observe production data, but they are never allowed to

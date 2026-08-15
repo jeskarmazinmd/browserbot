@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ipaddress
 import json
 import os
 import re
@@ -8,7 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, Request, Response, status
 from fastapi.responses import HTMLResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 import secrets
@@ -18,6 +19,8 @@ BOT_OUTPUT = DATA_DIR / "bot_output.txt"
 DAILY_PNL = DATA_DIR / "daily_pnl_history.json"
 DAILY_DEPLOYMENT = DATA_DIR / "daily_live_deployment_history.json"
 ELIGIBILITY = DATA_DIR / "eligibility_status.json"
+MARKET_TOKEN = DATA_DIR / "schwab_token.json"
+TOKEN_LEASE_SECRET = os.environ.get("MARKET_TOKEN_LEASE_SECRET", "")
 
 app = FastAPI(title="Schwab Bot Dashboard", docs_url="/docs")
 
@@ -273,6 +276,47 @@ def index(user: str = Depends(authenticate)) -> str:
 @app.get("/healthz")
 def healthz() -> dict[str, Any]:
     return {"ok": True, "data_dir": str(DATA_DIR), "bot_output_exists": BOT_OUTPUT.exists()}
+
+def _private_fly_client(request: Request) -> bool:
+    """Allow only direct Fly private-network traffic, not the public proxy."""
+    raw = request.headers.get("fly-client-ip")
+    if not raw and request.client:
+        raw = request.client.host
+    if not raw:
+        return False
+    try:
+        address = ipaddress.ip_address(raw.split("%", 1)[0])
+    except ValueError:
+        return False
+    return address.version == 6 and address in ipaddress.ip_network("fdaa::/16")
+
+
+@app.get("/internal/market-access-token", include_in_schema=False)
+def market_access_token(request: Request, response: Response) -> dict[str, Any]:
+    if not _private_fly_client(request):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    supplied = request.headers.get("x-token-lease-secret", "")
+    if not TOKEN_LEASE_SECRET or not secrets.compare_digest(supplied, TOKEN_LEASE_SECRET):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    try:
+        document = json.loads(MARKET_TOKEN.read_text())
+        token = document["token"]
+        access_token = str(token["access_token"])
+        expires_at = float(token["expires_at"])
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Market token unavailable",
+        )
+    if not access_token or expires_at <= datetime.now(timezone.utc).timestamp() + 10:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Market access token expired",
+        )
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["Pragma"] = "no-cache"
+    return {"access_token": access_token, "expires_at": expires_at, "token_type": "Bearer"}
+
 
 @app.get("/api/dashboard")
 def dashboard(user: str = Depends(authenticate)) -> dict[str, Any]:

@@ -96,3 +96,16 @@ runtime/
 
 # Archived local material is not part of production
 archive_unused/
+
+# C3 live image exclusions
+research_data/
+*.pkl
+*.tgz
+*_checkpoint/
+plugins/
+tests/
+executor_*.py
+executor_service.py
+Dockerfile.executor
+fly.executor.toml
+requirements.executor.txt

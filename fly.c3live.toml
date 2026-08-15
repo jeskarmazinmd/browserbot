@@ -1,0 +1,28 @@
+app = "schwab-c3-live"
+primary_region = "lax"
+
+[build]
+  dockerfile = "Dockerfile.c3live"
+
+[env]
+  EXECUTION_MODE = "SHADOW"
+  LIVE_ORDER_PLACEMENT_ENABLED = "0"
+  MARKET_TOKEN_LEASE_URL = "http://schwab.internal:8081/internal/market-access-token"
+  C3_UNIVERSE_SECONDS = "5"
+  C3_PRIORITY_SECONDS = "0.5"
+  C3_ORDER_LATENCY_MS = "250"
+  C3_MAX_QUOTE_AGE_MS = "2500"
+  C3_MAX_SPREAD_PCT = "0.25"
+  C3_ENTRY_LIMIT_BPS = "5"
+  C3_STRESS_BPS = "5"
+  C3_STARTING_CASH = "5000"
+  C3_SLOT_NOTIONAL = "1000"
+
+[[mounts]]
+  source = "c3_live_data"
+  destination = "/data"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory = "1gb"
