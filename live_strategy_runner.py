@@ -24,6 +24,7 @@ from strategies.registry import (
     validate_flash_entry,
 )
 from strategies.capacity_filters import apply_capacity_filters
+from strategies.c3_exit_duration_sweep import derive_duration_signals
 from strategies.ema_volume_batch import BoundedVolumeConfirmation
 from regime_logger import log_regime, latest_regime
 from paper_outcome_tracker import PaperOutcomeTracker
@@ -2582,7 +2583,23 @@ def main():
                         },
                     )
                     paper_outcomes.register(e)
-                    if e.get("strategy_id") in parent_signal_counts:
++                    for duration_signal in derive_duration_signals(e):
++                        append_strategy_event(
++                            duration_signal["strategy_id"],
++                            "SIGNAL",
++                            symbol=duration_signal["symbol"],
++                            signal=duration_signal,
++                            signal_regime=latest_regime(),
++                            thresholds={
++                                "DERIVED_FROM": "C3N25S10",
++                                "LIVE_ORDER_PLACEMENT": False,
++                                "EXIT_MODEL": "c2",
++                                "NO_NEW_HIGH_SECONDS": duration_signal["no_new_high_seconds"],
++                                "EXPERIMENT": "c3_nnh_duration_sweep",
++                            },
++                        )
++                        paper_outcomes.register(duration_signal)
++                    if e.get("strategy_id") in parent_signal_counts:
                         parent_signal_counts[e["strategy_id"]] += 1
                     for derived in derive_signals(e):
                         append_strategy_event(

@@ -39,6 +39,8 @@ OPTIONAL_FIELDS = (
     "breakeven_after_activation",
     "capacity_filter_passed", "capacity_filter_audit",
     "capacity_filter_version",
+    "exit_duration_sweep_seconds", "exit_duration_sweep_parent",
+    "exit_duration_sweep_version",
 )
 
 
