@@ -1,0 +1,17 @@
+app = "schwab-c3-live"
+
+primary_region = "lax"
+
+[env]
+  RUN_MODE = "LIVE"
+  LIVE_ORDER_PLACEMENT_ENABLED = "0"
+  MIN_DATA_VOLUME_USABLE_MB = "900"
+  MARKET_TOKEN_LEASE_URL = "http://schwab.internal:8081/internal/market-access-token"
+
+[[mounts]]
+  source = "c3_live_data"
+  destination = "/data"
+
+[[vm]]
+  size = "shared-cpu-2x"
+  memory = "2048mb"
