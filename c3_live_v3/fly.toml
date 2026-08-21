@@ -5,7 +5,7 @@ primary_region = "lax"
 [env]
   RUN_MODE = "LIVE"
   LIVE_ORDER_PLACEMENT_ENABLED = "0"
-  MIN_DATA_VOLUME_USABLE_MB = "900"
+  MIN_DATA_VOLUME_USABLE_MB = "1800"
   MARKET_TOKEN_LEASE_URL = "http://schwab.internal:8081/internal/market-access-token"
 
 [[mounts]]
@@ -13,5 +13,5 @@ primary_region = "lax"
   destination = "/data"
 
 [[vm]]
-  size = "shared-cpu-2x"
+  size = "shared-cpu-4x"
   memory = "2048mb"
