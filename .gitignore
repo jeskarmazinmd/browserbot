@@ -19,3 +19,6 @@ schwabtradekey.txt
 archive_unused/
 research_data/
 research_lab_state/
+
+# Local research/output artifacts
+artifacts/
