@@ -36,3 +36,39 @@ class LeasedSchwabMarketClient:
             headers={"Authorization": f"Bearer {token}", "Accept": "application/json"},
             timeout=self.timeout,
         )
+
+
+    def get_price_history_every_minute(
+        self,
+        symbol,
+        *,
+        start_datetime,
+        end_datetime,
+        need_extended_hours_data=False,
+        need_previous_close=False,
+    ):
+        token = self._access_token()
+
+        return requests.get(
+            "https://api.schwabapi.com/marketdata/v1/pricehistory",
+            params={
+                "symbol": symbol,
+                "periodType": "day",
+                "period": 1,
+                "frequencyType": "minute",
+                "frequency": 1,
+                "startDate": int(start_datetime.timestamp() * 1000),
+                "endDate": int(end_datetime.timestamp() * 1000),
+                "needExtendedHoursData": str(
+                    bool(need_extended_hours_data)
+                ).lower(),
+                "needPreviousClose": str(
+                    bool(need_previous_close)
+                ).lower(),
+            },
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Accept": "application/json",
+            },
+            timeout=self.timeout,
+        )

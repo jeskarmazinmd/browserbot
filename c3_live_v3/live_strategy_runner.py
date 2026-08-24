@@ -299,7 +299,23 @@ _EMA_VOLUME_CONFIRMATION = BoundedVolumeConfirmation(
 
 
 def _market_data_client():
-    """Build the existing Schwab market-data client without touching the quote tape."""
+    """Build a market-data client without touching the quote tape."""
+    lease_url = os.environ.get("MARKET_TOKEN_LEASE_URL", "").strip()
+    if lease_url:
+        client = getattr(_MARKET_DATA_CLIENT_LOCAL, "client", None)
+        if client is None:
+            from leased_schwab_market_client import LeasedSchwabMarketClient
+            client = LeasedSchwabMarketClient(
+                lease_url=lease_url,
+                lease_secret=os.environ.get(
+                    "MARKET_TOKEN_LEASE_SECRET",
+                    "",
+                ),
+                timeout=_EMA_VOLUME_REQUEST_TIMEOUT_SECONDS,
+            )
+            _MARKET_DATA_CLIENT_LOCAL.client = client
+        return client
+
     from schwab.auth import client_from_token_file
 
     app_key = os.environ.get("SCHWAB_MARKET_APP_KEY") or os.environ.get("SCHWAB_APP_KEY")
@@ -1821,7 +1837,13 @@ def main():
         try:
             now_ts = time.time()
 
-            if RUN_MODE == "LIVE":
+            if (
+                RUN_MODE == "LIVE"
+                and not os.environ.get(
+                    "MARKET_TOKEN_LEASE_URL",
+                    "",
+                ).strip()
+            ):
                 market_token_path = "/data/schwab_token.json"
                 market_min_left = token_minutes_left(market_token_path)
 
@@ -2543,7 +2565,7 @@ def main():
                     flash_nearest[strategy_id] = dict(candidate)
 
             for measurement in near_events:
-                for strategy_id in (STRATEGY_A, STRATEGY_B, STRATEGY_D, STRATEGY_H):
+                for strategy_id in STRATEGY_CONFIGS:
                     candidate = score_flash_near_miss(strategy_id, measurement)
                     if candidate is None:
                         continue
