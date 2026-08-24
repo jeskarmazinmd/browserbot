@@ -114,6 +114,29 @@ STRATEGY_H_MAX_PRE_SLOPE_PCT_PER_HOUR = (
     STRATEGY_CONFIGS[STRATEGY_H]["max_pre_slope_pct_per_hour"]
 )
 
+C3_ONLY_ENABLED = os.environ.get("C3_ONLY", "0").strip() == "1"
+C3_MIRROR_STRATEGY_ID = "C3N25S10"
+
+if C3_ONLY_ENABLED:
+    if C3_MIRROR_STRATEGY_ID not in STRATEGY_CONFIGS:
+        raise RuntimeError(
+            f"C3_ONLY requested but {C3_MIRROR_STRATEGY_ID} is unavailable"
+        )
+
+    # Preserve module initialization above, then restrict runtime evaluation to
+    # the exact shared research module selected for this independent mirror.
+    STRATEGY_CONFIGS = {
+        C3_MIRROR_STRATEGY_ID: STRATEGY_CONFIGS[C3_MIRROR_STRATEGY_ID]
+    }
+
+    # C3-only means exactly one direct flash module: no minute strategies and
+    # no experimental signals derived from the mirrored C3 signal.
+    MINUTE_STRATEGIES = ()
+    DERIVED_STRATEGY_IDS = ()
+    derive_duration_signals = lambda _event: ()
+    derive_m2_family_signals = lambda _event: ()
+    derive_signals = lambda _event: ()
+
 # Independent strategy orchestration settings. Individual strategy rules and
 # thresholds live exclusively in strategies/strategy_*.py.
 INDEPENDENT_FORWARD_START_UTC = "2026-07-31T13:30:00+00:00"
@@ -1715,13 +1738,22 @@ def main():
         f"active={len(multi_leg_outcomes.active)} seen={len(multi_leg_outcomes.seen)}",
         flush=True,
     )
-    minute_strategy_pool = MinuteStrategyPool()
-    print(
-        "MINUTE_STRATEGY_POOL_ONLINE "
-        f"shards={minute_strategy_pool.shard_count} "
-        f"strategies={len(MINUTE_STRATEGIES)}",
-        flush=True,
-    )
+    if C3_ONLY_ENABLED:
+        minute_strategy_pool = None
+        print(
+            "C3_ONLY_ACTIVE "
+            f"strategy={C3_MIRROR_STRATEGY_ID} "
+            "minute_strategies=0 derived_strategies=0",
+            flush=True,
+        )
+    else:
+        minute_strategy_pool = MinuteStrategyPool()
+        print(
+            "MINUTE_STRATEGY_POOL_ONLINE "
+            f"shards={minute_strategy_pool.shard_count} "
+            f"strategies={len(MINUTE_STRATEGIES)}",
+            flush=True,
+        )
     print(
         "DERIVED_STRATEGIES_ONLINE " + ",".join(sorted(DERIVED_STRATEGY_IDS)),
         flush=True,
@@ -2039,9 +2071,13 @@ def main():
 
             flash_price_matrix = flash_minute_price_matrix(df)
 
-            minute_snapshots = completed_minute_snapshots(
-                df,
-                after_timestamp=last_minute_snapshot_timestamp,
+            minute_snapshots = (
+                []
+                if C3_ONLY_ENABLED
+                else completed_minute_snapshots(
+                    df,
+                    after_timestamp=last_minute_snapshot_timestamp,
+                )
             )
             warming_minute_pipeline = (
                 last_minute_snapshot_timestamp is None
