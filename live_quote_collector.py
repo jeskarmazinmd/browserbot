@@ -280,8 +280,13 @@ def main():
     symbols = load_symbols()
     print(f"Loaded {len(symbols)} symbols", flush=True)
 
+    token_path = Path("/data/schwab_token.json")
     client = get_schwab_client()
-    print("Connected to Schwab", flush=True)
+    client_token_mtime_ns = token_path.stat().st_mtime_ns
+    print(
+        f"Connected to Schwab; token_mtime_ns={client_token_mtime_ns}",
+        flush=True,
+    )
 
     path = tape_path()
     print(f"Writing tape to {path}", flush=True)
@@ -329,6 +334,19 @@ def main():
             last_maintenance = time.time()
 
         ts = datetime.now(timezone.utc).isoformat()
+
+        # The refresh owner atomically replaces the shared token file. Rebuild
+        # this long-lived SDK client whenever that happens so the collector
+        # cannot retain a superseded refresh token in memory.
+        current_token_mtime_ns = token_path.stat().st_mtime_ns
+        if current_token_mtime_ns != client_token_mtime_ns:
+            client = get_schwab_client()
+            client_token_mtime_ns = token_path.stat().st_mtime_ns
+            print(
+                "Reloaded Schwab client after token update; "
+                f"token_mtime_ns={client_token_mtime_ns}",
+                flush=True,
+            )
 
         fetch_start = time.perf_counter()
         snapshots = fetch_schwab_quote_snapshots(client, symbols)
