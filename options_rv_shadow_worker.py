@@ -19,7 +19,7 @@ except ImportError:  # lets wiring tests import without optional networking deps
 from options_rv_paper_tracker import OptionsRVTracker
 
 UNDERLYINGS=("SPY","QQQ","IWM")
-STRATEGIES=("rvputcr1","rvcallcr1","rvcond1","rvcal1","rvdiag1","rvfly1")
+STRATEGIES=("rvputcr1","rvcallcr1","rvcond1")
 POLL_SECONDS=float(os.getenv("OPTIONS_RV_POLL_SECONDS","300"))
 DATA_ROOT=Path(os.getenv("DATA_ROOT","/data"))
 STATUS=DATA_ROOT/"options_rv_shadow_status.json"

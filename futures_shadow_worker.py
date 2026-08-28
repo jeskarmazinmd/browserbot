@@ -14,7 +14,7 @@ import requests
 from futures_paper_tracker import FuturesPaperTracker
 
 ROOTS = ("/MES", "/MNQ", "/MGC", "/MCL", "/M6E")
-STRATEGIES = ("FUTMES1", "FUTMNQ1", "FUTMGC1", "FUTMCL1", "FUTM6E1", "FUTMESR1", "FUTMGCR1", "FUTMCLR1", "FUTIDXR1", "FUTXAR1")
+STRATEGIES = ("FUTMES1", "FUTMNQ1", "FUTMGC1", "FUTMCL1", "FUTMESR1", "FUTMGCR1", "FUTMCLR1", "FUTIDXR1", "FUTXAR1")
 QUOTE_URL = "https://api.schwabapi.com/marketdata/v1/quotes"
 TOKEN_PATH = Path("/data/schwab_token.json")
 DATA_ROOT = Path("/data")

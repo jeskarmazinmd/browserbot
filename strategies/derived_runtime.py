@@ -83,8 +83,7 @@ def derive_signals(parent):
             and rebound_ratio <= flash_ratio * float(strategy_l.CONFIG["max_rebound_to_flash_ratio"])
         ):
             derived.append(_clone(parent, "L"))
-        if _float(parent.get("distance_below_rolling_vwap_pct"), -1.0) >= float(strategy_m.CONFIG["min_distance_below_vwap_pct"]):
-            derived.append(_clone(parent, "M"))
+        # M disabled after persistently negative forward results.
         derived.append(_clone(
             parent, "N", exit_model="adaptive_trail_target",
             **strategy_n.CONFIG,

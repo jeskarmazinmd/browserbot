@@ -20,7 +20,7 @@ SYMBOLS = (
 )
 STRATEGIES = (
     "MSIMB1", "MSPERSIST1", "MSBIDPULL1", "MSASKPULL1", "MSFLIP1",
-    "MSVEL1", "MSSPCOMP1", "MSSPSHOCK1", "MSDEPTH1", "MSRECOV1",
+    "MSVEL1", "MSSPSHOCK1", "MSDEPTH1", "MSRECOV1",
 )
 QUOTE_URL = "https://api.schwabapi.com/marketdata/v1/quotes"
 TOKEN_PATH = Path(os.environ.get("MICROSTRUCTURE_MARKET_TOKEN", "/data/schwab_token.json"))

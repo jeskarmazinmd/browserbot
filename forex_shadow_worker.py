@@ -14,7 +14,7 @@ import requests
 from forex_paper_tracker import ForexPaperTracker
 
 PAIRS = ("EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "USD/CAD", "NZD/USD", "USD/CHF", "EUR/GBP")
-STRATEGIES = ("FXEUR1", "FXGBP1", "FXJPY1", "FXAUD1", "FXCAD1", "FXCHF1", "FXEGBP1", "FXAN1", "FXUSDB1", "FXLON1")
+STRATEGIES = ("FXEUR1", "FXGBP1", "FXJPY1", "FXAUD1", "FXCAD1", "FXLON1")
 QUOTE_URL = "https://api.schwabapi.com/marketdata/v1/quotes"
 TOKEN_PATH = Path("/data/schwab_token.json")
 DATA_ROOT = Path("/data")

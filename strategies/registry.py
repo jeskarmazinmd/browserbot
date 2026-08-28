@@ -258,7 +258,16 @@ def _load_strategies():
     return loaded
 
 
-ENABLED_STRATEGIES = _load_strategies()
+DISABLED_RESEARCH_STRATEGY_IDS = frozenset({
+    "SPY_XA1", "SHOCKR1", "VOLR1", "VOLR2", "BREADTH2",
+    "EMA1RR", "EMA1V15", "HL1", "AV1", "TL1", "PTD1X",
+})
+
+ENABLED_STRATEGIES = [
+    strategy
+    for strategy in _load_strategies()
+    if _strategy_id(strategy) not in DISABLED_RESEARCH_STRATEGY_IDS
+]
 
 FLASH_STRATEGIES = list(FLASH_STRATEGY_MODULES.values())
 
