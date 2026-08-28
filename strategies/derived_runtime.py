@@ -15,10 +15,9 @@ from . import (
 
 J_MODULES = (strategy_j1, strategy_j2, strategy_j3, strategy_j4, strategy_j5, strategy_j6)
 C_MODULES = (strategy_c1, strategy_c2, strategy_c3, strategy_c4)
-K_MODULES = (
-    strategy_k1, strategy_k2, strategy_k3, strategy_k4, strategy_k5,
-    strategy_k6, strategy_k7, strategy_k8, strategy_k9,
-)
+# K1-K9 are failed leaf experiments. Parent A remains active for its other
+# derived strategies and shared signal production.
+K_MODULES = ()
 DERIVED_STRATEGY_IDS = frozenset({
     "C1", "C2", "C3", "C4", "E", "F", "G", "I",
     "J1", "J2", "J3", "J4", "J5", "J6",

@@ -14,7 +14,9 @@ from zoneinfo import ZoneInfo
 from crosssection_paper_tracker import CrossSectionPaperTracker
 
 NY=ZoneInfo("America/New_York")
-STRATEGIES=("CSRANK5","CSRANK20","CSREV1","CSVOLADJ1","CSDISP1","CSBREADTH1","CSRELSPY1","CSOPEN1")
+# Failed strategy outputs disabled 2026-08-28. Keep this worker running so
+# cross-sectional quote tapes continue to be collected for future research.
+STRATEGIES=()
 QUOTE_URL="https://api.schwabapi.com/marketdata/v1/quotes"
 TOKEN_PATH=Path(os.environ.get("CROSSSECTION_MARKET_TOKEN","/data/schwab_token.json")); DATA_ROOT=Path(os.environ.get("CROSSSECTION_DATA_ROOT","/data"))
 POLL_SECONDS=float(os.environ.get("CROSSSECTION_POLL_SECONDS","60")); MAX_SYMBOLS=int(os.environ.get("CROSSSECTION_MAX_SYMBOLS","1500")); MAX_AGE=float(os.environ.get("CROSSSECTION_MAX_QUOTE_AGE_SECONDS","180")); STATUS=DATA_ROOT/"crosssection_shadow_status.json"

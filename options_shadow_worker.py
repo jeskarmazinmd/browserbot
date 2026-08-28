@@ -10,7 +10,9 @@ from options_paper_tracker import OptionsPaperTracker
 
 NY=ZoneInfo("America/New_York")
 UNDERLYINGS=("SPY","QQQ","IWM","AAPL","NVDA","TSLA")
-STRATEGIES=("OPTDIR1","OPTDIR2","OPTREV1","OPTBRK1","OPTIVR1","OPTSKEW1","OPTTERM1","OPTSTRAD1","OPTVERT1","OPTVERT2")
+# Failed strategy outputs disabled 2026-08-28. Keep collecting option-chain
+# tapes so replacement strategies can be researched against forward data.
+STRATEGIES=()
 POLL_SECONDS=float(os.environ.get("OPTIONS_POLL_SECONDS","120"))
 DATA_ROOT=Path(os.environ.get("OPTIONS_DATA_ROOT","/data"))
 STATUS=DATA_ROOT/"options_shadow_status.json"
