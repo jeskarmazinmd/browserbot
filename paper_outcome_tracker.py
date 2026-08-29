@@ -43,6 +43,9 @@ OPTIONAL_FIELDS = (
     "exit_duration_sweep_version",
     "forward_start_utc", "paper_only",
     "m2_family_variant", "m2_family_version",
+    "c3_admission_family_version", "c3_admission_feature",
+    "c3_admission_operator", "c3_admission_threshold",
+    "c3_admission_value", "c3_admission_cutoff",
 )
 
 

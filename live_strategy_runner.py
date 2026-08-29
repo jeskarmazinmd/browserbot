@@ -25,6 +25,10 @@ from strategies.registry import (
 )
 from strategies.capacity_filters import apply_capacity_filters
 from strategies.c3_exit_duration_sweep import derive_duration_signals
+from strategies.c3_admission_family import (
+    C3AdmissionFamily,
+    FAMILY_STRATEGY_IDS as C3_ADMISSION_STRATEGY_IDS,
+)
 from strategies.m2_forward_family import derive_m2_family_signals
 from strategies.ema_volume_batch import BoundedVolumeConfirmation
 from regime_logger import log_regime, latest_regime
@@ -1716,6 +1720,7 @@ def main():
         flush=True,
     )
     minute_strategy_pool = MinuteStrategyPool()
+    c3_admission_family = C3AdmissionFamily()
     print(
         "MINUTE_STRATEGY_POOL_ONLINE "
         f"shards={minute_strategy_pool.shard_count} "
@@ -1724,6 +1729,11 @@ def main():
     )
     print(
         "DERIVED_STRATEGIES_ONLINE " + ",".join(sorted(DERIVED_STRATEGY_IDS)),
+        flush=True,
+    )
+    print(
+        "C3_ADMISSION_FAMILY_ONLINE "
+        + ",".join(C3_ADMISSION_STRATEGY_IDS),
         flush=True,
     )
     for strategy in MINUTE_STRATEGIES:
@@ -1736,6 +1746,13 @@ def main():
         )
     for strategy_id in STRATEGY_CONFIGS:
         diagnostics.define(strategy_id, "RUNNING", runtime_path="flash")
+    for strategy_id in C3_ADMISSION_STRATEGY_IDS:
+        diagnostics.define(
+            strategy_id,
+            "WAITING_PARENT",
+            runtime_path="derived_research_admission",
+            parent_strategy="C3N25S10",
+        )
     derived_parents = {
         **{key: "B" for key in ("C1", "C2", "C3", "C4", "G", "J1", "J2", "J3", "J4", "J5", "J6")},
         "E": "A", "I": "A", "F": "D",
@@ -2449,6 +2466,15 @@ def main():
                     strategy_pending.clear()
 
             events.sort(key=lambda e: e["flash_drop_pct"], reverse=True)
+            c3_admission_by_source = {}
+            for admission_signal in c3_admission_family.derive_batch(events, df):
+                c3_admission_by_source.setdefault(
+                    (
+                        admission_signal.get("symbol"),
+                        admission_signal.get("timestamp"),
+                    ),
+                    [],
+                ).append(admission_signal)
             events_a = [e for e in events if e.get("strategy_id") == STRATEGY_A]
             events_b = [e for e in events if e.get("strategy_id") == STRATEGY_B]
             events_d = [e for e in events if e.get("strategy_id") == STRATEGY_D]
@@ -2584,6 +2610,30 @@ def main():
                         },
                     )
                     paper_outcomes.register(e)
+                    for admission_signal in c3_admission_by_source.get(
+                        (e.get("symbol"), e.get("timestamp")),
+                        [],
+                    ):
+                        append_strategy_event(
+                            admission_signal["strategy_id"],
+                            "SIGNAL",
+                            symbol=admission_signal["symbol"],
+                            signal=admission_signal,
+                            signal_regime=latest_regime(),
+                            thresholds={
+                                "DERIVED_FROM": "C3N25S10",
+                                "LIVE_ORDER_PLACEMENT": False,
+                                "PAPER_ONLY": True,
+                                "FORWARD_START_UTC": admission_signal["forward_start_utc"],
+                                "FEATURE": admission_signal["c3_admission_feature"],
+                                "OPERATOR": admission_signal["c3_admission_operator"],
+                                "THRESHOLD": admission_signal["c3_admission_threshold"],
+                                "FEATURE_VALUE": admission_signal["c3_admission_value"],
+                                "FEATURE_CUTOFF": admission_signal["c3_admission_cutoff"],
+                                "EXPERIMENT": "c3_admission_family",
+                            },
+                        )
+                        paper_outcomes.register(admission_signal)
                     for duration_signal in derive_duration_signals(e):
                         append_strategy_event(
                             duration_signal["strategy_id"],
