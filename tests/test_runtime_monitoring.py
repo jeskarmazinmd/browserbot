@@ -6,7 +6,7 @@ import tempfile
 import unittest
 
 import c3_live_v3.c3_supervisor as supervisor
-import runtime_monitoring
+from c3_live_v3 import runtime_monitoring
 
 
 class RuntimeMonitoringTests(unittest.TestCase):
