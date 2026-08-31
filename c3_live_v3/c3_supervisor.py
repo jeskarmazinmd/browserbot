@@ -25,7 +25,20 @@ WORKERS = {
 # Research workers may observe production data, but they are never allowed to
 # become part of the production failure domain.  An optional worker that exits
 # stays stopped until the next normal machine restart/deploy.
-OPTIONAL_WORKERS = {}
+OPTIONAL_WORKERS = {
+    "capital_performance": [
+        sys.executable,
+        "-u",
+        "-m",
+        "reporting.capital_performance_worker",
+    ],
+    "all_engine_performance": [
+        sys.executable,
+        "-u",
+        "-m",
+        "reporting.all_engine_performance_worker",
+    ],
+}
 
 EXIT_LOG = Path("/data/worker_supervisor.jsonl")
 ELIGIBILITY_REFRESH = [sys.executable, "-u", "refresh_eligible_symbols.py"]
@@ -33,6 +46,13 @@ DATA_MAINTENANCE = [sys.executable, "-u", "data_maintenance.py"]
 DATA_VOLUME_PATH = Path("/data")
 MIN_DATA_VOLUME_USABLE_MB = int(
     os.environ.get("MIN_DATA_VOLUME_USABLE_MB", "1800")
+)
+STRATEGY_HEARTBEAT = Path("/data/runtime_heartbeat.json")
+STRATEGY_HEARTBEAT_TIMEOUT_SECONDS = float(
+    os.environ.get("STRATEGY_HEARTBEAT_TIMEOUT_SECONDS", "180")
+)
+STRATEGY_HEARTBEAT_STARTUP_GRACE_SECONDS = float(
+    os.environ.get("STRATEGY_HEARTBEAT_STARTUP_GRACE_SECONDS", "600")
 )
 
 
@@ -73,6 +93,46 @@ def worker_exit_is_fatal(name):
     if name in OPTIONAL_WORKERS:
         return False
     return name in WORKERS
+
+
+def heartbeat_health(path, expected_pid, now=None):
+    """Return heartbeat health without confusing a prior process for this one."""
+    now = now or datetime.now(timezone.utc)
+    try:
+        payload = json.loads(Path(path).read_text())
+        updated_at = datetime.fromisoformat(
+            str(payload["updated_at"]).replace("Z", "+00:00")
+        )
+        if updated_at.tzinfo is None:
+            updated_at = updated_at.replace(tzinfo=timezone.utc)
+        age_seconds = (now - updated_at).total_seconds()
+        heartbeat_pid = int(payload["pid"])
+    except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
+        return False, {
+            "reason": "missing_or_invalid",
+            "error": f"{type(exc).__name__}: {exc}",
+        }
+
+    if heartbeat_pid != int(expected_pid):
+        return False, {
+            "reason": "pid_mismatch",
+            "heartbeat_pid": heartbeat_pid,
+            "expected_pid": int(expected_pid),
+            "age_seconds": round(age_seconds, 3),
+        }
+    if age_seconds > STRATEGY_HEARTBEAT_TIMEOUT_SECONDS:
+        return False, {
+            "reason": "stale",
+            "heartbeat_pid": heartbeat_pid,
+            "age_seconds": round(age_seconds, 3),
+            "timeout_seconds": STRATEGY_HEARTBEAT_TIMEOUT_SECONDS,
+            "phase": payload.get("phase"),
+        }
+    return True, {
+        "heartbeat_pid": heartbeat_pid,
+        "age_seconds": round(age_seconds, 3),
+        "phase": payload.get("phase"),
+    }
 
 
 def main():
@@ -128,6 +188,9 @@ def main():
         name: subprocess.Popen(command, env=os.environ.copy())
         for name, command in commands.items()
     }
+    worker_started_monotonic = {
+        name: time.monotonic() for name in processes
+    }
     record(
         "started",
         workers={name: proc.pid for name, proc in processes.items()},
@@ -157,6 +220,26 @@ def main():
             record("worker_exit", worker=name, returncode=code)
             terminate_all(processes)
             return 0 if stopping else 1
+
+        strategy = processes.get("strategy")
+        if strategy is not None and strategy.poll() is None:
+            runtime_seconds = (
+                time.monotonic() - worker_started_monotonic["strategy"]
+            )
+            if runtime_seconds >= STRATEGY_HEARTBEAT_STARTUP_GRACE_SECONDS:
+                healthy, details = heartbeat_health(
+                    STRATEGY_HEARTBEAT,
+                    strategy.pid,
+                )
+                if not healthy:
+                    record(
+                        "worker_heartbeat_failed",
+                        worker="strategy",
+                        runtime_seconds=round(runtime_seconds, 3),
+                        **details,
+                    )
+                    terminate_all(processes)
+                    return 1
         time.sleep(0.5)
 
 

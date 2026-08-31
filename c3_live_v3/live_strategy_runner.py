@@ -40,6 +40,10 @@ from schwab_token_guard import (
     mark_manual_reauth_required,
     token_file_lock,
 )
+from runtime_monitoring import (
+    write_runtime_heartbeat,
+    write_runtime_manifest,
+)
 
 RUN_MODE = os.environ.get("RUN_MODE", "LIVE")
 REPLAY_TAPE_PATH = os.environ.get("REPLAY_TAPE_PATH")
@@ -1729,6 +1733,28 @@ def main():
     print("🚀 CADENCE-AWARE STRATEGY RUNNER ONLINE", flush=True)
     print(f"PRE={PRE_CRASH_TREND_MINUTES}m FLASH={FLASH_WINDOW_MINUTES}m DROP={FLASH_DROP_PCT}-{MAX_FLASH_DROP_PCT}% TARGET={RECOVERY_TARGET_FRACTION} STOP={STOP_LOSS_FRACTION_BELOW_ENTRY}", flush=True)
 
+    manifest = write_runtime_manifest(
+        c3_only=C3_ONLY_ENABLED,
+        live_order_placement=live_order_placement_enabled(),
+        run_mode=RUN_MODE,
+    )
+    write_runtime_heartbeat(
+        phase="STARTING",
+        force=True,
+        engine_generation=manifest["engine_generation"],
+        strategy_ids=manifest["strategy_ids"],
+        live_order_placement_enabled=manifest[
+            "live_order_placement_enabled"
+        ],
+    )
+    print(
+        "RUNTIME_MANIFEST_WRITTEN "
+        f"engine={manifest['engine_generation']} "
+        f"canonical_status={manifest['canonical_outputs']['status']} "
+        "legacy_v2_outputs=IGNORED",
+        flush=True,
+    )
+
     trader = make_trader() if (RUN_MODE == "LIVE" and live_order_placement_enabled()) else None
     last_trading_token_touch = 0
     last_market_token_touch = 0
@@ -1835,6 +1861,11 @@ def main():
 
     while True:
         try:
+            write_runtime_heartbeat(
+                phase="CYCLE_START",
+                c3_only=C3_ONLY_ENABLED,
+                live_order_placement_enabled=live_order_placement_enabled(),
+            )
             now_ts = time.time()
 
             if (
@@ -1960,6 +1991,14 @@ def main():
                             flush=True,
                         )
             df = quote_source.read_data()
+
+            write_runtime_heartbeat(
+                phase="QUOTES_READ",
+                rows=0 if df is None else len(df),
+                quote_clock=str(quote_source.now()),
+                c3_only=C3_ONLY_ENABLED,
+                live_order_placement_enabled=live_order_placement_enabled(),
+            )
 
             if RUN_MODE == "REPLAY":
                 print(
@@ -2912,8 +2951,25 @@ def main():
                 )
             diagnostics.flush()
 
+            write_runtime_heartbeat(
+                phase="CYCLE_COMPLETE",
+                force=True,
+                rows=len(df),
+                quote_clock=str(quote_source.now()),
+                c3_only=C3_ONLY_ENABLED,
+                live_order_placement_enabled=live_order_placement_enabled(),
+            )
+
         except Exception as e:
             print("runner error:", type(e).__name__, e, flush=True)
+            write_runtime_heartbeat(
+                phase="CYCLE_ERROR",
+                force=True,
+                error_type=type(e).__name__,
+                error=str(e)[:500],
+                c3_only=C3_ONLY_ENABLED,
+                live_order_placement_enabled=live_order_placement_enabled(),
+            )
 
         if RUN_MODE == "REPLAY" and quote_source.finished:
             print(
