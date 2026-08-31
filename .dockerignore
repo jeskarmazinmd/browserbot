@@ -109,3 +109,6 @@ executor_service.py
 Dockerfile.executor
 fly.executor.toml
 requirements.executor.txt
+
+# Large local diagnostic captures
+diagnostics/
