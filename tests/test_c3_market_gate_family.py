@@ -6,6 +6,8 @@ import pandas as pd
 
 from strategies.c3_market_gate_family import (
     C3MarketGateFamily,
+    COMBOS,
+    GATES,
     FAMILY_STRATEGY_IDS,
     FORWARD_START_UTC,
     PARENT_STRATEGY_ID,
@@ -27,7 +29,7 @@ class C3MarketGateFamilyTests(unittest.TestCase):
 
     def frame(self, weak=False):
         rows = []
-        minutes = pd.date_range("2026-09-02T14:00:00Z", periods=11, freq="min")
+        minutes = pd.date_range("2026-09-02T13:50:00Z", periods=21, freq="min")
         for index in range(60):
             symbol = f"U{index:02d}"
             for offset, timestamp in enumerate(minutes):
@@ -49,14 +51,18 @@ class C3MarketGateFamilyTests(unittest.TestCase):
         rows.append({"timestamp": "2026-09-02T14:10:00Z", "symbol": "IWM", "price": 50.0})
         return pd.DataFrame(rows)
 
-    def test_inventory_is_small_and_unique(self):
-        self.assertEqual(6, len(FAMILY_STRATEGY_IDS))
-        self.assertEqual(6, len(set(FAMILY_STRATEGY_IDS)))
+    def test_inventory_is_broad_pre_registered_and_unique(self):
+        self.assertEqual(32, len(FAMILY_STRATEGY_IDS))
+        self.assertEqual(len(GATES) + len(COMBOS), len(FAMILY_STRATEGY_IDS))
+        self.assertEqual(len(FAMILY_STRATEGY_IDS), len(set(FAMILY_STRATEGY_IDS)))
 
     def test_features_stop_before_entry_minute(self):
         features = C3MarketGateFamily().features(self.parent()["timestamp"], self.frame())
         self.assertGreater(features["iwm_ret_5m"], 0)
         self.assertGreater(features["green_pct_5m"], 35)
+        self.assertGreater(features["iwm_ret_15m"], 0)
+        self.assertIn("breadth_change_5v15", features)
+        self.assertIn("downside_spread_5m", features)
 
     def test_favorable_market_emits_unchanged_paper_children(self):
         parent = self.parent()
@@ -73,9 +79,21 @@ class C3MarketGateFamilyTests(unittest.TestCase):
     def test_weak_market_records_refrains(self):
         engine = C3MarketGateFamily()
         children = engine.derive_batch([self.parent()], self.frame(weak=True))
-        self.assertEqual([], children)
-        self.assertEqual(6, len(engine.last_decisions))
-        self.assertTrue(all(not decision["passed"] for decision in engine.last_decisions))
+        child_ids = {row["strategy_id"] for row in children}
+        self.assertEqual(32, len(engine.last_decisions))
+        for strategy_id in ("C3MG_IWM5", "C3MG_SPY5", "C3MG_BRD35",
+                            "C3MG_MED10", "C3MG_P10", "C3MG_4OF4"):
+            self.assertNotIn(strategy_id, child_ids)
+        self.assertGreater(sum(not row["passed"] for row in engine.last_decisions), 20)
+
+    def test_consensus_arms_have_ordered_strictness(self):
+        engine = C3MarketGateFamily()
+        engine.derive_batch([self.parent()], self.frame())
+        decisions = {row["strategy_id"]: row for row in engine.last_decisions}
+        self.assertTrue(decisions["C3MG_2OF4"]["passed"])
+        self.assertTrue(decisions["C3MG_3OF4"]["passed"])
+        self.assertTrue(decisions["C3MG_4OF4"]["passed"])
+        self.assertEqual(4.0, decisions["C3MG_4OF4"]["value"])
 
     def test_missing_breadth_fails_closed_without_blocking_index_arms(self):
         frame = self.frame().query("symbol in ['SPY', 'QQQ', 'IWM']")

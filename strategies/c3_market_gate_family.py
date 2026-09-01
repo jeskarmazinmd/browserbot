@@ -1,67 +1,88 @@
 """Prospective, paper-only market-regime gates for C3N25S10.
 
-Every arm receives the canonical parent entry and either mirrors it unchanged
-or refrains.  Inputs end one full clock minute before the parent entry, so no
-entry-minute or future information can influence admission.  Thresholds are
-round, pre-registered research hypotheses rather than fitted values.
+Each arm receives the canonical parent entry and either mirrors it unchanged
+or refrains. Inputs end one full minute before entry. Round thresholds are
+pre-registered research hypotheses, not values fitted to bot outcomes.
 """
 
 from __future__ import annotations
 
 from copy import deepcopy
-from datetime import datetime
 from typing import Any, Mapping
 
 import pandas as pd
 
-
 PARENT_STRATEGY_ID = "C3N25S10"
 FORWARD_START_UTC = "2026-09-02T13:30:00+00:00"
-FAMILY_VERSION = "c3_market_gate_v1_20260902"
+FAMILY_VERSION = "c3_market_gate_v2_20260902"
 MIN_BREADTH_SYMBOLS = 50
+LOOKBACKS = (5, 15)
+INDEX_SYMBOLS = {"SPY", "QQQ", "IWM"}
 
+
+def _rule(feature, op, threshold, hypothesis):
+    return {"feature": feature, "op": op, "threshold": threshold,
+            "hypothesis": hypothesis}
+
+
+# The original five IDs and thresholds are retained unchanged for continuity.
 GATES: dict[str, dict[str, Any]] = {
-    "C3MG_IWM5": {
-        "feature": "iwm_ret_5m",
-        "op": ">=",
-        "threshold": -0.25,
-        "hypothesis": "avoid entries during sharp five-minute small-cap selling",
-    },
-    "C3MG_SPY5": {
-        "feature": "spy_ret_5m",
-        "op": ">=",
-        "threshold": -0.20,
-        "hypothesis": "avoid entries during sharp five-minute broad-market selling",
-    },
-    "C3MG_BRD35": {
-        "feature": "green_pct_5m",
-        "op": ">=",
-        "threshold": 35.0,
-        "hypothesis": "require at least modest five-minute market breadth",
-    },
-    "C3MG_MED10": {
-        "feature": "median_return_5m",
-        "op": ">=",
-        "threshold": -0.10,
-        "hypothesis": "avoid a materially falling median eligible symbol",
-    },
-    "C3MG_P10": {
-        "feature": "p10_return_5m",
-        "op": ">=",
-        "threshold": -0.75,
-        "hypothesis": "avoid severe weakness in the lower tail of the universe",
-    },
+    "C3MG_IWM5": _rule("iwm_ret_5m", ">=", -0.25, "five-minute small-cap weakness"),
+    "C3MG_SPY5": _rule("spy_ret_5m", ">=", -0.20, "five-minute broad-index weakness"),
+    "C3MG_BRD35": _rule("green_pct_5m", ">=", 35.0, "five-minute breadth"),
+    "C3MG_MED10": _rule("median_return_5m", ">=", -0.10, "median-stock weakness"),
+    "C3MG_P10": _rule("p10_return_5m", ">=", -0.75, "lower-tail weakness"),
+
+    # Index/small-cap weakness: strict and lenient, short and sustained.
+    "C3MG_I5S": _rule("iwm_ret_5m", ">=", -0.10, "strict short small-cap weakness"),
+    "C3MG_I5L": _rule("iwm_ret_5m", ">=", -0.50, "lenient short small-cap weakness"),
+    "C3MG_I15S": _rule("iwm_ret_15m", ">=", -0.30, "strict sustained small-cap weakness"),
+    "C3MG_I15L": _rule("iwm_ret_15m", ">=", -0.60, "lenient sustained small-cap weakness"),
+    "C3MG_QQQ5": _rule("qqq_ret_5m", ">=", -0.20, "five-minute growth-index weakness"),
+
+    # Breadth was the clearest discriminator in the independent market study.
+    "C3MG_BRD30": _rule("green_pct_5m", ">=", 30.0, "lenient short breadth floor"),
+    "C3MG_BRD40": _rule("green_pct_5m", ">=", 40.0, "moderate short breadth floor"),
+    "C3MG_BRD45": _rule("green_pct_5m", ">=", 45.0, "firm short breadth floor"),
+    "C3MG_BRD50": _rule("green_pct_5m", ">=", 50.0, "majority-positive short breadth"),
+    "C3MG_B15L": _rule("green_pct_15m", ">=", 35.0, "lenient sustained breadth floor"),
+    "C3MG_B15S": _rule("green_pct_15m", ">=", 45.0, "strict sustained breadth floor"),
+
+    # Central-market and tail weakness.
+    "C3MG_M5S": _rule("median_return_5m", ">=", -0.05, "strict short median weakness"),
+    "C3MG_M5L": _rule("median_return_5m", ">=", -0.20, "lenient short median weakness"),
+    "C3MG_M15S": _rule("median_return_15m", ">=", -0.10, "strict sustained median weakness"),
+    "C3MG_M15L": _rule("median_return_15m", ">=", -0.20, "lenient sustained median weakness"),
+    "C3MG_P10S": _rule("p10_return_5m", ">=", -0.50, "strict lower-tail weakness"),
+    "C3MG_P10L": _rule("p10_return_5m", ">=", -1.00, "lenient lower-tail weakness"),
+
+    # Relative structure, deterioration, narrowing, tail spread, and stress.
+    "C3MG_REL20": _rule("iwm_minus_spy_5m", ">=", -0.20, "small-cap lag versus SPY"),
+    "C3MG_BSLP5": _rule("breadth_change_5v15", ">=", -5.0, "rapid breadth deterioration"),
+    "C3MG_NAR50": _rule("spy_minus_median_5m", "<=", 0.50, "narrow SPY leadership"),
+    "C3MG_DSP75": _rule("downside_spread_5m", "<=", 0.75, "stretched downside tail"),
+    "C3MG_STRESS": _rule("p90_abs_return_5m", "<=", 1.00, "cross-sectional stress"),
 }
 
+CORE_COMPONENTS = ("C3MG_IWM5", "C3MG_SPY5", "C3MG_BRD35", "C3MG_MED10")
+COMBOS: dict[str, dict[str, Any]] = {
+    "C3MG_2OF4": {"components": CORE_COMPONENTS, "min_pass": 2,
+                   "hypothesis": "lenient core consensus"},
+    "C3MG_3OF4": {"components": CORE_COMPONENTS, "min_pass": 3,
+                   "hypothesis": "majority core consensus"},
+    "C3MG_4OF4": {"components": CORE_COMPONENTS, "min_pass": 4,
+                   "hypothesis": "unanimous core consensus"},
+    "C3MG_XS3": {"components": ("C3MG_I15S", "C3MG_B15S", "C3MG_M15S", "C3MG_P10S"),
+                  "min_pass": 3, "hypothesis": "strict sustained consensus"},
+    "C3MG_DIV2": {"components": ("C3MG_REL20", "C3MG_BSLP5", "C3MG_NAR50"),
+                   "min_pass": 2, "hypothesis": "market-divergence consensus"},
+}
+
+# Compatibility for diagnostics written against v1.
 COMBO_STRATEGY_ID = "C3MG_3OF4"
-COMBO_COMPONENTS = (
-    "C3MG_IWM5",
-    "C3MG_SPY5",
-    "C3MG_BRD35",
-    "C3MG_MED10",
-)
+COMBO_COMPONENTS = CORE_COMPONENTS
 COMBO_MIN_PASS = 3
-FAMILY_STRATEGY_IDS = tuple(GATES) + (COMBO_STRATEGY_ID,)
+FAMILY_STRATEGY_IDS = tuple(GATES) + tuple(COMBOS)
 
 
 def _utc(value: Any) -> pd.Timestamp | None:
@@ -71,9 +92,7 @@ def _utc(value: Any) -> pd.Timestamp | None:
         return None
     if pd.isna(result):
         return None
-    if result.tzinfo is None:
-        return result.tz_localize("UTC")
-    return result.tz_convert("UTC")
+    return result.tz_localize("UTC") if result.tzinfo is None else result.tz_convert("UTC")
 
 
 def _asof(series: pd.Series, timestamp: pd.Timestamp) -> float | None:
@@ -94,8 +113,6 @@ def _return_pct(current: float | None, previous: float | None) -> float | None:
 
 
 class C3MarketGateFamily:
-    """Evaluate causal market gates and clone only admitted parent entries."""
-
     def __init__(self) -> None:
         self._frame_cache_key: tuple[Any, ...] | None = None
         self._frame_cache = pd.DataFrame(columns=["timestamp", "symbol", "price"])
@@ -110,9 +127,7 @@ class C3MarketGateFamily:
         if key == self._frame_cache_key:
             return self._frame_cache
         work = frame[["timestamp", "symbol", "price"]].copy()
-        work["timestamp"] = pd.to_datetime(
-            work["timestamp"], utc=True, errors="coerce"
-        ).dt.floor("min")
+        work["timestamp"] = pd.to_datetime(work["timestamp"], utc=True, errors="coerce").dt.floor("min")
         work["symbol"] = work["symbol"].astype(str).str.upper()
         work["price"] = pd.to_numeric(work["price"], errors="coerce")
         work = work.dropna(subset=["timestamp", "symbol", "price"])
@@ -137,38 +152,39 @@ class C3MarketGateFamily:
         if work.empty:
             return {}
 
-        previous_cutoff = cutoff - pd.Timedelta(minutes=5)
-        returns: dict[str, float] = {}
-        for symbol, rows in work[work["timestamp"] <= cutoff].groupby("symbol"):
-            series = rows.set_index("timestamp")["price"].sort_index()
-            value = _return_pct(
-                _asof(series, cutoff),
-                _asof(series, previous_cutoff),
-            )
-            if value is not None:
-                returns[str(symbol)] = value
-
+        eligible = work[work["timestamp"] <= cutoff]
+        if eligible.empty:
+            return {}
+        # Vectorized as-of snapshots preserve the v1 semantics while avoiding
+        # thousands of Python-level per-symbol scans at every unique cutoff.
+        current = eligible.groupby("symbol", sort=False)["price"].last()
         result: dict[str, float] = {}
-        for symbol, feature in (
-            ("IWM", "iwm_ret_5m"),
-            ("SPY", "spy_ret_5m"),
-            ("QQQ", "qqq_ret_5m"),
+        for lookback in LOOKBACKS:
+            previous_cutoff = cutoff - pd.Timedelta(minutes=lookback)
+            prior_rows = eligible[eligible["timestamp"] <= previous_cutoff]
+            if prior_rows.empty:
+                continue
+            previous = prior_rows.groupby("symbol", sort=False)["price"].last()
+            returns = ((current / previous) - 1.0).dropna() * 100.0
+            for symbol in INDEX_SYMBOLS:
+                if symbol in returns.index:
+                    result[f"{symbol.lower()}_ret_{lookback}m"] = float(returns.loc[symbol])
+            universe = returns[~returns.index.isin(INDEX_SYMBOLS)].astype(float)
+            if len(universe) >= MIN_BREADTH_SYMBOLS:
+                result[f"symbols_measured_{lookback}m"] = float(len(universe))
+                result[f"green_pct_{lookback}m"] = float((universe > 0).mean() * 100.0)
+                result[f"median_return_{lookback}m"] = float(universe.median())
+                result[f"p10_return_{lookback}m"] = float(universe.quantile(0.10))
+                result[f"p90_abs_return_{lookback}m"] = float(universe.abs().quantile(0.90))
+
+        for name, left, right in (
+            ("iwm_minus_spy_5m", "iwm_ret_5m", "spy_ret_5m"),
+            ("breadth_change_5v15", "green_pct_5m", "green_pct_15m"),
+            ("spy_minus_median_5m", "spy_ret_5m", "median_return_5m"),
+            ("downside_spread_5m", "median_return_5m", "p10_return_5m"),
         ):
-            if symbol in returns:
-                result[feature] = returns[symbol]
-
-        universe_returns = pd.Series(
-            [value for symbol, value in returns.items() if symbol not in {"SPY", "QQQ", "IWM"}],
-            dtype=float,
-        )
-        if len(universe_returns) >= MIN_BREADTH_SYMBOLS:
-            result.update({
-                "symbols_measured": float(len(universe_returns)),
-                "green_pct_5m": float((universe_returns > 0).mean() * 100.0),
-                "median_return_5m": float(universe_returns.median()),
-                "p10_return_5m": float(universe_returns.quantile(0.10)),
-            })
-
+            if left in result and right in result:
+                result[name] = result[left] - result[right]
         self._feature_cache[cutoff] = dict(result)
         return result
 
@@ -177,12 +193,8 @@ class C3MarketGateFamily:
         threshold = float(rule["threshold"])
         return value >= threshold if rule["op"] == ">=" else value <= threshold
 
-    def _child(
-        self,
-        parent: Mapping[str, Any],
-        strategy_id: str,
-        metadata: Mapping[str, Any],
-    ) -> dict[str, Any]:
+    def _child(self, parent: Mapping[str, Any], strategy_id: str,
+               metadata: Mapping[str, Any]) -> dict[str, Any]:
         child = deepcopy(dict(parent))
         symbol = str(parent.get("symbol") or "").strip()
         child.update({
@@ -198,15 +210,11 @@ class C3MarketGateFamily:
         })
         return child
 
-    def derive_batch(
-        self,
-        parents: list[Mapping[str, Any]],
-        frame: pd.DataFrame,
-    ) -> list[dict[str, Any]]:
+    def derive_batch(self, parents: list[Mapping[str, Any]],
+                     frame: pd.DataFrame) -> list[dict[str, Any]]:
         children: list[dict[str, Any]] = []
         decisions: list[dict[str, Any]] = []
         forward_start = _utc(FORWARD_START_UTC)
-
         for parent in parents:
             if str(parent.get("strategy_id") or "").upper() != PARENT_STRATEGY_ID:
                 continue
@@ -222,21 +230,14 @@ class C3MarketGateFamily:
                 value = features.get(feature)
                 passed = value is not None and self._passes(float(value), rule)
                 parent_decisions[strategy_id] = passed
-                decision = {
-                    "strategy_id": strategy_id,
-                    "symbol": parent.get("symbol"),
-                    "timestamp": parent.get("timestamp"),
-                    "source_setup_id": parent.get("setup_id"),
-                    "feature": feature,
-                    "operator": rule["op"],
-                    "threshold": float(rule["threshold"]),
-                    "value": value,
-                    "passed": passed,
+                decisions.append({
+                    "strategy_id": strategy_id, "symbol": parent.get("symbol"),
+                    "timestamp": parent.get("timestamp"), "source_setup_id": parent.get("setup_id"),
+                    "feature": feature, "operator": rule["op"],
+                    "threshold": float(rule["threshold"]), "value": value, "passed": passed,
                     "reason": "passed" if passed else ("missing_feature" if value is None else "gate_refrained"),
-                    "feature_cutoff": cutoff.isoformat(),
-                    "hypothesis": rule["hypothesis"],
-                }
-                decisions.append(decision)
+                    "feature_cutoff": cutoff.isoformat(), "hypothesis": rule["hypothesis"],
+                })
                 if passed:
                     children.append(self._child(parent, strategy_id, {
                         "c3_market_gate_feature": feature,
@@ -246,33 +247,28 @@ class C3MarketGateFamily:
                         "c3_market_gate_cutoff": cutoff.isoformat(),
                     }))
 
-            combo_passes = sum(parent_decisions.get(component, False) for component in COMBO_COMPONENTS)
-            combo_passed = combo_passes >= COMBO_MIN_PASS and all(
-                component in parent_decisions for component in COMBO_COMPONENTS
-            )
-            decisions.append({
-                "strategy_id": COMBO_STRATEGY_ID,
-                "symbol": parent.get("symbol"),
-                "timestamp": parent.get("timestamp"),
-                "source_setup_id": parent.get("setup_id"),
-                "feature": "combo_pass_count",
-                "operator": ">=",
-                "threshold": float(COMBO_MIN_PASS),
-                "value": float(combo_passes),
-                "passed": combo_passed,
-                "reason": "passed" if combo_passed else "gate_refrained",
-                "feature_cutoff": cutoff.isoformat(),
-                "components": list(COMBO_COMPONENTS),
-            })
-            if combo_passed:
-                children.append(self._child(parent, COMBO_STRATEGY_ID, {
-                    "c3_market_gate_feature": "combo_pass_count",
-                    "c3_market_gate_operator": ">=",
-                    "c3_market_gate_threshold": float(COMBO_MIN_PASS),
-                    "c3_market_gate_value": float(combo_passes),
-                    "c3_market_gate_cutoff": cutoff.isoformat(),
-                    "c3_market_gate_components": list(COMBO_COMPONENTS),
-                }))
-
+            for strategy_id, combo in COMBOS.items():
+                components = tuple(combo["components"])
+                pass_count = sum(parent_decisions.get(component, False) for component in components)
+                passed = all(c in parent_decisions for c in components) and pass_count >= int(combo["min_pass"])
+                parent_decisions[strategy_id] = passed
+                decisions.append({
+                    "strategy_id": strategy_id, "symbol": parent.get("symbol"),
+                    "timestamp": parent.get("timestamp"), "source_setup_id": parent.get("setup_id"),
+                    "feature": "combo_pass_count", "operator": ">=",
+                    "threshold": float(combo["min_pass"]), "value": float(pass_count),
+                    "passed": passed, "reason": "passed" if passed else "gate_refrained",
+                    "feature_cutoff": cutoff.isoformat(), "components": list(components),
+                    "hypothesis": combo["hypothesis"],
+                })
+                if passed:
+                    children.append(self._child(parent, strategy_id, {
+                        "c3_market_gate_feature": "combo_pass_count",
+                        "c3_market_gate_operator": ">=",
+                        "c3_market_gate_threshold": float(combo["min_pass"]),
+                        "c3_market_gate_value": float(pass_count),
+                        "c3_market_gate_cutoff": cutoff.isoformat(),
+                        "c3_market_gate_components": list(components),
+                    }))
         self.last_decisions = decisions
         return children

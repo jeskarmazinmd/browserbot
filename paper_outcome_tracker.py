@@ -46,6 +46,10 @@ OPTIONAL_FIELDS = (
     "c3_admission_family_version", "c3_admission_feature",
     "c3_admission_operator", "c3_admission_threshold",
     "c3_admission_value", "c3_admission_cutoff",
+    "c3_market_gate_family_version", "c3_market_gate_feature",
+    "c3_market_gate_operator", "c3_market_gate_threshold",
+    "c3_market_gate_value", "c3_market_gate_cutoff",
+    "c3_market_gate_components",
 )
 
 
