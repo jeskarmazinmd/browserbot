@@ -33,6 +33,7 @@ Newly disabled independent leaves had at least 14 active sessions and a
 cumulative return of -6% or worse through September 1:
 
 - `GT1`, `SH1`, `ET29`, `PT325`, `HT5`, `LT65`
+- `FUTMGC1`, `FUTMCL1`, `FUTIDXR1`, `FUTXAR1`, `SWBREAK10`
 
 Newly disabled derived leaves had at least 14 active sessions and a cumulative
 return of -10% or worse:
