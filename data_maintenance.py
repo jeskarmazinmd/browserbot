@@ -61,6 +61,28 @@ def _safe_json_lines(path: Path):
                 continue
 
 
+def _open_outcome_setups(path: Path) -> set[str]:
+    """Return entries not yet closed, using the ledger as authority.
+
+    This deliberately does not mutate the ledger.  It protects startup from a
+    stale status checkpoint after a restart between PAPER_ENTRY/PAPER_EXIT and
+    the tracker's next status write.
+    """
+    if not path.exists() or not path.stat().st_size:
+        return set()
+    entries = set()
+    exits = set()
+    for row in _safe_json_lines(path):
+        setup = str(row.get("setup_id") or "")
+        if not setup:
+            continue
+        if row.get("event_type") == "PAPER_ENTRY":
+            entries.add(setup)
+        elif row.get("event_type") == "PAPER_EXIT":
+            exits.add(setup)
+    return entries - exits
+
+
 def _gzip_verified(path: Path, destination: Path) -> dict:
     """Create a verified gzip copy, then remove the source."""
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -289,6 +311,23 @@ def run(data_root="/data", now=None) -> dict:
     except (OSError, ValueError, TypeError) as exc:
         report["reason"] = f"paper status unavailable: {type(exc).__name__}"
         return report
+    outcome_path = root / "paper_signal_outcomes.jsonl"
+    open_setups = _open_outcome_setups(outcome_path)
+    if open_setups:
+        # The append-only ledger is authoritative.  Repair only the derived
+        # count; the tracker will recover the actual records and close them by
+        # its normal target/stop/EOD rules after the workers start.
+        old_active = status.get("active")
+        status["active"] = len(open_setups)
+        if old_active != len(open_setups):
+            _atomic_json(status_path, status)
+            report["status_repair"] = {
+                "old_active": old_active,
+                "new_active": len(open_setups),
+                "source": "authoritative_outcome_ledger",
+            }
+        report["reason"] = f"paper outcomes still active in ledger: {len(open_setups)}"
+        return report
     if int(status.get("active", -1)) != 0:
         report["reason"] = f"paper outcomes still active: {status.get('active')}"
         return report
@@ -300,7 +339,6 @@ def run(data_root="/data", now=None) -> dict:
 
     archive = root / "archive"
     stamp = now.strftime("%Y%m%dT%H%M%SZ")
-    outcome_path = root / "paper_signal_outcomes.jsonl"
     if outcome_path.exists() and outcome_path.stat().st_size:
         compact = archive / f"paper_trades.{stamp}.jsonl.gz"
         report["actions"]["paper_outcomes"] = _compact_outcomes(outcome_path, compact)

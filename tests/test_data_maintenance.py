@@ -70,14 +70,35 @@ class DataMaintenanceTests(unittest.TestCase):
         with gzip.open(event_archive, "rt") as handle:
             self.assertEqual(handle.read(), event_text)
 
-    def test_incomplete_outcome_ledger_aborts_without_deletion(self):
+    def test_open_ledger_repairs_stale_status_and_skips_without_deletion(self):
         self.write_status(0)
         ledger = self.root / "paper_signal_outcomes.jsonl"
         ledger.write_text(json.dumps({"event_type": "PAPER_ENTRY", "setup_id": "open"}) + "\n")
-        with self.assertRaises(RuntimeError):
-            data_maintenance.run(self.root, self.after_eod)
+        result = data_maintenance.run(self.root, self.after_eod)
+        self.assertEqual("SKIPPED", result["status"])
+        self.assertIn("still active in ledger: 1", result["reason"])
+        self.assertEqual(0, result["status_repair"]["old_active"])
+        self.assertEqual(1, result["status_repair"]["new_active"])
+        self.assertEqual(1, json.loads(
+            (self.root / "paper_signal_status.json").read_text()
+        )["active"])
         self.assertTrue(ledger.exists())
         self.assertGreater(ledger.stat().st_size, 0)
+
+    def test_multiple_open_entries_repair_exact_active_count(self):
+        self.write_status(0)
+        rows = [
+            {"event_type": "PAPER_ENTRY", "setup_id": "closed"},
+            {"event_type": "PAPER_EXIT", "setup_id": "closed"},
+            {"event_type": "PAPER_ENTRY", "setup_id": "open-a"},
+            {"event_type": "PAPER_ENTRY", "setup_id": "open-b"},
+        ]
+        (self.root / "paper_signal_outcomes.jsonl").write_text(
+            "".join(json.dumps(row) + "\n" for row in rows)
+        )
+        result = data_maintenance.run(self.root, self.after_eod)
+        self.assertEqual("SKIPPED", result["status"])
+        self.assertEqual(2, result["status_repair"]["new_active"])
 
     def test_eod_event_summary_includes_intraday_segments(self):
         self.write_status(0)
