@@ -13,17 +13,24 @@ from . import (
 )
 
 
-J_MODULES = (strategy_j1, strategy_j2, strategy_j3, strategy_j4, strategy_j5, strategy_j6)
+# J3/J4/J5 are failed leaves; J1/J2/J6 remain prospective controls.
+J_MODULES = (strategy_j1, strategy_j2, strategy_j6)
 C_MODULES = (strategy_c1, strategy_c2, strategy_c3, strategy_c4)
 # K1-K9 are failed leaf experiments. Parent A remains active for its other
 # derived strategies and shared signal production.
 K_MODULES = ()
+DISABLED_DERIVED_STRATEGY_IDS = frozenset({
+    "E", "I", "J3", "J4", "J5",
+    "K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8", "K9",
+    "M", "N", "P", "Q",
+})
+
 DERIVED_STRATEGY_IDS = frozenset({
     "C1", "C2", "C3", "C4", "E", "F", "G", "I",
     "J1", "J2", "J3", "J4", "J5", "J6",
     "K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8", "K9",
     "L", "M", "N", "O", "P", "Q", "R", "S",
-})
+}) - DISABLED_DERIVED_STRATEGY_IDS
 
 
 def _float(value, default=0.0):
@@ -55,19 +62,6 @@ def derive_signals(parent):
     derived = []
 
     if strategy_id == "A":
-        if (
-            parent.get("volume_data_status_flash") == "OK"
-            and _float(parent.get("flash_dollar_volume_3m"))
-            >= float(strategy_e.CONFIG["min_flash_dollar_volume_3m"])
-        ):
-            derived.append(_clone(parent, "E"))
-        try:
-            delay = _float(parent.get("confirmation_wait_seconds"), float("inf"))
-        except (TypeError, ValueError):
-            delay = float("inf")
-        if delay <= float(strategy_i.CONFIG["max_confirmation_delay_seconds"]):
-            derived.append(_clone(parent, "I"))
-
         for module in K_MODULES:
             derived.append(_clone(
                 parent,
@@ -85,23 +79,10 @@ def derive_signals(parent):
             derived.append(_clone(parent, "L"))
         # M disabled after persistently negative forward results.
         derived.append(_clone(
-            parent, "N", exit_model="adaptive_trail_target",
-            **strategy_n.CONFIG,
-        ))
-        derived.append(_clone(
             parent, "O", exit_model="second_leg",
             entered=False, source_entry_price=float(parent["entry_price"]),
             **strategy_o.CONFIG,
         ))
-        if (
-            _float(parent.get("pre_return_pct"), -1.0) >= float(strategy_p.CONFIG["min_pre_return_pct"])
-            and _float(parent.get("pre_r2"), -1.0) >= float(strategy_p.CONFIG["min_pre_r2"])
-        ):
-            derived.append(_clone(parent, "P"))
-        pre_std = _float(parent.get("pre30_return_std_pct"))
-        volatility_units = _float(parent.get("flash_drop_pct")) / pre_std if pre_std > 0 else 0.0
-        if volatility_units >= float(strategy_q.CONFIG["min_volatility_units"]):
-            derived.append(_clone(parent, "Q", flash_drop_volatility_units=volatility_units))
         try:
             from datetime import datetime
             from zoneinfo import ZoneInfo

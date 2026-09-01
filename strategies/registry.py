@@ -19,7 +19,7 @@ from . import (
     strategy_c3n20, strategy_c3n25, strategy_c3n30, strategy_c3n40, strategy_c3n50,
     strategy_c3n25a05, strategy_c3n25a10, strategy_c3n25a20, strategy_c3n25a50,
     strategy_c3n25t15, strategy_c3n25t60,
-    strategy_c3n25s10, strategy_c3n25s15, strategy_c3n25s25,
+    strategy_c3n25s10, strategy_c3n25s10dup, strategy_c3n25s15, strategy_c3n25s25,
     strategy_c3n25be,
     strategy_c3n25w20, strategy_c3n25w30,
     strategy_c3p25, strategy_c3l25,
@@ -42,7 +42,7 @@ FLASH_STRATEGY_MODULES = {
         strategy_c3n20, strategy_c3n25, strategy_c3n30, strategy_c3n40, strategy_c3n50,
         strategy_c3n25a05, strategy_c3n25a10, strategy_c3n25a20, strategy_c3n25a50,
         strategy_c3n25t15, strategy_c3n25t60,
-        strategy_c3n25s10, strategy_c3n25s15, strategy_c3n25s25,
+        strategy_c3n25s10, strategy_c3n25s10dup, strategy_c3n25s15, strategy_c3n25s25,
     strategy_c3n25be,
     strategy_c3n25w20, strategy_c3n25w30,
         strategy_c3p25, strategy_c3l25,
@@ -203,10 +203,8 @@ REPORTING_STRATEGY_MODULES = {}
 # explicit makes operational diagnostics distinguish active derived modules
 # from definitions that remain reporting-only.
 DERIVED_RUNTIME_STRATEGY_IDS = frozenset({
-    "C1", "C2", "C3", "C4", "E", "F", "G", "I",
-    "J1", "J2", "J3", "J4", "J5", "J6",
-    "K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8", "K9",
-    "L", "M", "N", "O", "P", "Q", "R", "S",
+    "C1", "C2", "C3", "C4", "F", "G",
+    "J1", "J2", "J6", "L", "O", "R", "S",
 })
 
 for _strategy_id in (
@@ -261,6 +259,9 @@ def _load_strategies():
 DISABLED_RESEARCH_STRATEGY_IDS = frozenset({
     "SPY_XA1", "SHOCKR1", "VOLR1", "VOLR2", "BREADTH2",
     "EMA1RR", "EMA1V15", "HL1", "AV1", "TL1", "PTD1X",
+    # Persistently negative independent leaves through 2026-09-01.  These do
+    # not feed any successful descendants; history remains in /data.
+    "GT1", "SH1", "ET29", "PT325", "HT5", "LT65",
 })
 
 ENABLED_STRATEGIES = [

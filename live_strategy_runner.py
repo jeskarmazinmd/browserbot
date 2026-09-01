@@ -25,9 +25,14 @@ from strategies.registry import (
 )
 from strategies.capacity_filters import apply_capacity_filters
 from strategies.c3_exit_duration_sweep import derive_duration_signals
+from strategies.c3_nh015_duplicate import derive_nh015_duplicate
 from strategies.c3_admission_family import (
     C3AdmissionFamily,
     FAMILY_STRATEGY_IDS as C3_ADMISSION_STRATEGY_IDS,
+)
+from strategies.c3_market_gate_family import (
+    C3MarketGateFamily,
+    FAMILY_STRATEGY_IDS as C3_MARKET_GATE_STRATEGY_IDS,
 )
 from strategies.m2_forward_family import derive_m2_family_signals
 from strategies.ema_volume_batch import BoundedVolumeConfirmation
@@ -1721,6 +1726,7 @@ def main():
     )
     minute_strategy_pool = MinuteStrategyPool()
     c3_admission_family = C3AdmissionFamily()
+    c3_market_gate_family = C3MarketGateFamily()
     print(
         "MINUTE_STRATEGY_POOL_ONLINE "
         f"shards={minute_strategy_pool.shard_count} "
@@ -1734,6 +1740,11 @@ def main():
     print(
         "C3_ADMISSION_FAMILY_ONLINE "
         + ",".join(C3_ADMISSION_STRATEGY_IDS),
+        flush=True,
+    )
+    print(
+        "C3_MARKET_GATE_FAMILY_ONLINE "
+        + ",".join(C3_MARKET_GATE_STRATEGY_IDS),
         flush=True,
     )
     for strategy in MINUTE_STRATEGIES:
@@ -1753,12 +1764,21 @@ def main():
             runtime_path="derived_research_admission",
             parent_strategy="C3N25S10",
         )
+    for strategy_id in C3_MARKET_GATE_STRATEGY_IDS:
+        diagnostics.define(
+            strategy_id,
+            "WAITING_PARENT",
+            runtime_path="derived_research_market_gate",
+            parent_strategy="C3N25S10",
+        )
     derived_parents = {
         **{key: "B" for key in ("C1", "C2", "C3", "C4", "G", "J1", "J2", "J3", "J4", "J5", "J6")},
         "E": "A", "I": "A", "F": "D",
         **{key: "A" for key in ("K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8", "K9", "L", "M", "N", "O", "P", "Q", "R", "S")},
     }
     for strategy_id, parent_id in derived_parents.items():
+        if strategy_id not in DERIVED_STRATEGY_IDS:
+            continue
         diagnostics.define(
             strategy_id,
             "WAITING_PARENT",
@@ -2475,6 +2495,23 @@ def main():
                     ),
                     [],
                 ).append(admission_signal)
+            c3_market_gate_by_source = {}
+            for market_gate_signal in c3_market_gate_family.derive_batch(events, df):
+                c3_market_gate_by_source.setdefault(
+                    (
+                        market_gate_signal.get("symbol"),
+                        market_gate_signal.get("timestamp"),
+                    ),
+                    [],
+                ).append(market_gate_signal)
+            c3_market_gate_refrains_by_source = {}
+            for decision in c3_market_gate_family.last_decisions:
+                if decision.get("passed"):
+                    continue
+                c3_market_gate_refrains_by_source.setdefault(
+                    (decision.get("symbol"), decision.get("timestamp")),
+                    [],
+                ).append(decision)
             events_a = [e for e in events if e.get("strategy_id") == STRATEGY_A]
             events_b = [e for e in events if e.get("strategy_id") == STRATEGY_B]
             events_d = [e for e in events if e.get("strategy_id") == STRATEGY_D]
@@ -2634,6 +2671,42 @@ def main():
                             },
                         )
                         paper_outcomes.register(admission_signal)
+                    for market_gate_signal in c3_market_gate_by_source.get(
+                        (e.get("symbol"), e.get("timestamp")),
+                        [],
+                    ):
+                        append_strategy_event(
+                            market_gate_signal["strategy_id"],
+                            "SIGNAL",
+                            symbol=market_gate_signal["symbol"],
+                            signal=market_gate_signal,
+                            signal_regime=latest_regime(),
+                            thresholds={
+                                "DERIVED_FROM": "C3N25S10",
+                                "LIVE_ORDER_PLACEMENT": False,
+                                "PAPER_ONLY": True,
+                                "FORWARD_START_UTC": market_gate_signal["forward_start_utc"],
+                                "FEATURE": market_gate_signal["c3_market_gate_feature"],
+                                "OPERATOR": market_gate_signal["c3_market_gate_operator"],
+                                "THRESHOLD": market_gate_signal["c3_market_gate_threshold"],
+                                "FEATURE_VALUE": market_gate_signal["c3_market_gate_value"],
+                                "FEATURE_CUTOFF": market_gate_signal["c3_market_gate_cutoff"],
+                                "EXPERIMENT": "c3_market_gate_family",
+                            },
+                        )
+                        paper_outcomes.register(market_gate_signal)
+                    for decision in c3_market_gate_refrains_by_source.get(
+                        (e.get("symbol"), e.get("timestamp")),
+                        [],
+                    ):
+                        append_strategy_event(
+                            decision["strategy_id"],
+                            "REFRAINED",
+                            symbol=decision.get("symbol"),
+                            source_setup_id=decision.get("source_setup_id"),
+                            decision=decision,
+                            experiment="c3_market_gate_family",
+                        )
                     for duration_signal in derive_duration_signals(e):
                         append_strategy_event(
                             duration_signal["strategy_id"],
@@ -2650,6 +2723,23 @@ def main():
                             },
                         )
                         paper_outcomes.register(duration_signal)
+                    nh015_duplicate = derive_nh015_duplicate(e)
+                    if nh015_duplicate is not None:
+                        append_strategy_event(
+                            nh015_duplicate["strategy_id"],
+                            "SIGNAL",
+                            symbol=nh015_duplicate["symbol"],
+                            signal=nh015_duplicate,
+                            signal_regime=latest_regime(),
+                            thresholds={
+                                "DERIVED_FROM": "C3N25S10NH015",
+                                "LIVE_ORDER_PLACEMENT": False,
+                                "EXIT_MODEL": "c2",
+                                "NO_NEW_HIGH_SECONDS": 15.0,
+                                "EXPERIMENT": "c3_nh015_duplicate_parity",
+                            },
+                        )
+                        paper_outcomes.register(nh015_duplicate)
                     for m2_family_signal in derive_m2_family_signals(e):
                         append_strategy_event(
                             m2_family_signal["strategy_id"],

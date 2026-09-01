@@ -3,7 +3,11 @@ import unittest
 from datetime import datetime, timedelta, timezone
 
 from paper_outcome_tracker import PaperOutcomeTracker
-from strategies.derived_runtime import derive_signals
+from strategies.derived_runtime import (
+    DERIVED_STRATEGY_IDS,
+    DISABLED_DERIVED_STRATEGY_IDS,
+    derive_signals,
+)
 
 
 def parent(strategy_id):
@@ -33,12 +37,21 @@ def parent(strategy_id):
 class DerivedRuntimeTests(unittest.TestCase):
     def test_parent_routes(self):
         a_ids = {s["strategy_id"] for s in derive_signals(parent("A"))}
-        self.assertTrue({"E", "I", "K1", "K9", "L", "M", "N", "O", "P", "Q", "R", "S"} <= a_ids)
+        self.assertEqual({"L", "O", "R", "S"}, a_ids)
         self.assertEqual({s["strategy_id"] for s in derive_signals(parent("D"))}, {"F"})
         self.assertEqual(
             {s["strategy_id"] for s in derive_signals(parent("B"))},
-            {"C1", "C2", "C3", "C4", "G", "J1", "J2", "J3", "J4", "J5", "J6"},
+            {"C1", "C2", "C3", "C4", "G", "J1", "J2", "J6"},
         )
+
+    def test_failed_leaves_are_explicitly_disabled(self):
+        emitted = {
+            signal["strategy_id"]
+            for source in ("A", "B", "D")
+            for signal in derive_signals(parent(source))
+        }
+        self.assertFalse(emitted & DISABLED_DERIVED_STRATEGY_IDS)
+        self.assertFalse(DERIVED_STRATEGY_IDS & DISABLED_DERIVED_STRATEGY_IDS)
 
     def test_overlays_reject_missing_metrics(self):
         a = parent("A")
@@ -51,9 +64,9 @@ class DerivedRuntimeTests(unittest.TestCase):
     def test_j_checkpoint_exit(self):
         with tempfile.TemporaryDirectory() as root:
             tracker = PaperOutcomeTracker(root)
-            j3 = next(s for s in derive_signals(parent("B")) if s["strategy_id"] == "J3")
-            tracker.register(j3)
-            rows = tracker.update({"XYZ": 99.9}, datetime(2026, 8, 3, 14, 0, 16, tzinfo=timezone.utc))
+            j6 = next(s for s in derive_signals(parent("B")) if s["strategy_id"] == "J6")
+            tracker.register(j6)
+            rows = tracker.update({"XYZ": 99.9}, datetime(2026, 8, 3, 14, 0, 31, tzinfo=timezone.utc))
             self.assertEqual(rows[0]["exit_reason"], "NO_PROGRESS_CHECKPOINT")
 
     def test_c1_activates_then_trails(self):
@@ -82,38 +95,6 @@ class DerivedRuntimeTests(unittest.TestCase):
             rows = restarted.update({"XYZ": 100.1}, start + timedelta(seconds=10))
             self.assertEqual(rows[0]["exit_reason"], "TRAIL_PULLBACK")
 
-    def test_k_fixed_and_conditional_rules(self):
-        with tempfile.TemporaryDirectory() as root:
-            tracker = PaperOutcomeTracker(root)
-            derived = {s["strategy_id"]: s for s in derive_signals(parent("A"))}
-            tracker.register(derived["K1"])
-            tracker.register(derived["K4"])
-            now = datetime(2026, 8, 3, 14, 0, 31, tzinfo=timezone.utc)
-            rows = tracker.update({"XYZ": 100.1}, now)
-            self.assertEqual({row["strategy_id"] for row in rows}, {"K1"})
-            self.assertIn("K4", {row["strategy_id"] for row in tracker.active.values()})
-
-    def test_k_passed_checkpoint_survives_restart(self):
-        with tempfile.TemporaryDirectory() as root:
-            tracker = PaperOutcomeTracker(root)
-            k4 = next(s for s in derive_signals(parent("A")) if s["strategy_id"] == "K4")
-            tracker.register(k4)
-            tracker.update({"XYZ": 100.1}, datetime(2026, 8, 3, 14, 0, 31, tzinfo=timezone.utc))
-            tracker.checkpoint(force=True)
-            restarted = PaperOutcomeTracker(root)
-            rows = restarted.update({"XYZ": 99.9}, datetime(2026, 8, 3, 14, 0, 40, tzinfo=timezone.utc))
-            self.assertEqual(rows, [])
-
-    def test_n_adaptive_trail(self):
-        with tempfile.TemporaryDirectory() as root:
-            tracker = PaperOutcomeTracker(root)
-            n = next(s for s in derive_signals(parent("A")) if s["strategy_id"] == "N")
-            tracker.register(n)
-            start = datetime(2026, 8, 3, 14, tzinfo=timezone.utc)
-            tracker.update({"XYZ": 100.4}, start + timedelta(seconds=5))
-            rows = tracker.update({"XYZ": 100.1}, start + timedelta(seconds=10))
-            self.assertEqual(rows[0]["exit_reason"], "ADAPTIVE_TRAIL")
-
     def test_o_waits_for_second_leg(self):
         with tempfile.TemporaryDirectory() as root:
             tracker = PaperOutcomeTracker(root)
@@ -136,9 +117,6 @@ class DerivedRuntimeTests(unittest.TestCase):
     def test_ls_filters_reject_failed_thresholds(self):
         cases = {
             "L": ("rebound_volume_ratio", 0.9),
-            "M": ("distance_below_rolling_vwap_pct", 0.4),
-            "P": ("pre_r2", 0.4),
-            "Q": ("pre30_return_std_pct", 1.0),
             "S": ("market_1m_return_pct", -0.1),
         }
         for strategy_id, (field, value) in cases.items():
