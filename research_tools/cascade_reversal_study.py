@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import csv
 import glob
+import gzip
 import math
 from collections import defaultdict
 from dataclasses import dataclass
@@ -58,14 +59,34 @@ def load_minute_bars(paths: Iterable[str]) -> dict[str, list[Bar]]:
     for path_string in paths:
         path = Path(path_string)
         print(f"Reading {path} ...", flush=True)
-        with path.open("r", encoding="utf-8", errors="ignore", newline="") as handle:
+        if path.suffix.lower() == ".gz":
+            handle_context = gzip.open(
+                path, "rt", encoding="utf-8", errors="ignore", newline=""
+            )
+        else:
+            handle_context = path.open(
+                "r", encoding="utf-8", errors="ignore", newline=""
+            )
+        with handle_context as handle:
             reader = csv.DictReader((line.replace("\x00", "") for line in handle))
             for row in reader:
                 try:
                     symbol = str(row.get("symbol", "")).strip().upper()
-                    price = float(row.get("last_price", ""))
-                    minute = _minute_from_iso(str(row.get("timestamp_utc", "")))
-                except (TypeError, ValueError):
+                    raw_price = next(
+                        row.get(name)
+                        for name in (
+                            "legacy_price",
+                            "last_price",
+                            "last",
+                            "mark",
+                            "regular_last",
+                        )
+                        if row.get(name) not in (None, "")
+                    )
+                    price = float(raw_price)
+                    raw_minute = row.get("market_minute_utc") or row.get("timestamp_utc")
+                    minute = _minute_from_iso(str(raw_minute or ""))
+                except (StopIteration, TypeError, ValueError):
                     continue
                 if not symbol or not math.isfinite(price) or price <= 0:
                     continue
