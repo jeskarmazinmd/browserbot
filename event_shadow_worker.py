@@ -8,7 +8,7 @@ from event_paper_tracker import EventPaperTracker
 NY=ZoneInfo("America/New_York");DATA_ROOT=Path(os.getenv("EVENT_DATA_ROOT","/data"));FEED=Path(os.getenv("EVENT_FEED_PATH",str(DATA_ROOT/"event_feed.jsonl")));TOKEN=Path("/data/schwab_token.json");URL="https://api.schwabapi.com/marketdata/v1/quotes";POLL=int(os.getenv("EVENT_POLL_SECONDS","60"));MAX_AGE=int(os.getenv("EVENT_MAX_AGE_SECONDS","86400"))
 # EVTSEC8K1 and EVTVOL1 disabled after persistently negative forward results.
 STRATEGIES=("EVTEARNUP1","EVTEARNDN1","EVTGUIDUP1","EVTGUIDDN1","EVTANALYST1","EVTMACRO1")
-STRATEGIES+=("EVTSEC8K1","EVTSEC8K1INV","EVTVOL1","EVTVOL1INV")
+STRATEGIES+=("EVTSEC8K1INV","EVTVOL1INV")
 REQUIRED=("event_id","published_at","observed_at","symbol","event_type","direction","source","source_url")
 def regular(now):
     x=now.astimezone(NY);return x.weekday()<5 and clock_time(9,30)<=x.time()<clock_time(16,0)

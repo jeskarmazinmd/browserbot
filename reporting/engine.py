@@ -203,7 +203,7 @@ STRATEGY_J_OUTCOME_PATHS = {
 # unless the configured early rule exits first.
 STRATEGY_K_FORWARD_START_UTC = "2026-07-31T13:30:00+00:00"
 STRATEGY_K_CHECKPOINT_SECONDS = (15, 30, 60, 90, 120, 180, 300)
-STRATEGY_K_CONFIGS = {
+STRATEGY_K_DEFINITIONS = {
     "K1": {"mode": "fixed_exit", "seconds": 30},
     "K2": {"mode": "fixed_exit", "seconds": 60},
     "K3": {"mode": "fixed_exit", "seconds": 120},
@@ -218,6 +218,14 @@ STRATEGY_K_CONFIGS = {
     "K3INV": {"mode": "fixed_exit", "seconds": 120, "inverse_side": True},
     "K5INV": {"mode": "conditional_return", "seconds": 60, "min_return_pct": 0.0, "inverse_side": True},
     "K7INV": {"mode": "conditional_mfe", "seconds": 60, "min_mfe_pct": 0.30, "inverse_side": True},
+}
+DISABLED_STRATEGY_K_IDS = frozenset({
+    "K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8", "K9",
+})
+STRATEGY_K_CONFIGS = {
+    strategy_id: config
+    for strategy_id, config in STRATEGY_K_DEFINITIONS.items()
+    if strategy_id not in DISABLED_STRATEGY_K_IDS
 }
 STRATEGY_K_OUTCOME_PATHS = {
     "K1": SIGNAL_PAPER_OUTCOMES_K1_JSONL,

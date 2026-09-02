@@ -19,7 +19,7 @@ SYMBOLS = (
     "GOOGL", "META", "AMZN", "TSLA", "NFLX", "ORCL", "CRM", "MU", "INTC",
 )
 STRATEGIES = (
-    "MSIMB1", "MSPERSIST1", "MSBIDPULL1", "MSASKPULL1", "MSFLIP1",
+    "MSIMB1", "MSPERSIST1", "MSBIDPULL1", "MSFLIP1",
     "MSVEL1", "MSSPSHOCK1", "MSDEPTH1", "MSRECOV1",
 )
 QUOTE_URL = "https://api.schwabapi.com/marketdata/v1/quotes"

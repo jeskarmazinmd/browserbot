@@ -20,7 +20,7 @@ C_MODULES = (strategy_c1, strategy_c2, strategy_c3, strategy_c4)
 # derived strategies and shared signal production.
 K_MODULES = ()
 DISABLED_DERIVED_STRATEGY_IDS = frozenset({
-    "E", "I", "J3", "J4", "J5",
+    "E", "F", "I", "J3", "J4", "J5", "L",
     "K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8", "K9",
     "M", "N", "P", "Q",
 })
@@ -130,4 +130,7 @@ def derive_signals(parent):
                 stop_fraction=module.CONFIG["stop_loss_fraction"],
                 **module.CONFIG,
             ))
-    return derived
+    return [
+        signal for signal in derived
+        if signal["strategy_id"] not in DISABLED_DERIVED_STRATEGY_IDS
+    ]

@@ -7,7 +7,7 @@ from zoneinfo import ZoneInfo
 from swing_paper_tracker import SwingPaperTracker
 NY=ZoneInfo("America/New_York")
 ANCHORS=("SPY","QQQ","IWM","DIA","XLK","XLF","XLE","XLV","XLY","XLP","XLI","XLU","SMH","GLD","TLT","NVDA","AMD","AVGO","MSFT","AAPL","GOOGL","META","AMZN","TSLA")
-STRATEGIES=("SWREV2","SWTREND20")
+STRATEGIES=()
 BASE="https://api.schwabapi.com/marketdata/v1";TOKEN_PATH=Path(os.environ.get("SWING_MARKET_TOKEN","/data/schwab_token.json"));DATA_ROOT=Path(os.environ.get("SWING_DATA_ROOT","/data"));POLL_SECONDS=float(os.environ.get("SWING_POLL_SECONDS","300"));STATUS=DATA_ROOT/"swing_shadow_status.json";MAX_AGE=360;UNIVERSE_LIMIT=int(os.environ.get("SWING_UNIVERSE_LIMIT","500"));HISTORY_PACE_SECONDS=float(os.environ.get("SWING_HISTORY_PACE_SECONDS","0.25"))
 def regular_market(now):
  et=now.astimezone(NY);m=et.hour*60+et.minute;return et.weekday()<5 and 570<=m<960

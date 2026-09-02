@@ -16,7 +16,7 @@ from short_paper_tracker import ShortPaperTracker
 
 NY = ZoneInfo("America/New_York")
 SYMBOLS = ("SPY", "QQQ", "IWM", "DIA", "XLK", "XLF", "XLE", "XLV", "XLY", "XLP", "XLI", "XLU", "SMH", "IYT", "GLD", "SLV", "USO", "TLT", "NVDA", "AMD", "AVGO", "MSFT", "AAPL", "GOOGL", "META", "AMZN", "TSLA", "NFLX", "ORCL", "CRM", "MU", "INTC")
-STRATEGIES = ("SHTBRK1", "SHTFAIL1", "SHTBRD1", "SHTGAP1", "SHTVOL1", "SHTMKT1")
+STRATEGIES = ("SHTFAIL1", "SHTBRD1", "SHTGAP1", "SHTVOL1", "SHTMKT1")
 QUOTE_URL = "https://api.schwabapi.com/marketdata/v1/quotes"
 TOKEN_PATH = Path("/data/schwab_token.json")
 DATA_ROOT = Path("/data")

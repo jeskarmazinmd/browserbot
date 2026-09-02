@@ -17,8 +17,8 @@ NY=ZoneInfo("America/New_York")
 # Failed strategy outputs disabled 2026-08-28. Keep this worker running so
 # cross-sectional quote tapes continue to be collected for future research.
 STRATEGIES=(
-    "CSRANK5","CSRANK5INV","CSRANK20","CSRANK20INV","CSREV1","CSREV1INV",
-    "CSDISP1","CSDISP1INV","CSBREADTH1","CSBREADTH1INV","CSRELSPY1","CSRELSPY1INV",
+    "CSRANK5INV","CSRANK20INV","CSREV1INV",
+    "CSDISP1INV","CSBREADTH1INV","CSRELSPY1INV",
 )
 QUOTE_URL="https://api.schwabapi.com/marketdata/v1/quotes"
 TOKEN_PATH=Path(os.environ.get("CROSSSECTION_MARKET_TOKEN","/data/schwab_token.json")); DATA_ROOT=Path(os.environ.get("CROSSSECTION_DATA_ROOT","/data"))

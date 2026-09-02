@@ -37,8 +37,8 @@ def parent(strategy_id):
 class DerivedRuntimeTests(unittest.TestCase):
     def test_parent_routes(self):
         a_ids = {s["strategy_id"] for s in derive_signals(parent("A"))}
-        self.assertEqual({"L", "O", "R", "S"}, a_ids)
-        self.assertEqual({s["strategy_id"] for s in derive_signals(parent("D"))}, {"F"})
+        self.assertEqual({"O", "R", "S"}, a_ids)
+        self.assertEqual({s["strategy_id"] for s in derive_signals(parent("D"))}, set())
         self.assertEqual(
             {s["strategy_id"] for s in derive_signals(parent("B"))},
             {"C1", "C2", "C3", "C4", "G", "J1", "J2", "J6"},

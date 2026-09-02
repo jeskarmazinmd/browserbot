@@ -31,6 +31,13 @@ from . import strategy_h
 from . import strategy_c2t9, strategy_c2t35, strategy_c1t9, strategy_gt9, strategy_et29, strategy_pt325, strategy_pt325315, strategy_pmid, strategy_ht5, strategy_qmid, strategy_qv425, strategy_lt65
 
 
+DISABLED_FLASH_STRATEGY_IDS = frozenset({
+    # Mature standalone leaf with persistently negative forward results.
+    # Keep its module and historical outcomes; stop prospective evaluation.
+    "C3L25Q2",
+})
+
+
 FLASH_STRATEGY_MODULES = {
     module.STRATEGY_ID: module
     for module in (
@@ -50,6 +57,7 @@ FLASH_STRATEGY_MODULES = {
     strategy_c3l25q2, strategy_c3l25q4,
     strategy_c3l25d05, strategy_c3l25d20,
     )
+    if module.STRATEGY_ID not in DISABLED_FLASH_STRATEGY_IDS
 }
 
 
@@ -204,8 +212,8 @@ REPORTING_STRATEGY_MODULES = {}
 # explicit makes operational diagnostics distinguish active derived modules
 # from definitions that remain reporting-only.
 DERIVED_RUNTIME_STRATEGY_IDS = frozenset({
-    "C1", "C2", "C3", "C4", "F", "G",
-    "J1", "J2", "J6", "L", "O", "R", "S",
+    "C1", "C2", "C3", "C4", "G",
+    "J1", "J2", "J6", "O", "R", "S",
 })
 
 for _strategy_id in (
@@ -263,6 +271,9 @@ DISABLED_RESEARCH_STRATEGY_IDS = frozenset({
     # Persistently negative independent leaves through 2026-09-01.  These do
     # not feed any successful descendants; history remains in /data.
     "GT1", "SH1", "ET29", "PT325", "HT5", "LT65",
+    # Mature negative leaves through 2026-09-02.  These are output modules,
+    # not shared signal producers; source and history remain available.
+    "GE1", "EMA3", "CV1", "TD1", "GM1", "GR1", "EMA1T50", "GTMX",
 })
 
 ENABLED_STRATEGIES = [

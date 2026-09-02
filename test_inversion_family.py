@@ -1,5 +1,12 @@
+import sys
+import types
 import unittest
+from unittest.mock import patch
 
+import crosssection_shadow_worker
+import event_shadow_worker
+with patch.dict(sys.modules, {"requests": types.ModuleType("requests")}):
+    import options_shadow_worker
 from crosssection_strategies.inverted import InvertedStrategy as EquityInverse
 from event_strategies.inverted import InvertedStrategy as EventInverse
 from options_strategies.inverted import InvertedStrategy as OptionInverse
@@ -31,6 +38,22 @@ def option_snapshot():
 
 
 class InversionTests(unittest.TestCase):
+    def test_failed_parents_remain_disabled_in_workers(self):
+        worker_pairs = (
+            (crosssection_shadow_worker.STRATEGIES, (
+                "CSRANK5", "CSRANK20", "CSREV1", "CSDISP1",
+                "CSBREADTH1", "CSRELSPY1",
+            )),
+            (event_shadow_worker.STRATEGIES, ("EVTSEC8K1", "EVTVOL1")),
+            (options_shadow_worker.STRATEGIES, (
+                "OPTDIR1", "OPTDIR2", "OPTVERT1", "OPTVERT2",
+            )),
+        )
+        for active, parents in worker_pairs:
+            for parent in parents:
+                self.assertNotIn(parent, active)
+                self.assertIn(f"{parent}INV", active)
+
     def test_equity_side_flips_and_control_is_immutable(self):
         inverse=EquityInverse(_EquityOriginal,"CONTROLINV")
         row=inverse.evaluate({})[0]
