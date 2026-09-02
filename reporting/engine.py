@@ -95,6 +95,11 @@ SIGNAL_PAPER_OUTCOMES_K6_JSONL = output_path("signal_paper_outcomes_strategy_k6_
 SIGNAL_PAPER_OUTCOMES_K7_JSONL = output_path("signal_paper_outcomes_strategy_k7_60s_mfe_0_30_v1.jsonl")
 SIGNAL_PAPER_OUTCOMES_K8_JSONL = output_path("signal_paper_outcomes_strategy_k8_60s_reach_0_20_v1.jsonl")
 SIGNAL_PAPER_OUTCOMES_K9_JSONL = output_path("signal_paper_outcomes_strategy_k9_30min_timeout_v1.jsonl")
+SIGNAL_PAPER_OUTCOMES_K1INV_JSONL = output_path("signal_paper_outcomes_strategy_k1inv_short_exit_30s_v1.jsonl")
+SIGNAL_PAPER_OUTCOMES_K2INV_JSONL = output_path("signal_paper_outcomes_strategy_k2inv_short_exit_60s_v1.jsonl")
+SIGNAL_PAPER_OUTCOMES_K3INV_JSONL = output_path("signal_paper_outcomes_strategy_k3inv_short_exit_120s_v1.jsonl")
+SIGNAL_PAPER_OUTCOMES_K5INV_JSONL = output_path("signal_paper_outcomes_strategy_k5inv_short_60s_condition_v1.jsonl")
+SIGNAL_PAPER_OUTCOMES_K7INV_JSONL = output_path("signal_paper_outcomes_strategy_k7inv_short_60s_mfe_v1.jsonl")
 NEAR_MISS_PAPER_H_JSONL = output_path("near_miss_paper_outcomes_strategy_h_filtered_broad_rebound_v1.jsonl")
 NEAR_MISS_PAPER_C1_JSONL = output_path("near_miss_paper_outcomes_strategy_c1_trailing_v1.jsonl")
 NEAR_MISS_PAPER_C2_JSONL = output_path("near_miss_paper_outcomes_strategy_c2_no_high_v1.jsonl")
@@ -208,6 +213,11 @@ STRATEGY_K_CONFIGS = {
     "K7": {"mode": "conditional_mfe", "seconds": 60, "min_mfe_pct": 0.30},
     "K8": {"mode": "conditional_reach", "seconds": 60, "required_gain_pct": 0.20},
     "K9": {"mode": "fixed_exit", "seconds": 1800},
+    "K1INV": {"mode": "fixed_exit", "seconds": 30, "inverse_side": True},
+    "K2INV": {"mode": "fixed_exit", "seconds": 60, "inverse_side": True},
+    "K3INV": {"mode": "fixed_exit", "seconds": 120, "inverse_side": True},
+    "K5INV": {"mode": "conditional_return", "seconds": 60, "min_return_pct": 0.0, "inverse_side": True},
+    "K7INV": {"mode": "conditional_mfe", "seconds": 60, "min_mfe_pct": 0.30, "inverse_side": True},
 }
 STRATEGY_K_OUTCOME_PATHS = {
     "K1": SIGNAL_PAPER_OUTCOMES_K1_JSONL,
@@ -219,6 +229,11 @@ STRATEGY_K_OUTCOME_PATHS = {
     "K7": SIGNAL_PAPER_OUTCOMES_K7_JSONL,
     "K8": SIGNAL_PAPER_OUTCOMES_K8_JSONL,
     "K9": SIGNAL_PAPER_OUTCOMES_K9_JSONL,
+    "K1INV": SIGNAL_PAPER_OUTCOMES_K1INV_JSONL,
+    "K2INV": SIGNAL_PAPER_OUTCOMES_K2INV_JSONL,
+    "K3INV": SIGNAL_PAPER_OUTCOMES_K3INV_JSONL,
+    "K5INV": SIGNAL_PAPER_OUTCOMES_K5INV_JSONL,
+    "K7INV": SIGNAL_PAPER_OUTCOMES_K7INV_JSONL,
 }
 
 
@@ -1955,6 +1970,9 @@ def strategy_k_family_lines(
                 outcomes = variant_maps[variant]
                 if key in outcomes:
                     continue
+                inverse = bool(config.get("inverse_side"))
+                inverse_target = float(entry) - (float(target) - float(entry))
+                inverse_stop = float(entry) + (float(entry) - float(stop))
                 outcomes[key] = {
                     "key": key,
                     "strategy_id": variant,
@@ -1963,8 +1981,9 @@ def strategy_k_family_lines(
                     "timestamp": event.get("timestamp"),
                     "symbol": symbol,
                     "entry": float(entry),
-                    "target": float(target),
-                    "stop": float(stop),
+                    "target": inverse_target if inverse else float(target),
+                    "stop": inverse_stop if inverse else float(stop),
+                    "position_side": "SHORT" if inverse else "LONG",
                     "rule": dict(config),
                     "paper_notional": 1000.0,
                     "status": "open",
@@ -2103,6 +2122,7 @@ def strategy_k_family_lines(
                 if rows.empty:
                     continue
                 entry, target, stop = float(rec["entry"]), float(rec["target"]), float(rec["stop"])
+                short = rec.get("position_side") == "SHORT"
                 deadline = entry_ts + pd.Timedelta(seconds=float(config["seconds"]))
                 highest = entry
                 lowest = entry
@@ -2115,19 +2135,20 @@ def strategy_k_family_lines(
                     et = row_ts.tz_convert(NY_TZ)
                     highest = max(highest, px)
                     lowest = min(lowest, px)
-                    if px >= target:
+                    if (not short and px >= target) or (short and px <= target):
                         exit_row, reason = row, "target"
                         break
-                    if px <= stop:
+                    if (not short and px <= stop) or (short and px >= stop):
                         exit_row, reason = row, "stop"
                         break
                     if (et.hour, et.minute) >= (15, 55):
                         exit_row, reason = row, "end"
                         break
                     if not evaluated and row_ts >= deadline:
-                        ret = (px / entry - 1.0) * 100.0
-                        mfe = (highest / entry - 1.0) * 100.0
-                        mae = (lowest / entry - 1.0) * 100.0
+                        direction = -1.0 if short else 1.0
+                        ret = direction * (px / entry - 1.0) * 100.0
+                        mfe = (entry / lowest - 1.0) * 100.0 if short else (highest / entry - 1.0) * 100.0
+                        mae = -(highest / entry - 1.0) * 100.0 if short else (lowest / entry - 1.0) * 100.0
                         rec.update({
                             "checkpoint_time": str(row_ts),
                             "checkpoint_price": px,
@@ -2149,8 +2170,8 @@ def strategy_k_family_lines(
                 rec.update({
                     "highest_price": highest,
                     "lowest_price": lowest,
-                    "mfe_pct": (highest / entry - 1.0) * 100.0,
-                    "mae_pct": (lowest / entry - 1.0) * 100.0,
+                    "mfe_pct": (entry / lowest - 1.0) * 100.0 if short else (highest / entry - 1.0) * 100.0,
+                    "mae_pct": -(highest / entry - 1.0) * 100.0 if short else (lowest / entry - 1.0) * 100.0,
                     "last_checked": datetime.now(timezone.utc).isoformat(),
                 })
                 if exit_row is None:
@@ -2158,7 +2179,7 @@ def strategy_k_family_lines(
                     _update_open_mark_to_market(rec, latest["price"], latest["timestamp"])
                     continue
                 exit_price = target if reason == "target" else stop if reason == "stop" else float(exit_row["price"])
-                ret_pct = (exit_price / entry - 1.0) * 100.0
+                ret_pct = (-1.0 if short else 1.0) * (exit_price / entry - 1.0) * 100.0
                 rec.update({
                     "status": "closed",
                     "exit_time": str(exit_row["timestamp"]),
@@ -3087,7 +3108,8 @@ def _update_open_mark_to_market(rec, price, price_time):
         current_price = float(price)
         if entry <= 0 or current_price <= 0:
             return
-        current_ret_pct = (current_price / entry - 1.0) * 100.0
+        direction = -1.0 if rec.get("position_side") == "SHORT" else 1.0
+        current_ret_pct = direction * (current_price / entry - 1.0) * 100.0
         notional = float(rec.get("paper_notional", 1000.0) or 1000.0)
         rec.update({
             "current_price": current_price,
