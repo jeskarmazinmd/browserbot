@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 import unittest
 
-from reporting.capital_performance import simulate_day
+from reporting.capital_performance import simulate_day, simulate_portfolio_models
 
 
 class CapitalPerformanceTests(unittest.TestCase):
@@ -64,6 +64,35 @@ class CapitalPerformanceTests(unittest.TestCase):
 
         self.assertEqual(result["signals"], 0)
         self.assertEqual(result["taken"], 0)
+
+    def test_four_daily_and_rolling_models_share_the_same_trades(self):
+        first = datetime(2026, 8, 7, 14, 0, tzinfo=timezone.utc)
+        second = first + timedelta(days=1)
+        rows = {
+            "2026-08-07": [self.trade(1, first, exit_price=9.0)],
+            "2026-08-08": [self.trade(2, second, exit_price=11.0)],
+        }
+
+        models = simulate_portfolio_models(rows)
+
+        self.assertEqual({
+            "DUP_5K_DAILY", "DUP_10K_DAILY",
+            "DUP_5K_ROLLING", "DUP_10K_ROLLING",
+        }, set(models))
+        self.assertEqual(
+            5000.0,
+            models["DUP_5K_DAILY"]["days"]["2026-08-08"]["starting_equity"],
+        )
+        self.assertEqual(
+            models["DUP_5K_ROLLING"]["days"]["2026-08-07"]["end_equity"],
+            models["DUP_5K_ROLLING"]["days"]["2026-08-08"]["starting_equity"],
+        )
+        self.assertEqual(
+            10000.0,
+            models["DUP_10K_DAILY"]["days"]["2026-08-08"]["starting_equity"],
+        )
+        self.assertAlmostEqual(5000.0, models["DUP_5K_DAILY"]["ending_equity"])
+        self.assertAlmostEqual(4998.0, models["DUP_5K_ROLLING"]["ending_equity"])
 
 if __name__ == "__main__":
     unittest.main()

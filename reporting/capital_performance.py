@@ -157,3 +157,42 @@ def simulate_day(
         "one_share_pnl": one_share_pnl,
         "one_share_return_pct": one_share_pnl / starting_cash * 100.0,
     }
+
+
+def simulate_portfolio_models(rows_by_day, capital_levels=(5000.0, 10000.0)):
+    """Run daily-reset and rolling-capital models over identical trade rows."""
+    days = sorted(rows_by_day)
+    models = {}
+    for capital in capital_levels:
+        initial = float(capital)
+        if initial <= 0 or not math.isfinite(initial):
+            raise ValueError("capital levels must be finite and positive")
+        label = f"{int(initial / 1000)}K"
+        for reset_daily in (True, False):
+            mode = "DAILY" if reset_daily else "ROLLING"
+            name = f"DUP_{label}_{mode}"
+            next_start = initial
+            cumulative_pnl = 0.0
+            results = {}
+            for day in days:
+                day_start = initial if reset_daily else next_start
+                result = simulate_day(rows_by_day[day], starting_cash=day_start)
+                results[day] = {
+                    **result,
+                    "starting_equity": day_start,
+                    "pnl": result["end_equity"] - day_start,
+                }
+                cumulative_pnl += result["end_equity"] - day_start
+                next_start = result["end_equity"]
+            ending_equity = (
+                initial + cumulative_pnl if reset_daily else next_start
+            )
+            models[name] = {
+                "initial_capital": initial,
+                "reset_daily": reset_daily,
+                "days": results,
+                "ending_equity": ending_equity,
+                "cumulative_pnl": cumulative_pnl,
+                "total_return_pct": cumulative_pnl / initial * 100.0,
+            }
+    return models

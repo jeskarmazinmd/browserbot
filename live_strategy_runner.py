@@ -26,6 +26,14 @@ from strategies.registry import (
 from strategies.capacity_filters import apply_capacity_filters
 from strategies.c3_exit_duration_sweep import derive_duration_signals
 from strategies.c3_nh015_duplicate import derive_nh015_duplicate
+from live_nh015_execution import (
+    NH015LiveBook,
+    STRATEGY_ID as LIVE_NH015_STRATEGY_ID,
+    cash_only_preflight_findings,
+    configured_for_nh015,
+    nh015_should_exit,
+    partition_broker_preflight_findings,
+)
 from strategies.c3_admission_family import (
     C3AdmissionFamily,
     FAMILY_STRATEGY_IDS as C3_ADMISSION_STRATEGY_IDS,
@@ -55,11 +63,8 @@ REPLAY_TAPE_PATH = os.environ.get("REPLAY_TAPE_PATH")
 
 
 def live_order_placement_enabled():
-    """Fail-closed master switch for real broker order submission."""
-    return os.environ.get(
-        "LIVE_ORDER_PLACEMENT_ENABLED",
-        "0",
-    ).strip() == "1"
+    """Fail closed unless the master arm names the sole supported strategy."""
+    return configured_for_nh015()
 
 RUN_ID = os.environ.get("RUN_ID", "live")
 
@@ -91,7 +96,6 @@ ENTRY_CUTOFF_HOUR_ET = 15
 ENTRY_CUTOFF_MINUTE_ET = 30
 
 
-QTY = 1
 BUY_LIMIT_BUFFER_PCT = 0.002
 REBOUND_CONFIRMATION_PCT = 0.001  # Strategy A: 0.10% rebound
 MIN_REMAINING_UPSIDE_PCT = 0.20
@@ -102,11 +106,8 @@ ENTRY_TIMEOUT_SECONDS = 60
 # 15:55 ET = 12:55 PT.
 EOD_EXIT_HOUR_ET = 15
 EOD_EXIT_MINUTE_ET = 55
-MAX_ORDER_ATTEMPTS_PER_BOOT = 10
 POLL_SECONDS = 5
 MAX_QUOTE_AGE_SECONDS = 300
-
-attempted = set()
 
 STRATEGY_CONFIGS = flash_strategy_configs()
 
@@ -813,7 +814,12 @@ def _finalize_real_trade(trader, sym, pos, now_utc):
     pnl = (exit_price - entry_price) * qty
 
     order_type = str(match.get("order_type") or "").upper()
-    if pos.get("eod_order_id") and str(match.get("order_id")) == str(pos.get("eod_order_id")):
+    if (
+        pos.get("nh015_exit_order_id")
+        and str(match.get("order_id")) == str(pos.get("nh015_exit_order_id"))
+    ):
+        reason = "NO_NEW_HIGH_15S"
+    elif pos.get("eod_order_id") and str(match.get("order_id")) == str(pos.get("eod_order_id")):
         reason = "EOD"
     elif order_type == "STOP":
         reason = "STOP"
@@ -878,7 +884,7 @@ def _finalize_real_trade(trader, sym, pos, now_utc):
     append_trigger_outcome(record)
     append_bot_event("TRIGGER_TRADE_CLOSED", symbol=sym, outcome=record, position=pos)
     print(f"TRIGGER_TRADE_CLOSED {sym} return={ret_pct:+.2f}% pnl={pnl:+.2f}", flush=True)
-    return True
+    return record
 
 
 def make_trader():
@@ -919,13 +925,26 @@ def make_trader():
         t.enabled = False
         return t
 
-    if not isinstance(body, list) or not body or not body[0].get("hashValue"):
+    if not isinstance(body, list) or not body:
         print(f"TRADING_DISABLED could not resolve Schwab account hash: unexpected body={body}", flush=True)
         t = SchwabTradeClient(token or "", "TRADING_DISABLED")
         t.enabled = False
         return t
 
-    account_id = body[0]["hashValue"]
+    accounts = [row for row in body if row.get("hashValue")]
+    if not live_order_placement_enabled() and accounts:
+        accounts = accounts[:1]
+    if len(accounts) != 1:
+        print(
+            "TRADING_DISABLED expected exactly one resolved trading account "
+            f"matches={len(accounts)}",
+            flush=True,
+        )
+        t = SchwabTradeClient(token or "", "TRADING_DISABLED")
+        t.enabled = False
+        return t
+
+    account_id = accounts[0]["hashValue"]
 
     with token_file_lock(token_path):
         token_data = json.loads(token_path.read_text())
@@ -1170,7 +1189,164 @@ def is_eod_exit_time():
     return (now.hour, now.minute) >= (EOD_EXIT_HOUR_ET, EOD_EXIT_MINUTE_ET)
 
 
-def manage_exits(trader, positions, prices_now):
+def _manage_nh015_dynamic_exit(trader, sym, pos, actual_qty, current_px, now_utc):
+    """Cancel the protective bracket and flatten after NH015 says to exit.
+
+    Returns True once an NH015 exit is active or required, which prevents the
+    generic EOD branch from submitting a second sell in the same cycle.
+    """
+    if pos.get("strategy_id") != LIVE_NH015_STRATEGY_ID:
+        return False
+
+    active_statuses = {
+        "ACCEPTED", "AWAITING_CONDITION", "AWAITING_PARENT_ORDER",
+        "AWAITING_STOP_CONDITION", "PENDING_ACTIVATION", "QUEUED",
+        "WORKING", "PENDING_CANCEL", "PENDING_REPLACE", "PARTIALLY_FILLED",
+    }
+    terminal_failure_statuses = {"REJECTED", "CANCELED", "CANCELLED", "EXPIRED"}
+    exit_order_id = pos.get("nh015_exit_order_id")
+    if exit_order_id:
+        result = trader.get_order(exit_order_id)
+        if not result.get("ok"):
+            append_bot_event(
+                "NH015_EXIT_ORDER_QUERY_ERROR",
+                symbol=sym,
+                order_id=exit_order_id,
+                response=result,
+                position=pos,
+            )
+            return True
+        status = str((result.get("body") or {}).get("status", "")).upper()
+        pos["nh015_exit_order_status"] = status
+        if status in active_statuses or status == "FILLED":
+            return True
+        if status in terminal_failure_statuses:
+            pos.pop("nh015_exit_order_id", None)
+            pos.pop("nh015_exit_order_status", None)
+
+    if current_px is None or not pos.get("actual_entry_price"):
+        return False
+    if not nh015_should_exit(pos, float(current_px), now_utc):
+        return False
+
+    last_attempt = _parse_utc(pos.get("last_nh015_exit_attempt_at"))
+    if last_attempt and (now_utc - last_attempt).total_seconds() < 15:
+        return True
+    pos["last_nh015_exit_attempt_at"] = now_utc.isoformat()
+    append_bot_event(
+        "NH015_NO_NEW_HIGH_EXIT_TRIGGERED",
+        symbol=sym,
+        price=float(current_px),
+        position=pos,
+    )
+
+    cancellation = trader.cancel_active_exit_orders(sym)
+    append_bot_event(
+        "NH015_CANCEL_PROTECTIVE_EXITS_RESULT",
+        symbol=sym,
+        response=cancellation,
+        position=pos,
+    )
+    if not cancellation.get("ok"):
+        return True
+
+    recheck = trader.get_net_position_qty(sym)
+    if not recheck.get("ok"):
+        append_bot_event(
+            "NH015_POSITION_RECHECK_ERROR",
+            symbol=sym,
+            response=recheck,
+            position=pos,
+        )
+        return True
+    remaining_qty = float(recheck.get("quantity", 0) or 0)
+    if remaining_qty <= 0:
+        return True
+    sell_qty = int(remaining_qty)
+    if sell_qty <= 0 or float(sell_qty) != remaining_qty:
+        append_bot_event(
+            "NH015_INVALID_EXIT_QUANTITY",
+            symbol=sym,
+            quantity=remaining_qty,
+            position=pos,
+        )
+        return True
+
+    response = trader.place_market_sell_order(sym, qty=sell_qty)
+    append_bot_event(
+        "NH015_MARKET_EXIT_RESPONSE",
+        symbol=sym,
+        qty=sell_qty,
+        response=response,
+        position=pos,
+    )
+    if response.get("ok") and response.get("order_id"):
+        pos["nh015_exit_order_id"] = response["order_id"]
+        pos["nh015_exit_order_response"] = response
+    return True
+
+
+def _nh015_broker_entry_preflight(trader, positions, symbol, qty, limit_price):
+    """Reject entry unless broker holdings/orders agree with local state."""
+    errors = []
+    account = trader.get_account_positions()
+    if not account.get("ok"):
+        return ["broker_position_query_failed"]
+
+    local_symbols = {str(value).upper() for value in positions}
+    broker_symbols = set()
+    target_quantity = 0.0
+    for row in account.get("positions", []):
+        instrument = row.get("instrument", {}) or {}
+        row_symbol = str(instrument.get("symbol") or "").upper()
+        quantity = (
+            float(row.get("longQuantity", 0) or 0)
+            - float(row.get("shortQuantity", 0) or 0)
+        )
+        if quantity:
+            broker_symbols.add(row_symbol)
+        if row_symbol == str(symbol).upper():
+            target_quantity += quantity
+    if target_quantity:
+        errors.append("target_symbol_position_already_exists")
+    if broker_symbols - local_symbols:
+        errors.append("untracked_broker_position_exists")
+
+    orders = trader.get_recent_orders(lookback_days=1)
+    if not orders.get("ok"):
+        errors.append("broker_order_query_failed")
+    else:
+        active_statuses = {
+            "ACCEPTED", "AWAITING_CONDITION", "AWAITING_PARENT_ORDER",
+            "AWAITING_STOP_CONDITION", "PENDING_ACTIVATION", "QUEUED",
+            "WORKING", "PENDING_CANCEL", "PENDING_REPLACE", "PARTIALLY_FILLED",
+        }
+        for root in orders.get("orders", []):
+            for node in trader._walk_orders(root):
+                if str(node.get("status") or "").upper() not in active_statuses:
+                    continue
+                for leg in node.get("orderLegCollection", []) or []:
+                    instrument = leg.get("instrument", {}) or {}
+                    order_symbol = str(instrument.get("symbol") or "").upper()
+                    instruction = str(leg.get("instruction") or "").upper()
+                    if instruction == "SELL" and order_symbol in local_symbols:
+                        continue
+                    errors.append("untracked_active_broker_order_exists")
+                    break
+                if errors and errors[-1] == "untracked_active_broker_order_exists":
+                    break
+
+    balances = account.get("balances", {}) or {}
+    # Never use buyingPower, dayTradingBuyingPower, or availableFunds here:
+    # those fields may include broker credit in a margin account.  The live
+    # strategy is a cash-sized $5k model even when hosted in a margin account.
+    # Use the maximum possible entry cost, not the lower model signal price,
+    # so the buy-limit buffer cannot silently consume margin.
+    errors.extend(cash_only_preflight_findings(balances, qty * limit_price))
+    return list(dict.fromkeys(errors))
+
+
+def manage_exits(trader, positions, prices_now, live_book=None):
     """Reconcile orders and positions using Schwab as the source of truth.
 
     The broker-hosted OCO handles target and stop exits. The runner only
@@ -1224,7 +1400,14 @@ def manage_exits(trader, positions, prices_now):
         # No filled position currently exists. A previously confirmed fill
         # becoming flat means the broker-hosted target/stop or EOD sell closed it.
         if actual_qty <= 0 and pos.get("state") in ("ENTRY_FILLED", "POSITION_OPEN", "FILLED"):
-            if _finalize_real_trade(trader, sym, pos, now_utc):
+            closed = _finalize_real_trade(trader, sym, pos, now_utc)
+            if closed:
+                if live_book and pos.get("strategy_id") == LIVE_NH015_STRATEGY_ID:
+                    live_book.close(
+                        pos.get("setup_id", ""),
+                        closed["realized_pnl"],
+                        closed,
+                    )
                 del positions[sym]
                 continue
 
@@ -1317,7 +1500,14 @@ def manage_exits(trader, positions, prices_now):
                             pos.setdefault("mfe_at", pos["entry_fill_time"])
                             pos.setdefault("mae_at", pos["entry_fill_time"])
                             pos["state"] = "POSITION_OPEN"
-                            if _finalize_real_trade(trader, sym, pos, now_utc):
+                            closed = _finalize_real_trade(trader, sym, pos, now_utc)
+                            if closed:
+                                if live_book and pos.get("strategy_id") == LIVE_NH015_STRATEGY_ID:
+                                    live_book.close(
+                                        pos.get("setup_id", ""),
+                                        closed["realized_pnl"],
+                                        closed,
+                                    )
                                 del positions[sym]
                                 continue
                         pos["state"] = "ENTRY_FILLED_AWAITING_POSITION"
@@ -1335,6 +1525,11 @@ def manage_exits(trader, positions, prices_now):
                             status=status,
                             position=pos,
                         )
+                        if live_book and pos.get("strategy_id") == LIVE_NH015_STRATEGY_ID:
+                            live_book.release_unfilled(
+                                pos.get("setup_id", ""),
+                                f"entry_{status.lower()}",
+                            )
                         del positions[sym]
                         continue
 
@@ -1367,6 +1562,16 @@ def manage_exits(trader, positions, prices_now):
             if current_px < float(pos.get("lowest_price_since_fill", current_px)):
                 pos["lowest_price_since_fill"] = current_px
                 pos["mae_at"] = now_utc.isoformat()
+
+        if _manage_nh015_dynamic_exit(
+            trader,
+            sym,
+            pos,
+            actual_qty,
+            current_px,
+            now_utc,
+        ):
+            continue
 
         # Target and stop are already working broker-side in the OCO.
         if not is_eod_exit_time():
@@ -1704,6 +1909,15 @@ def main():
     last_market_token_touch = 0
     positions = load_positions()
     print(f"LOADED_POSITIONS={list(positions.keys())}", flush=True)
+    live_book = NH015LiveBook(DATA_ROOT)
+    live_book.publish_status()
+    print(
+        "NH015_LIVE_BOOK_ONLINE "
+        f"armed={configured_for_nh015()} "
+        f"equity={live_book.equity:.2f} "
+        f"active={len(live_book.state.get('active', {}))}",
+        flush=True,
+    )
     paper_outcomes = PaperOutcomeTracker(
         DATA_ROOT,
         eod_hour=EOD_EXIT_HOUR_ET,
@@ -1959,7 +2173,9 @@ def main():
 
             prices_now = latest_prices(df)
             if RUN_MODE == "LIVE":
-                manage_exits(trader, positions, prices_now)
+                manage_exits(trader, positions, prices_now, live_book=live_book)
+                live_book.rollover(quote_source.now())
+                live_book.publish_status()
 
             now_utc = quote_source.now()
             for outcome in paper_outcomes.update(prices_now, now_utc):
@@ -2026,6 +2242,7 @@ def main():
             events = []
             near_events = []
             independent_events = []
+            live_nh015_candidates = []
 
             if market_day != independent_dedupe_day:
                 independent_last_signal.clear()
@@ -2277,7 +2494,10 @@ def main():
 
             for sym, g in df.groupby("symbol"):
                 scan_stats["symbols_seen"] += 1
-                if sym in positions:
+                # A live NH015 position must not suppress the research signal
+                # stream used by NH015 and NH015DUP.  Any same-symbol live
+                # conflict is recorded later as a live-only skip.
+                if sym in positions and not configured_for_nh015():
                     scan_stats["positions_skipped"] += 1
                     continue
 
@@ -2642,7 +2862,10 @@ def main():
                             "STOP_LOSS_FRACTION_BELOW_ENTRY": STRATEGY_CONFIGS[e.get("strategy_id", STRATEGY_A)]["stop_loss_fraction"],
                             "EOD_EXIT_HOUR_ET": EOD_EXIT_HOUR_ET,
                             "EOD_EXIT_MINUTE_ET": EOD_EXIT_MINUTE_ET,
-                            "QTY": QTY,
+                            "LIVE_SIZING_MODEL": (
+                                "$5000 daily; 1% equity risk; 20% max position; "
+                                "whole shares"
+                            ),
                             "REBOUND_CONFIRMATION_PCT": STRATEGY_CONFIGS[e.get("strategy_id", STRATEGY_A)]["rebound_confirmation_pct"],
                         },
                     )
@@ -2723,6 +2946,8 @@ def main():
                             },
                         )
                         paper_outcomes.register(duration_signal)
+                        if duration_signal["strategy_id"] == LIVE_NH015_STRATEGY_ID:
+                            live_nh015_candidates.append(duration_signal)
                     nh015_duplicate = derive_nh015_duplicate(e)
                     if nh015_duplicate is not None:
                         append_strategy_event(
@@ -2789,18 +3014,19 @@ def main():
                         paper_outcomes.register(derived)
                         derived_signal_counts[derived["strategy_id"]] += 1
 
-                for e in events_a:
+                for e in live_nh015_candidates:
                     sym = e["symbol"]
 
                     # LIVE market data does not imply permission to trade.
-                    if RUN_MODE == "LIVE" and not live_order_placement_enabled():
+                    if RUN_MODE != "LIVE" or not live_order_placement_enabled():
                         continue
 
-                    if len(attempted) >= MAX_ORDER_ATTEMPTS_PER_BOOT:
-                        print("MAX_ORDER_ATTEMPTS_PER_BOOT reached.", flush=True)
-                        break
-
-                    if sym in attempted or sym in positions:
+                    if sym in positions:
+                        append_bot_event(
+                            "NH015_LIVE_SKIPPED_SYMBOL_ALREADY_OPEN",
+                            symbol=sym,
+                            signal=e,
+                        )
                         continue
 
                     if not is_regular_market_hours_et():
@@ -2817,12 +3043,48 @@ def main():
                         )
                         continue
 
-                    attempted.add(sym)
+                    allocation, allocation_errors = live_book.allocation(e, now_utc)
+                    if allocation_errors:
+                        append_bot_event(
+                            "NH015_LIVE_ALLOCATION_REJECTED",
+                            symbol=sym,
+                            errors=allocation_errors,
+                            signal=e,
+                            live_book=live_book.status(),
+                        )
+                        continue
 
+                    qty = allocation.shares
                     buy_limit_price = round(e["entry_price"] * (1 + BUY_LIMIT_BUFFER_PCT), 2)
+                    preflight_findings = _nh015_broker_entry_preflight(
+                        trader,
+                        positions,
+                        sym,
+                        qty,
+                        buy_limit_price,
+                    )
+                    preflight_errors, preflight_advisories = (
+                        partition_broker_preflight_findings(preflight_findings)
+                    )
+                    if preflight_advisories:
+                        append_bot_event(
+                            "NH015_LIVE_BROKER_PREFLIGHT_ADVISORY",
+                            symbol=sym,
+                            advisories=preflight_advisories,
+                            signal=e,
+                        )
+                    if preflight_errors:
+                        append_bot_event(
+                            "NH015_LIVE_BROKER_PREFLIGHT_REJECTED",
+                            symbol=sym,
+                            errors=preflight_errors,
+                            signal=e,
+                        )
+                        continue
+                    live_book.record_attempt(e, allocation, now_utc)
 
                     print(
-                        f"ENTRY_TRIGGER_OCO_ATTEMPT {sym} qty={QTY} "
+                        f"NH015_ENTRY_TRIGGER_OCO_ATTEMPT {sym} qty={qty} "
                         f"buy_limit={buy_limit_price:.2f} target={e['target_price']:.2f} stop={e['stop_price']:.2f}",
                         flush=True
                     )
@@ -2830,7 +3092,8 @@ def main():
                     append_bot_event(
                         "ENTRY_TRIGGER_OCO_ATTEMPT",
                         symbol=sym,
-                        qty=QTY,
+                        strategy_id=LIVE_NH015_STRATEGY_ID,
+                        qty=qty,
                         buy_limit_price=buy_limit_price,
                         target_price=e["target_price"],
                         stop_price=e["stop_price"],
@@ -2841,7 +3104,7 @@ def main():
                         if RUN_MODE == "LIVE":
                             resp = trader.place_entry_trigger_oco_order(
                                 sym,
-                                qty=QTY,
+                                qty=qty,
                                 buy_limit_price=buy_limit_price,
                                 target_price=e["target_price"],
                                 stop_price=e["stop_price"],
@@ -2857,7 +3120,8 @@ def main():
                         append_bot_event(
                             "ENTRY_TRIGGER_OCO_RESPONSE",
                             symbol=sym,
-                            qty=QTY,
+                            strategy_id=LIVE_NH015_STRATEGY_ID,
+                            qty=qty,
                             buy_limit_price=buy_limit_price,
                             target_price=e["target_price"],
                             stop_price=e["stop_price"],
@@ -2870,7 +3134,8 @@ def main():
                         append_bot_event(
                             "ENTRY_TRIGGER_OCO_ERROR",
                             symbol=sym,
-                            qty=QTY,
+                            strategy_id=LIVE_NH015_STRATEGY_ID,
+                            qty=qty,
                             buy_limit_price=buy_limit_price,
                             target_price=e["target_price"],
                             stop_price=e["stop_price"],
@@ -2880,9 +3145,31 @@ def main():
                         )
 
                     if isinstance(resp, dict) and resp.get("ok") is True:
+                        if not resp.get("order_id"):
+                            live_book.record_submission_failure(
+                                e["setup_id"],
+                                {**resp, "error": "accepted response missing order_id"},
+                            )
+                            append_bot_event(
+                                "NH015_ENTRY_NOT_TRACKED",
+                                symbol=sym,
+                                reason="accepted_response_missing_order_id",
+                                response=resp,
+                                signal=e,
+                            )
+                            continue
+                        live_book.record_submission(e["setup_id"], resp["order_id"])
                         positions[sym] = {
-                            "qty": QTY,
+                            "strategy_id": LIVE_NH015_STRATEGY_ID,
+                            "setup_id": e["setup_id"],
+                            "source_setup_id": e.get("source_setup_id"),
+                            "qty": qty,
                             "entry_price": e["entry_price"],
+                            "model_entry_price": allocation.model_entry_price,
+                            "model_reserved_cost": allocation.reserved_cost,
+                            "exit_model": "c2",
+                            "activation_gain_pct": 0.3,
+                            "no_new_high_seconds": 15.0,
                             "order_submission_regime": latest_regime(),
                             "flash_start_price": e["flash_start_price"],
                             "flash_drop_pct": e["flash_drop_pct"],
@@ -2906,6 +3193,7 @@ def main():
                         }
                         save_positions(positions)
                     else:
+                        live_book.record_submission_failure(e["setup_id"], resp)
                         print(f"NOT_TRACKING_POSITION {sym}: entry order failed/not accepted: {resp}", flush=True)
                         append_bot_event(
                             "ENTRY_NOT_TRACKED",

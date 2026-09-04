@@ -11,7 +11,7 @@ from pathlib import Path
 import time
 from zoneinfo import ZoneInfo
 
-from reporting.capital_performance import simulate_day
+from reporting.capital_performance import simulate_day, simulate_portfolio_models
 
 
 ROOT = Path("/data")
@@ -23,6 +23,9 @@ HISTORY_TXT = ROOT / "capital_constrained_history.txt"
 LATEST_TXT = ROOT / "capital_constrained_performance.txt"
 HEALTH = ROOT / "capital_performance_health.json"
 ERRORS = ROOT / "capital_performance_errors.jsonl"
+DUP_MODELS = ROOT / "nh015_dup_portfolio_models.json"
+DUP_MODELS_TXT = ROOT / "nh015_dup_portfolio_models.txt"
+DUP_STRATEGY_ID = "C3N25S10NH015DUP"
 
 NY = ZoneInfo("America/New_York")
 CALCULATION_VERSION = 2
@@ -167,6 +170,78 @@ def summarize(day_rows):
     }
 
 
+def load_dup_model_rows() -> dict[str, list[dict]]:
+    """Load and deduplicate every finalized DUP exit available on disk."""
+    by_setup = {}
+    for path in sorted(ARCHIVE.glob("paper_trades.*.jsonl.gz")):
+        rows, exact = load_archive(path)
+        if not exact:
+            continue
+        for row in rows:
+            if row.get("strategy_id") == DUP_STRATEGY_ID and row.get("setup_id"):
+                by_setup[str(row["setup_id"])] = row
+    for row in load_live_exits():
+        if row.get("strategy_id") == DUP_STRATEGY_ID and row.get("setup_id"):
+            by_setup[str(row["setup_id"])] = row
+
+    result = defaultdict(list)
+    for row in by_setup.values():
+        day = market_day(row)
+        if day:
+            result[day].append(row)
+    return dict(result)
+
+
+def render_dup_models(models: dict) -> None:
+    lines = [
+        "NH015 DUP PORTFOLIO MODEL MATRIX",
+        "Same DUP trades | 1% risk | 20% max position | whole shares",
+        "",
+        (
+            f"{'Model':<18} {'Start $':>10} {'End $':>10} "
+            f"{'Total':>9} {'Days':>6}"
+        ),
+        "-" * 58,
+    ]
+    for name, model in models.items():
+        lines.append(
+            f"{name:<18} {model['initial_capital']:>10.2f} "
+            f"{model['ending_equity']:>10.2f} "
+            f"{model['total_return_pct']:>+8.2f}% {len(model['days']):>6}"
+        )
+
+    days = sorted({day for model in models.values() for day in model["days"]})
+    if days:
+        lines.extend(["", "DAILY DETAIL", ""])
+        for day in days:
+            lines.append(day)
+            for name, model in models.items():
+                row = model["days"].get(day)
+                if row is None:
+                    continue
+                lines.append(
+                    f"  {name:<18} start=${row['starting_equity']:.2f} "
+                    f"end=${row['end_equity']:.2f} pnl=${row['pnl']:+.2f} "
+                    f"return={row['return_pct']:+.2f}% "
+                    f"taken={row['taken']} skipped={row['skipped']}"
+                )
+    atomic_text(DUP_MODELS_TXT, "\n".join(lines) + "\n")
+
+
+def update_dup_models() -> dict:
+    rows_by_day = load_dup_model_rows()
+    models = simulate_portfolio_models(rows_by_day)
+    payload = {
+        "version": 1,
+        "strategy_id": DUP_STRATEGY_ID,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "models": models,
+    }
+    atomic_json(DUP_MODELS, payload)
+    render_dup_models(models)
+    return payload
+
+
 def status_active():
     try:
         return int(json.loads(STATUS.read_text()).get("active", -1))
@@ -304,6 +379,9 @@ def update_once(scan_live: bool) -> dict:
     if changed:
         history["updated_at"] = datetime.now(timezone.utc).isoformat()
         atomic_json(HISTORY, history)
+
+    if scan_live or changed:
+        update_dup_models()
 
     render(history)
     return history
