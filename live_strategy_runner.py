@@ -31,6 +31,7 @@ from live_nh015_execution import (
     STRATEGY_ID as LIVE_NH015_STRATEGY_ID,
     cash_only_preflight_findings,
     configured_for_nh015,
+    margin_debit_findings,
     nh015_should_exit,
     partition_broker_preflight_findings,
 )
@@ -1343,6 +1344,7 @@ def _nh015_broker_entry_preflight(trader, positions, symbol, qty, limit_price):
     # Use the maximum possible entry cost, not the lower model signal price,
     # so the buy-limit buffer cannot silently consume margin.
     errors.extend(cash_only_preflight_findings(balances, qty * limit_price))
+    errors.extend(margin_debit_findings(balances))
     return list(dict.fromkeys(errors))
 
 
@@ -1354,6 +1356,35 @@ def manage_exits(trader, positions, prices_now, live_book=None):
     """
     changed = False
     now_utc = datetime.now(timezone.utc)
+
+    if live_book is not None:
+        live_book.rollover(now_utc)
+        account_snapshot = trader.get_account_positions()
+        if account_snapshot.get("ok"):
+            margin_findings = margin_debit_findings(
+                account_snapshot.get("balances", {}) or {}
+            )
+            if margin_findings:
+                newly_halted = live_book.halt(
+                    "margin_debit",
+                    findings=margin_findings,
+                )
+                if newly_halted:
+                    append_bot_event(
+                        "NH015_MARGIN_DEBIT_RISK_HALT",
+                        findings=margin_findings,
+                    )
+        was_halted = bool(live_book.state.get("risk_halted"))
+        risk_halted, estimated_equity = live_book.evaluate_daily_loss(
+            positions,
+            prices_now,
+        )
+        if risk_halted and not was_halted:
+            append_bot_event(
+                "NH015_RISK_HALT_ACTIVE",
+                reason=live_book.state.get("risk_halt_reason"),
+                estimated_equity=estimated_equity,
+            )
 
     active_statuses = {
         "AWAITING_PARENT_ORDER",
@@ -1466,7 +1497,14 @@ def manage_exits(trader, positions, prices_now, live_book=None):
                             last_cancel is None
                             or (now_utc - last_cancel).total_seconds() >= 15
                         )
-                        if age_seconds >= ENTRY_TIMEOUT_SECONDS and cancel_retry_due:
+                        risk_halted = bool(
+                            live_book is not None
+                            and live_book.state.get("risk_halted")
+                        )
+                        if (
+                            (risk_halted or age_seconds >= ENTRY_TIMEOUT_SECONDS)
+                            and cancel_retry_due
+                        ):
                             cancel_result = trader.cancel_order(entry_order_id)
                             pos["last_entry_cancel_attempt_at"] = now_utc.isoformat()
                             pos.setdefault("entry_cancel_requested_at", now_utc.isoformat())
@@ -1563,7 +1601,12 @@ def manage_exits(trader, positions, prices_now, live_book=None):
                 pos["lowest_price_since_fill"] = current_px
                 pos["mae_at"] = now_utc.isoformat()
 
-        if _manage_nh015_dynamic_exit(
+        risk_halted = bool(
+            live_book is not None
+            and live_book.state.get("risk_halted")
+        )
+
+        if not risk_halted and _manage_nh015_dynamic_exit(
             trader,
             sym,
             pos,
@@ -1574,8 +1617,10 @@ def manage_exits(trader, positions, prices_now, live_book=None):
             continue
 
         # Target and stop are already working broker-side in the OCO.
-        if not is_eod_exit_time():
+        if not risk_halted and not is_eod_exit_time():
             continue
+
+        exit_reason = "RISK_HALT" if risk_halted else "EOD"
 
         # A previously submitted EOD market sell may still be working.
         eod_order_id = pos.get("eod_order_id")
@@ -1707,7 +1752,7 @@ def manage_exits(trader, positions, prices_now, live_book=None):
             "SELL_ATTEMPT",
             symbol=sym,
             qty=sell_qty,
-            reason="EOD",
+            reason=exit_reason,
             position=pos,
         )
 
@@ -1721,7 +1766,7 @@ def manage_exits(trader, positions, prices_now, live_book=None):
             "SELL_RESPONSE",
             symbol=sym,
             qty=sell_qty,
-            reason="EOD",
+            reason=exit_reason,
             response=response,
             position=pos,
         )

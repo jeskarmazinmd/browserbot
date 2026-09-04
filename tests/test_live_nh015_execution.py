@@ -13,6 +13,7 @@ from live_nh015_execution import (
     cash_only_preflight_findings,
     configured_for_nh015,
     nh015_should_exit,
+    margin_debit_findings,
     partition_broker_preflight_findings,
     unfunded_order_probe_enabled,
 )
@@ -100,6 +101,17 @@ class NH015LiveBookTests(unittest.TestCase):
             cash_only_preflight_findings({"buyingPower": 20000.0}, 1000.0),
         )
 
+    def test_margin_debit_is_detected(self):
+        self.assertEqual(
+            ["negative_broker_cash_balance", "broker_margin_debit_detected"],
+            margin_debit_findings({"cashBalance": -12.0, "marginBalance": 12.0}),
+        )
+        self.assertEqual([], margin_debit_findings({
+            "cashBalance": 5000.0,
+            "marginBalance": 0.0,
+            "buyingPower": 20000.0,
+        }))
+
     def test_unfunded_advisory_precedes_real_order_transport(self):
         root = Path(__file__).parents[1]
         runner = (root / "live_strategy_runner.py").read_text()
@@ -125,6 +137,9 @@ class NH015LiveBookTests(unittest.TestCase):
         self.assertNotIn("for e in events_a:\n", runner)
         self.assertIn("return configured_for_nh015()", runner)
         self.assertIn('"live_order_placement": False', duplicate)
+        self.assertIn("live_book.evaluate_daily_loss(", runner)
+        self.assertIn("if not risk_halted and _manage_nh015_dynamic_exit(", runner)
+        self.assertIn('exit_reason = "RISK_HALT" if risk_halted else "EOD"', runner)
 
     def test_sizing_exactly_matches_risk_sized_simulator(self):
         book = NH015LiveBook(self.root, self.now)
@@ -167,13 +182,20 @@ class NH015LiveBookTests(unittest.TestCase):
         self.assertIsNone(duplicate)
         self.assertIn("setup_already_attempted", errors)
 
-    def test_new_day_resets_only_when_flat(self):
+    def test_new_day_rolls_equity_forward_only_when_flat(self):
         book = NH015LiveBook(self.root, self.now)
+        signal = self.signal(1)
+        allocation, _ = book.allocation(signal, self.now)
+        book.record_attempt(signal, allocation, self.now)
+        book.record_submission(signal["setup_id"], "1")
+        book.close(signal["setup_id"], -100.0, {"exit_reason": "TEST"})
         tomorrow = self.now + timedelta(days=1)
         self.assertTrue(book.rollover(tomorrow))
         self.assertEqual("2026-09-04", book.state["market_day"])
+        self.assertEqual(4900.0, book.state["starting_cash"])
+        self.assertEqual(4900.0, book.state["cash"])
         history = json.loads(book.history_path.read_text())
-        self.assertEqual(5000.0, history["2026-09-03"]["end_equity"])
+        self.assertEqual(4900.0, history["2026-09-03"]["end_equity"])
 
         signal = self.signal(2)
         signal["timestamp"] = tomorrow.isoformat()
@@ -182,6 +204,50 @@ class NH015LiveBookTests(unittest.TestCase):
         book.record_attempt(signal, allocation, tomorrow)
         book.record_submission(signal["setup_id"], "2")
         self.assertFalse(book.rollover(tomorrow + timedelta(days=1)))
+
+    def test_overnight_restart_carries_prior_equity_forward(self):
+        book = NH015LiveBook(self.root, self.now)
+        signal = self.signal(1)
+        allocation, _ = book.allocation(signal, self.now)
+        book.record_attempt(signal, allocation, self.now)
+        book.record_submission(signal["setup_id"], "1")
+        book.close(signal["setup_id"], -100.0, {"exit_reason": "TEST"})
+
+        restarted = NH015LiveBook(self.root, self.now + timedelta(days=1))
+
+        self.assertEqual(4900.0, restarted.state["starting_cash"])
+        self.assertEqual(4900.0, restarted.state["cash"])
+        self.assertFalse(restarted.state["risk_halted"])
+
+    def test_daily_loss_halt_is_persistent_and_blocks_new_entries(self):
+        book = NH015LiveBook(self.root, self.now)
+        signal = self.signal(1, entry=10.0, stop=9.9)
+        allocation, _ = book.allocation(signal, self.now)
+        book.record_attempt(signal, allocation, self.now)
+        book.record_submission(signal["setup_id"], "1")
+        positions = {
+            "TEST1": {
+                "setup_id": signal["setup_id"],
+                "symbol": "TEST1",
+                "qty": 100,
+                "actual_qty": 100,
+                "actual_entry_price": 10.0,
+            }
+        }
+        halted, equity = book.evaluate_daily_loss(positions, {"TEST1": 7.5})
+        self.assertTrue(halted)
+        self.assertEqual(4750.0, equity)
+        loaded = NH015LiveBook(self.root, self.now)
+        self.assertTrue(loaded.state["risk_halted"])
+        rejected, errors = loaded.allocation(self.signal(2), self.now)
+        self.assertIsNone(rejected)
+        self.assertIn("risk_halted_for_day", errors)
+
+        book.close(signal["setup_id"], -250.0, {"exit_reason": "RISK_HALT"})
+        tomorrow = self.now + timedelta(days=1)
+        self.assertTrue(book.rollover(tomorrow))
+        self.assertFalse(book.state["risk_halted"])
+        self.assertEqual(4750.0, book.state["starting_cash"])
 
     def test_no_new_high_exit_activates_and_resets_on_new_high(self):
         activated = self.now

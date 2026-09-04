@@ -5,15 +5,22 @@ main `schwab` app. `C3N25S10NH015DUP` remains paper-only and unchanged.
 
 ## Allocation parity
 
-The live allocation ledger mirrors `reporting.capital_performance.simulate_day`:
+The live allocation ledger mirrors the rolling 5K portfolio model:
 
-- $5,000 virtual cash at the beginning of each New York market day
+- $5,000 initial virtual cash
+- each day's ending equity becomes the following day's starting equity
 - 1% of current virtual equity risk per trade
 - 20% maximum position size
 - whole shares
 - open positions reserve their entry cost
 - released capital can be reused after a reconciled live exit
 - no leverage
+
+A persistent 5% mark-to-market daily-loss halt blocks new entries, cancels
+pending entries, cancels protective exits, and submits market sells for the
+remaining broker-confirmed quantities. A detected negative cash balance or
+positive margin balance triggers the same halt. The halt remains active across
+process restarts and clears only at a successful flat day rollover.
 
 The live ledger uses actual realized broker P/L after exit. That means later
 live quantities can legitimately diverge from paper after real slippage or an

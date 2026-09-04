@@ -1,9 +1,10 @@
 """Fail-closed live allocation state for C3N25S10NH015.
 
-The allocation rules intentionally mirror reporting.capital_performance:
-$5,000 at the start of each market day, 1% equity risk per trade, a 20%
-maximum position, whole shares, and capital unavailable until the position
-closes.  Actual broker P/L is applied when a live exit is reconciled.
+The allocation rules intentionally mirror the rolling 5K portfolio model:
+$5,000 initial capital, 1% equity risk per trade, a 20% maximum position,
+whole shares, capital unavailable until the position closes, and each day's
+ending equity carried into the next day. Actual broker P/L is applied when a
+live exit is reconciled.
 """
 
 from __future__ import annotations
@@ -22,6 +23,7 @@ STRATEGY_ID = "C3N25S10NH015"
 STARTING_CASH = 5000.0
 RISK_FRACTION = 0.01
 MAX_POSITION_FRACTION = 0.20
+DAILY_LOSS_FRACTION = 0.05
 NY = ZoneInfo("America/New_York")
 
 # An unfunded-account transport test may explicitly allow a cash failure to
@@ -74,6 +76,22 @@ def cash_only_preflight_findings(
     return []
 
 
+def margin_debit_findings(balances: Mapping[str, Any]) -> list[str]:
+    """Return fail-closed findings for broker-reported margin debt."""
+    findings = []
+    try:
+        if balances.get("cashBalance") is not None and float(balances["cashBalance"]) < -0.01:
+            findings.append("negative_broker_cash_balance")
+    except (TypeError, ValueError):
+        findings.append("invalid_broker_cash_balance")
+    try:
+        if balances.get("marginBalance") is not None and float(balances["marginBalance"]) > 0.01:
+            findings.append("broker_margin_debit_detected")
+    except (TypeError, ValueError):
+        findings.append("invalid_broker_margin_balance")
+    return findings
+
+
 def configured_for_nh015() -> bool:
     """Require both the master arm and an exact strategy allowlist."""
     return (
@@ -120,37 +138,53 @@ class NH015LiveBook:
         self.state = self._load(now or datetime.now(timezone.utc))
 
     @staticmethod
-    def _fresh(day: str) -> dict[str, Any]:
+    def _fresh(day: str, capital: float = STARTING_CASH) -> dict[str, Any]:
         return {
-            "version": 1,
+            "version": 2,
             "strategy_id": STRATEGY_ID,
             "market_day": day,
-            "starting_cash": STARTING_CASH,
-            "cash": STARTING_CASH,
+            "initial_capital": STARTING_CASH,
+            "starting_cash": float(capital),
+            "cash": float(capital),
             "deployed": 0.0,
             "realized_pnl": 0.0,
+            "risk_halted": False,
+            "risk_halt_reason": None,
             "active": {},
             "attempted": {},
         }
 
     def _load(self, now: datetime) -> dict[str, Any]:
         day = _market_day(now)
+        carried_capital = STARTING_CASH
         try:
             value = json.loads(self.state_path.read_text())
             if (
                 isinstance(value, dict)
-                and value.get("version") == 1
+                and value.get("version") in {1, 2}
                 and value.get("strategy_id") == STRATEGY_ID
             ):
+                if value.get("version") == 1:
+                    value["version"] = 2
+                    value.setdefault("initial_capital", STARTING_CASH)
+                    value.setdefault("starting_cash", STARTING_CASH)
+                    value.setdefault("risk_halted", False)
+                    value.setdefault("risk_halt_reason", None)
+                    self.state = value
+                    self.checkpoint()
                 if value.get("market_day") == day:
                     return value
                 if value.get("active"):
                     value["rollover_blocked_for_day"] = day
                     return value
                 self._archive(value)
+                carried_capital = (
+                    float(value.get("cash", 0.0))
+                    + float(value.get("deployed", 0.0))
+                )
         except (OSError, ValueError, TypeError):
             pass
-        return self._fresh(day)
+        return self._fresh(day, carried_capital)
 
     def _archive(self, state: Mapping[str, Any]) -> None:
         day = str(state.get("market_day") or "")
@@ -166,9 +200,12 @@ class NH015LiveBook:
         attempts = list((state.get("attempted") or {}).values())
         history[day] = {
             "strategy_id": STRATEGY_ID,
-            "starting_cash": STARTING_CASH,
+            "starting_cash": float(state.get("starting_cash", STARTING_CASH)),
             "end_equity": equity,
-            "return_pct": (equity / STARTING_CASH - 1.0) * 100.0,
+            "return_pct": (
+                equity / float(state.get("starting_cash", STARTING_CASH)) - 1.0
+            ) * 100.0,
+            "total_return_pct": (equity / STARTING_CASH - 1.0) * 100.0,
             "realized_pnl": float(state.get("realized_pnl", 0.0)),
             "attempted": len(attempts),
             "submitted": sum(
@@ -209,9 +246,10 @@ class NH015LiveBook:
             self.checkpoint()
             return False
         self._archive(self.state)
-        self.state = self._fresh(day)
+        carried_equity = self.equity
+        self.state = self._fresh(day, carried_equity)
         self.checkpoint()
-        self._audit("DAY_RESET", market_day=day, starting_cash=STARTING_CASH)
+        self._audit("DAY_ROLLOVER", market_day=day, starting_cash=carried_equity)
         return True
 
     @property
@@ -224,6 +262,8 @@ class NH015LiveBook:
         errors: list[str] = []
         if not self.rollover(now):
             errors.append("prior_day_position_still_active")
+        if self.state.get("risk_halted"):
+            errors.append("risk_halted_for_day")
         if str(signal.get("strategy_id") or "").upper() != STRATEGY_ID:
             errors.append("strategy_not_allowlisted")
         setup_id = str(signal.get("setup_id") or "")
@@ -262,6 +302,59 @@ class NH015LiveBook:
             cash_shares=cash_shares,
         )
         return allocation, []
+
+    def mark_to_market_equity(
+        self,
+        positions: Mapping[str, Mapping[str, Any]],
+        prices: Mapping[str, Any],
+    ) -> float:
+        """Estimate live equity consistently with the reservation ledger."""
+        equity = float(self.state.get("cash", 0.0))
+        by_setup = {
+            str(pos.get("setup_id") or ""): pos
+            for pos in positions.values()
+        }
+        for setup_id, active in self.state.get("active", {}).items():
+            reserved = float(active.get("reserved_cost", 0.0))
+            equity += reserved
+            pos = by_setup.get(str(setup_id))
+            if not pos or not pos.get("actual_entry_price"):
+                continue
+            symbol = str(pos.get("symbol") or active.get("symbol") or "").upper()
+            current = prices.get(symbol)
+            if current is None:
+                continue
+            quantity = float(pos.get("actual_qty") or pos.get("filled_qty") or pos.get("qty") or 0.0)
+            equity += quantity * (float(current) - float(pos["actual_entry_price"]))
+        return equity
+
+    def halt(self, reason: str, **details: Any) -> bool:
+        """Persist a risk halt; return True only for the first transition."""
+        if self.state.get("risk_halted"):
+            return False
+        self.state["risk_halted"] = True
+        self.state["risk_halt_reason"] = str(reason)
+        self.state["risk_halted_at"] = datetime.now(timezone.utc).isoformat()
+        self.checkpoint()
+        self._audit("RISK_HALT", reason=reason, **details)
+        return True
+
+    def evaluate_daily_loss(
+        self,
+        positions: Mapping[str, Mapping[str, Any]],
+        prices: Mapping[str, Any],
+    ) -> tuple[bool, float]:
+        equity = self.mark_to_market_equity(positions, prices)
+        start = float(self.state.get("starting_cash", STARTING_CASH))
+        breached = equity <= start * (1.0 - DAILY_LOSS_FRACTION)
+        if breached:
+            self.halt(
+                "daily_loss_limit",
+                estimated_equity=equity,
+                day_starting_equity=start,
+                loss_fraction=DAILY_LOSS_FRACTION,
+            )
+        return bool(self.state.get("risk_halted")), equity
 
     def record_attempt(
         self,
