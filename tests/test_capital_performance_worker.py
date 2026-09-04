@@ -98,14 +98,24 @@ class CapitalPerformanceWorkerTests(unittest.TestCase):
                 "exit_timestamp": "2026-09-03T14:05:00+00:00",
                 "exit_price": 10.1,
             }
+            historical = {
+                **row,
+                "setup_id": f"{worker.HISTORICAL_NH015_STRATEGY_ID}|OLD|1",
+                "strategy_id": worker.HISTORICAL_NH015_STRATEGY_ID,
+                "signal_timestamp": "2026-09-02T14:00:00+00:00",
+                "exit_timestamp": "2026-09-02T14:05:00+00:00",
+            }
             worker.LEDGER.write_text(
-                json.dumps({"event_type": "PAPER_ENTRY", "setup_id": row["setup_id"]})
+                json.dumps({"event_type": "PAPER_ENTRY", "setup_id": historical["setup_id"]})
+                + "\n" + json.dumps(historical)
+                + "\n" + json.dumps({"event_type": "PAPER_ENTRY", "setup_id": row["setup_id"]})
                 + "\n" + json.dumps(row) + "\n"
             )
 
             payload = worker.update_dup_models()
 
             self.assertEqual(4, len(payload["models"]))
+            self.assertEqual(2, len(payload["coverage"]["days"]))
             self.assertIn("DUP_5K_DAILY", payload["models"])
             self.assertIn("DUP_10K_DAILY", payload["models"])
             self.assertIn("DUP_5K_ROLLING", payload["models"])

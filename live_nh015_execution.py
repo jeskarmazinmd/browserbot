@@ -23,7 +23,6 @@ STRATEGY_ID = "C3N25S10NH015"
 STARTING_CASH = 5000.0
 RISK_FRACTION = 0.01
 MAX_POSITION_FRACTION = 0.20
-DAILY_LOSS_FRACTION = 0.05
 NY = ZoneInfo("America/New_York")
 
 # An unfunded-account transport test may explicitly allow a cash failure to
@@ -55,6 +54,18 @@ def _truthy(name: str, default: str = "0") -> bool:
 def unfunded_order_probe_enabled() -> bool:
     """Allow cash failures through only for deliberate empty-account tests."""
     return _truthy("LIVE_UNFUNDED_ORDER_PROBE_ENABLED")
+
+
+def daily_loss_fraction() -> float:
+    """Configured daily halt fraction; zero disables the optional breaker."""
+    raw = os.environ.get("LIVE_DAILY_LOSS_LIMIT_PCT", "0").strip()
+    try:
+        percent = float(raw)
+    except ValueError as exc:
+        raise RuntimeError("LIVE_DAILY_LOSS_LIMIT_PCT must be numeric") from exc
+    if percent < 0 or percent >= 100:
+        raise RuntimeError("LIVE_DAILY_LOSS_LIMIT_PCT must be in [0, 100)")
+    return percent / 100.0
 
 
 def cash_only_preflight_findings(
@@ -346,13 +357,17 @@ class NH015LiveBook:
     ) -> tuple[bool, float]:
         equity = self.mark_to_market_equity(positions, prices)
         start = float(self.state.get("starting_cash", STARTING_CASH))
-        breached = equity <= start * (1.0 - DAILY_LOSS_FRACTION)
+        loss_fraction = daily_loss_fraction()
+        breached = (
+            loss_fraction > 0
+            and equity <= start * (1.0 - loss_fraction)
+        )
         if breached:
             self.halt(
                 "daily_loss_limit",
                 estimated_equity=equity,
                 day_starting_equity=start,
-                loss_fraction=DAILY_LOSS_FRACTION,
+                loss_fraction=loss_fraction,
             )
         return bool(self.state.get("risk_halted")), equity
 

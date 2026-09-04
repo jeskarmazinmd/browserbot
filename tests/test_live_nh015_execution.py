@@ -12,6 +12,7 @@ from live_nh015_execution import (
     STRATEGY_ID,
     cash_only_preflight_findings,
     configured_for_nh015,
+    daily_loss_fraction,
     nh015_should_exit,
     margin_debit_findings,
     partition_broker_preflight_findings,
@@ -75,6 +76,11 @@ class NH015LiveBookTests(unittest.TestCase):
 
     def test_unfunded_probe_is_off_by_default(self):
         self.assertFalse(unfunded_order_probe_enabled())
+
+    def test_daily_loss_breaker_is_off_by_default_and_configurable(self):
+        self.assertEqual(0.0, daily_loss_fraction())
+        os.environ["LIVE_DAILY_LOSS_LIMIT_PCT"] = "5"
+        self.assertEqual(0.05, daily_loss_fraction())
 
     def test_margin_buying_power_never_substitutes_for_cash(self):
         findings = cash_only_preflight_findings({
@@ -220,6 +226,7 @@ class NH015LiveBookTests(unittest.TestCase):
         self.assertFalse(restarted.state["risk_halted"])
 
     def test_daily_loss_halt_is_persistent_and_blocks_new_entries(self):
+        os.environ["LIVE_DAILY_LOSS_LIMIT_PCT"] = "5"
         book = NH015LiveBook(self.root, self.now)
         signal = self.signal(1, entry=10.0, stop=9.9)
         allocation, _ = book.allocation(signal, self.now)

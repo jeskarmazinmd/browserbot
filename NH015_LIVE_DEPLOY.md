@@ -16,11 +16,14 @@ The live allocation ledger mirrors the rolling 5K portfolio model:
 - released capital can be reused after a reconciled live exit
 - no leverage
 
-A persistent 5% mark-to-market daily-loss halt blocks new entries, cancels
-pending entries, cancels protective exits, and submits market sells for the
-remaining broker-confirmed quantities. A detected negative cash balance or
-positive margin balance triggers the same halt. The halt remains active across
-process restarts and clears only at a successful flat day rollover.
+An optional mark-to-market daily-loss halt is configured with
+`LIVE_DAILY_LOSS_LIMIT_PCT`; it is disabled by default (`0`) because no loss
+threshold has yet been validated prospectively. When enabled, it blocks new
+entries, cancels pending entries, cancels protective exits, and submits market
+sells for remaining broker-confirmed quantities. A detected negative cash
+balance or positive margin balance always triggers the same halt regardless of
+that optional setting. A halt persists across restarts and clears only at a
+successful flat day rollover.
 
 The live ledger uses actual realized broker P/L after exit. That means later
 live quantities can legitimately diverge from paper after real slippage or an

@@ -32,6 +32,7 @@ DUP_MODELS_TXT = ROOT / "nh015_dup_portfolio_models.txt"
 DUP_SIZING = ROOT / "nh015_dup_sizing_sweep.json"
 DUP_SIZING_TXT = ROOT / "nh015_dup_sizing_sweep.txt"
 DUP_STRATEGY_ID = "C3N25S10NH015DUP"
+HISTORICAL_NH015_STRATEGY_ID = "C3N25S10NH015"
 
 NY = ZoneInfo("America/New_York")
 CALCULATION_VERSION = 2
@@ -90,6 +91,7 @@ def compact_exit(row: dict, sequence):
     # Presence matters: missing means legacy normal-entry semantics;
     # explicit None means a delayed setup never actually entered.
     for key in (
+        "symbol",
         "entry_timestamp",
         "second_leg_entry_time",
         "exit_model",
@@ -142,6 +144,8 @@ def load_live_exits() -> list[dict]:
 def load_archive(path: Path):
     rows = []
     exact = True
+    sequence_by_setup = {}
+    next_sequence = 0
 
     with gzip.open(path, "rt", errors="replace") as handle:
         for line in handle:
@@ -149,11 +153,20 @@ def load_archive(path: Path):
                 row = json.loads(line)
             except (ValueError, TypeError):
                 continue
-            if row.get("event_type") != "PAPER_EXIT":
+            setup = str(row.get("setup_id") or "")
+            if row.get("event_type") == "PAPER_ENTRY":
+                if setup and setup not in sequence_by_setup:
+                    sequence_by_setup[setup] = next_sequence
+                    next_sequence += 1
+                continue
+            if row.get("event_type") != "PAPER_EXIT" or not setup:
                 continue
             sequence = row.get("entry_sequence")
             if sequence is None:
+                sequence = sequence_by_setup.get(setup)
+            if sequence is None:
                 exact = False
+                continue
             rows.append(compact_exit(row, sequence))
 
     return rows, exact
@@ -176,26 +189,59 @@ def summarize(day_rows):
     }
 
 
-def load_dup_model_rows() -> dict[str, list[dict]]:
-    """Load and deduplicate every finalized DUP exit available on disk."""
+def load_dup_model_rows() -> tuple[dict[str, list[dict]], dict]:
+    """Load DUP history, falling back to pre-DUP NH015 days without overlap."""
     by_setup = {}
     for path in sorted(ARCHIVE.glob("paper_trades.*.jsonl.gz")):
         rows, exact = load_archive(path)
-        if not exact:
-            continue
         for row in rows:
-            if row.get("strategy_id") == DUP_STRATEGY_ID and row.get("setup_id"):
+            if row.get("strategy_id") in {
+                DUP_STRATEGY_ID, HISTORICAL_NH015_STRATEGY_ID,
+            } and row.get("setup_id"):
                 by_setup[str(row["setup_id"])] = row
     for row in load_live_exits():
-        if row.get("strategy_id") == DUP_STRATEGY_ID and row.get("setup_id"):
+        if row.get("strategy_id") in {
+            DUP_STRATEGY_ID, HISTORICAL_NH015_STRATEGY_ID,
+        } and row.get("setup_id"):
             by_setup[str(row["setup_id"])] = row
 
-    result = defaultdict(list)
+    candidates = defaultdict(lambda: defaultdict(list))
     for row in by_setup.values():
         day = market_day(row)
         if day:
-            result[day].append(row)
-    return dict(result)
+            candidates[day][row.get("strategy_id")].append(row)
+
+    result = {}
+    coverage = {"days": {}, "overlap_mismatches": []}
+    for day, strategies in sorted(candidates.items()):
+        dup_rows = strategies.get(DUP_STRATEGY_ID, [])
+        historical_rows = strategies.get(HISTORICAL_NH015_STRATEGY_ID, [])
+        selected = dup_rows or historical_rows
+        source = DUP_STRATEGY_ID if dup_rows else HISTORICAL_NH015_STRATEGY_ID
+        if selected:
+            result[day] = selected
+        overlap_matches = None
+        if dup_rows and historical_rows:
+            def signatures(rows):
+                return {
+                    (
+                        row.get("symbol"), row.get("signal_timestamp"),
+                        row.get("entry_price"), row.get("exit_timestamp"),
+                        row.get("exit_price"),
+                    )
+                    for row in rows
+                }
+            overlap_matches = signatures(dup_rows) == signatures(historical_rows)
+            if not overlap_matches:
+                coverage["overlap_mismatches"].append(day)
+        coverage["days"][day] = {
+            "source": source,
+            "selected_exits": len(selected),
+            "dup_exits": len(dup_rows),
+            "historical_nh015_exits": len(historical_rows),
+            "overlap_matches": overlap_matches,
+        }
+    return result, coverage
 
 
 def render_dup_models(models: dict) -> None:
@@ -234,10 +280,18 @@ def render_dup_models(models: dict) -> None:
     atomic_text(DUP_MODELS_TXT, "\n".join(lines) + "\n")
 
 
-def render_dup_sizing(models: dict) -> None:
+def render_dup_sizing(models: dict, coverage: dict) -> None:
+    sources = defaultdict(int)
+    for row in coverage.get("days", {}).values():
+        sources[row.get("source")] += 1
     lines = [
         "NH015 DUP ENTRY-SIZING SWEEP",
         "Independent capital ledgers over identical raw trade opportunities",
+        (
+            f"Coverage: {len(coverage.get('days', {}))} days | "
+            + " | ".join(f"{key}={value}" for key, value in sorted(sources.items()))
+        ),
+        f"Overlap validation mismatches: {coverage.get('overlap_mismatches', [])}",
         "R% = equity risk cap | P% = maximum position fraction",
         "Paper results exclude spread, slippage, fees and market impact",
         "",
@@ -279,7 +333,7 @@ def render_dup_sizing(models: dict) -> None:
 
 
 def update_dup_models() -> dict:
-    rows_by_day = load_dup_model_rows()
+    rows_by_day, coverage = load_dup_model_rows()
     models = simulate_portfolio_models(rows_by_day)
     sizing_models = simulate_sizing_sweep(rows_by_day)
     payload = {
@@ -287,6 +341,7 @@ def update_dup_models() -> dict:
         "strategy_id": DUP_STRATEGY_ID,
         "updated_at": datetime.now(timezone.utc).isoformat(),
         "models": models,
+        "coverage": coverage,
     }
     atomic_json(DUP_MODELS, payload)
     render_dup_models(models)
@@ -295,8 +350,9 @@ def update_dup_models() -> dict:
         "strategy_id": DUP_STRATEGY_ID,
         "updated_at": payload["updated_at"],
         "models": sizing_models,
+        "coverage": coverage,
     })
-    render_dup_sizing(sizing_models)
+    render_dup_sizing(sizing_models, coverage)
     return payload
 
 
