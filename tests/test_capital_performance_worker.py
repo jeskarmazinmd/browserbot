@@ -13,6 +13,8 @@ class CapitalPerformanceWorkerTests(unittest.TestCase):
             "ARCHIVE": worker.ARCHIVE,
             "DUP_MODELS": worker.DUP_MODELS,
             "DUP_MODELS_TXT": worker.DUP_MODELS_TXT,
+            "DUP_SIZING": worker.DUP_SIZING,
+            "DUP_SIZING_TXT": worker.DUP_SIZING_TXT,
         }
 
     def tearDown(self):
@@ -83,6 +85,8 @@ class CapitalPerformanceWorkerTests(unittest.TestCase):
             worker.ARCHIVE = root / "archive"
             worker.DUP_MODELS = root / "models.json"
             worker.DUP_MODELS_TXT = root / "models.txt"
+            worker.DUP_SIZING = root / "sizing.json"
+            worker.DUP_SIZING_TXT = root / "sizing.txt"
             worker.ARCHIVE.mkdir()
             row = {
                 "event_type": "PAPER_EXIT",
@@ -107,6 +111,9 @@ class CapitalPerformanceWorkerTests(unittest.TestCase):
             self.assertIn("DUP_5K_ROLLING", payload["models"])
             self.assertIn("DUP_10K_ROLLING", payload["models"])
             self.assertIn("DUP_10K_ROLLING", worker.DUP_MODELS_TXT.read_text())
+            sizing = json.loads(worker.DUP_SIZING.read_text())
+            self.assertEqual(96, len(sizing["models"]))
+            self.assertIn("NH015 DUP ENTRY-SIZING SWEEP", worker.DUP_SIZING_TXT.read_text())
 
 if __name__ == "__main__":
     unittest.main()

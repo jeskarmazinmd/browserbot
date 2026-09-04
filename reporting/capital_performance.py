@@ -159,9 +159,55 @@ def simulate_day(
     }
 
 
+def _simulate_portfolio_model(
+    rows_by_day,
+    initial,
+    reset_daily,
+    risk_fraction,
+    max_position_fraction,
+):
+    days = sorted(rows_by_day)
+    next_start = float(initial)
+    cumulative_pnl = 0.0
+    results = {}
+    for day in days:
+        day_start = float(initial) if reset_daily else next_start
+        result = simulate_day(
+            rows_by_day[day],
+            starting_cash=day_start,
+            risk_fraction=risk_fraction,
+            max_position_fraction=max_position_fraction,
+        )
+        results[day] = {
+            **result,
+            "starting_equity": day_start,
+            "pnl": result["end_equity"] - day_start,
+        }
+        cumulative_pnl += result["end_equity"] - day_start
+        next_start = result["end_equity"]
+    ending_equity = float(initial) + cumulative_pnl if reset_daily else next_start
+    return {
+        "initial_capital": float(initial),
+        "reset_daily": bool(reset_daily),
+        "risk_fraction": float(risk_fraction),
+        "max_position_fraction": float(max_position_fraction),
+        "days": results,
+        "ending_equity": ending_equity,
+        "cumulative_pnl": cumulative_pnl,
+        "total_return_pct": cumulative_pnl / float(initial) * 100.0,
+        "total_taken": sum(row["taken"] for row in results.values()),
+        "total_skipped": sum(row["skipped"] for row in results.values()),
+        "worst_day_return_pct": min(
+            (row["return_pct"] for row in results.values()), default=0.0
+        ),
+        "worst_intraday_drawdown_pct": max(
+            (row["max_drawdown_pct"] for row in results.values()), default=0.0
+        ),
+    }
+
+
 def simulate_portfolio_models(rows_by_day, capital_levels=(5000.0, 10000.0)):
     """Run daily-reset and rolling-capital models over identical trade rows."""
-    days = sorted(rows_by_day)
     models = {}
     for capital in capital_levels:
         initial = float(capital)
@@ -171,28 +217,38 @@ def simulate_portfolio_models(rows_by_day, capital_levels=(5000.0, 10000.0)):
         for reset_daily in (True, False):
             mode = "DAILY" if reset_daily else "ROLLING"
             name = f"DUP_{label}_{mode}"
-            next_start = initial
-            cumulative_pnl = 0.0
-            results = {}
-            for day in days:
-                day_start = initial if reset_daily else next_start
-                result = simulate_day(rows_by_day[day], starting_cash=day_start)
-                results[day] = {
-                    **result,
-                    "starting_equity": day_start,
-                    "pnl": result["end_equity"] - day_start,
-                }
-                cumulative_pnl += result["end_equity"] - day_start
-                next_start = result["end_equity"]
-            ending_equity = (
-                initial + cumulative_pnl if reset_daily else next_start
+            models[name] = _simulate_portfolio_model(
+                rows_by_day,
+                initial,
+                reset_daily,
+                RISK_FRACTION,
+                MAX_POSITION_FRACTION,
             )
-            models[name] = {
-                "initial_capital": initial,
-                "reset_daily": reset_daily,
-                "days": results,
-                "ending_equity": ending_equity,
-                "cumulative_pnl": cumulative_pnl,
-                "total_return_pct": cumulative_pnl / initial * 100.0,
-            }
+    return models
+
+
+def simulate_sizing_sweep(
+    rows_by_day,
+    capital_levels=(5000.0, 10000.0),
+    risk_fractions=(0.001, 0.002, 0.005, 0.01),
+    max_position_fractions=(0.05, 0.10, 0.15, 0.20, 0.25, 0.33),
+):
+    """Compare independent sizing ledgers over one common opportunity stream."""
+    models = {}
+    for capital in capital_levels:
+        for reset_daily in (True, False):
+            for risk_fraction in risk_fractions:
+                for position_fraction in max_position_fractions:
+                    mode = "DAILY" if reset_daily else "ROLLING"
+                    name = (
+                        f"SIZE_{int(capital / 1000)}K_{mode}_"
+                        f"R{risk_fraction * 100:.2f}_P{position_fraction * 100:.0f}"
+                    )
+                    models[name] = _simulate_portfolio_model(
+                        rows_by_day,
+                        float(capital),
+                        reset_daily,
+                        float(risk_fraction),
+                        float(position_fraction),
+                    )
     return models

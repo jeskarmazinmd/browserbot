@@ -11,7 +11,11 @@ from pathlib import Path
 import time
 from zoneinfo import ZoneInfo
 
-from reporting.capital_performance import simulate_day, simulate_portfolio_models
+from reporting.capital_performance import (
+    simulate_day,
+    simulate_portfolio_models,
+    simulate_sizing_sweep,
+)
 
 
 ROOT = Path("/data")
@@ -25,6 +29,8 @@ HEALTH = ROOT / "capital_performance_health.json"
 ERRORS = ROOT / "capital_performance_errors.jsonl"
 DUP_MODELS = ROOT / "nh015_dup_portfolio_models.json"
 DUP_MODELS_TXT = ROOT / "nh015_dup_portfolio_models.txt"
+DUP_SIZING = ROOT / "nh015_dup_sizing_sweep.json"
+DUP_SIZING_TXT = ROOT / "nh015_dup_sizing_sweep.txt"
 DUP_STRATEGY_ID = "C3N25S10NH015DUP"
 
 NY = ZoneInfo("America/New_York")
@@ -228,9 +234,54 @@ def render_dup_models(models: dict) -> None:
     atomic_text(DUP_MODELS_TXT, "\n".join(lines) + "\n")
 
 
+def render_dup_sizing(models: dict) -> None:
+    lines = [
+        "NH015 DUP ENTRY-SIZING SWEEP",
+        "Independent capital ledgers over identical raw trade opportunities",
+        "R% = equity risk cap | P% = maximum position fraction",
+        "Paper results exclude spread, slippage, fees and market impact",
+        "",
+    ]
+    groups = defaultdict(list)
+    for name, model in models.items():
+        key = (model["initial_capital"], model["reset_daily"])
+        groups[key].append((name, model))
+    for (capital, reset_daily), rows in sorted(groups.items()):
+        mode = "DAILY" if reset_daily else "ROLLING"
+        lines.extend([
+            f"${capital:,.0f} {mode} — ranked by total return",
+            (
+                f"{'Rank':>4} {'Risk%':>7} {'Pos%':>7} {'Return':>9} "
+                f"{'WorstDay':>10} {'MaxDD':>8} {'Taken':>7} {'Skipped':>8} {'End $':>11}"
+            ),
+            "-" * 84,
+        ])
+        ranked = sorted(
+            rows,
+            key=lambda item: (
+                item[1]["total_return_pct"],
+                -item[1]["worst_intraday_drawdown_pct"],
+            ),
+            reverse=True,
+        )
+        for rank, (_, model) in enumerate(ranked, 1):
+            lines.append(
+                f"{rank:>4} {model['risk_fraction'] * 100:>6.2f}% "
+                f"{model['max_position_fraction'] * 100:>6.0f}% "
+                f"{model['total_return_pct']:>+8.2f}% "
+                f"{model['worst_day_return_pct']:>+9.2f}% "
+                f"{model['worst_intraday_drawdown_pct']:>7.2f}% "
+                f"{model['total_taken']:>7} {model['total_skipped']:>8} "
+                f"{model['ending_equity']:>11.2f}"
+            )
+        lines.append("")
+    atomic_text(DUP_SIZING_TXT, "\n".join(lines) + "\n")
+
+
 def update_dup_models() -> dict:
     rows_by_day = load_dup_model_rows()
     models = simulate_portfolio_models(rows_by_day)
+    sizing_models = simulate_sizing_sweep(rows_by_day)
     payload = {
         "version": 1,
         "strategy_id": DUP_STRATEGY_ID,
@@ -239,6 +290,13 @@ def update_dup_models() -> dict:
     }
     atomic_json(DUP_MODELS, payload)
     render_dup_models(models)
+    atomic_json(DUP_SIZING, {
+        "version": 1,
+        "strategy_id": DUP_STRATEGY_ID,
+        "updated_at": payload["updated_at"],
+        "models": sizing_models,
+    })
+    render_dup_sizing(sizing_models)
     return payload
 
 

@@ -1,7 +1,11 @@
 from datetime import datetime, timedelta, timezone
 import unittest
 
-from reporting.capital_performance import simulate_day, simulate_portfolio_models
+from reporting.capital_performance import (
+    simulate_day,
+    simulate_portfolio_models,
+    simulate_sizing_sweep,
+)
 
 
 class CapitalPerformanceTests(unittest.TestCase):
@@ -93,6 +97,22 @@ class CapitalPerformanceTests(unittest.TestCase):
         )
         self.assertAlmostEqual(5000.0, models["DUP_5K_DAILY"]["ending_equity"])
         self.assertAlmostEqual(4998.0, models["DUP_5K_ROLLING"]["ending_equity"])
+
+    def test_sizing_sweep_runs_independent_position_caps(self):
+        opened = datetime(2026, 8, 7, 14, 0, tzinfo=timezone.utc)
+        rows = {"2026-08-07": [self.trade(1, opened, exit_price=10.1)]}
+        models = simulate_sizing_sweep(
+            rows,
+            capital_levels=(5000.0,),
+            risk_fractions=(0.01,),
+            max_position_fractions=(0.10, 0.20),
+        )
+
+        ten = models["SIZE_5K_ROLLING_R1.00_P10"]
+        twenty = models["SIZE_5K_ROLLING_R1.00_P20"]
+        self.assertEqual(1, ten["days"]["2026-08-07"]["taken"])
+        self.assertAlmostEqual(5005.0, ten["ending_equity"])
+        self.assertAlmostEqual(5010.0, twenty["ending_equity"])
 
 if __name__ == "__main__":
     unittest.main()
