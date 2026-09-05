@@ -37,6 +37,7 @@ from live_nh015_execution import (
     partition_broker_preflight_findings,
 )
 from nh015_executable_shadow import NH015ExecutableShadow
+from nh015_execution_family import NH015ExecutionFamily
 from strategies.c3_admission_family import (
     C3AdmissionFamily,
     FAMILY_STRATEGY_IDS as C3_ADMISSION_STRATEGY_IDS,
@@ -2277,6 +2278,18 @@ def main():
         f"seen={len(nh015_exec_shadow.seen)}",
         flush=True,
     )
+    nh015_execution_family = NH015ExecutionFamily(
+        DATA_ROOT,
+        eod_hour=EOD_EXIT_HOUR_ET,
+        eod_minute=EOD_EXIT_MINUTE_ET,
+    )
+    print(
+        "NH015_EXECUTION_FAMILY_ONLINE "
+        f"active={len(nh015_execution_family.active)} "
+        f"pending={len(nh015_execution_family.pending)} "
+        f"seen={len(nh015_execution_family.seen)}",
+        flush=True,
+    )
     multi_leg_outcomes = MultiLegPaperTracker(
         DATA_ROOT,
         eod_hour=EOD_EXIT_HOUR_ET,
@@ -2522,7 +2535,11 @@ def main():
 
             prices_now = latest_prices(df)
             if RUN_MODE == "LIVE":
-                execution_symbols = set(positions) | nh015_exec_shadow.symbols()
+                execution_symbols = (
+                    set(positions)
+                    | nh015_exec_shadow.symbols()
+                    | nh015_execution_family.symbols()
+                )
                 execution_quotes = _nh015_execution_quotes(execution_symbols)
                 execution_bids = {
                     symbol: quote["bid"]
@@ -2548,6 +2565,18 @@ def main():
                         f"return={outcome['return_pct']:+.3f}%",
                         flush=True,
                     )
+                for outcome in nh015_execution_family.update(
+                    execution_quotes, quote_source.now()
+                ):
+                    if outcome["event_type"] == "FAMILY_EXIT":
+                        print(
+                            "NH015_EXEC_FAMILY_OUTCOME "
+                            f"strategy={outcome['strategy_id']} "
+                            f"symbol={outcome['symbol']} "
+                            f"reason={outcome['exit_reason']} "
+                            f"return={outcome['return_pct']:+.3f}%",
+                            flush=True,
+                        )
 
             now_utc = quote_source.now()
             for outcome in paper_outcomes.update(prices_now, now_utc):
@@ -3334,6 +3363,11 @@ def main():
                                 [nh015_duplicate["symbol"]]
                             ).get(nh015_duplicate["symbol"])
                             nh015_exec_shadow.register(
+                                nh015_duplicate,
+                                executable_quote,
+                                now_utc,
+                            )
+                            nh015_execution_family.register(
                                 nh015_duplicate,
                                 executable_quote,
                                 now_utc,
