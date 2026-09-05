@@ -86,6 +86,45 @@ class NH015ExecutionObserverTests(unittest.TestCase):
         with patch.object(observer, "REFERENCE_NOTIONAL", 1000.0):
             self.assertEqual(observer.reference_quantity(23.44), 42)
 
+    @staticmethod
+    def stability_sample(delay, bid, ask, size=500):
+        return {
+            "target_sample_delay_ms": delay, "outcome": "FULL",
+            "bid": bid, "ask": ask, "ask_size_raw": size,
+        }
+
+    def test_stability_family_uses_subsecond_quote_evidence(self):
+        rows = [
+            self.stability_sample(0, 99.96, 100.00),
+            self.stability_sample(100, 99.97, 100.00),
+            self.stability_sample(250, 99.98, 100.00),
+            self.stability_sample(1000, 99.98, 100.00),
+        ]
+        decisions = observer.evaluate_stability_policies(rows, 100.0, 101.0, 5)
+        by_id = {row["strategy_id"]: row for row in decisions}
+        self.assertEqual(set(observer.STABILITY_POLICY_IDS), set(by_id))
+        for strategy_id in (
+            "C3N25S10NH015XBIDSTABLE250", "C3N25S10NH015XBIDUP250",
+            "C3N25S10NH015XSTABLE1000", "C3N25S10NH015XASKPERSIST",
+            "C3N25S10NH015XSIZE2X", "C3N25S10NH015XEDGE3STABLE",
+        ):
+            self.assertTrue(by_id[strategy_id]["admitted"])
+        self.assertFalse(by_id["C3N25S10NH015XDEPTHIMB"]["admitted"])
+        self.assertEqual("LEVEL2_NOT_CONNECTED", by_id["C3N25S10NH015XDEPTHIMB"]["reason"])
+
+    def test_falling_bid_rejects_stability_gates(self):
+        rows = [
+            self.stability_sample(0, 99.96, 100.00),
+            self.stability_sample(100, 99.94, 99.98),
+            self.stability_sample(250, 99.90, 99.95),
+            self.stability_sample(1000, 99.88, 99.92),
+        ]
+        decisions = observer.evaluate_stability_policies(rows, 100.0, 101.0, 5)
+        by_id = {row["strategy_id"]: row for row in decisions}
+        self.assertFalse(by_id["C3N25S10NH015XBIDSTABLE250"]["admitted"])
+        self.assertFalse(by_id["C3N25S10NH015XBIDUP250"]["admitted"])
+        self.assertFalse(by_id["C3N25S10NH015XEDGE3STABLE"]["admitted"])
+
 
 if __name__ == "__main__":
     unittest.main()

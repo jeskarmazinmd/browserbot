@@ -31,6 +31,13 @@ SAMPLE_DELAYS_MS = tuple(
 MAX_QUOTE_AGE_MS = int(os.environ.get("NH015_OBSERVER_MAX_QUOTE_AGE_MS", "2000"))
 REFERENCE_NOTIONAL = float(os.environ.get("NH015_OBSERVER_REFERENCE_NOTIONAL", "1000"))
 ASK_SIZE_MULTIPLIER = float(os.environ.get("NH015_OBSERVER_ASK_SIZE_MULTIPLIER", "1"))
+STABILITY_FAMILY_VERSION = "nh015_quote_stability_v1_20260905"
+STABILITY_POLICY_IDS = (
+    "C3N25S10NH015XBIDSTABLE250", "C3N25S10NH015XBIDUP250",
+    "C3N25S10NH015XSTABLE1000", "C3N25S10NH015XSPREADCOMP",
+    "C3N25S10NH015XASKPERSIST", "C3N25S10NH015XSIZE2X",
+    "C3N25S10NH015XEDGE3STABLE", "C3N25S10NH015XDEPTHIMB",
+)
 
 
 def utc_now():
@@ -126,6 +133,68 @@ def fetch_snapshot(symbol):
     return extract_quote_snapshot(symbol, payload)
 
 
+def _valid_sample(sample):
+    return (
+        isinstance(sample, dict) and sample.get("outcome") != "UNKNOWN"
+        and isinstance(sample.get("bid"), (int, float))
+        and isinstance(sample.get("ask"), (int, float))
+        and sample["bid"] > 0 and sample["ask"] >= sample["bid"]
+    )
+
+
+def _sample_spread_pct(sample):
+    midpoint = (float(sample["bid"]) + float(sample["ask"])) / 2.0
+    return ((float(sample["ask"]) - float(sample["bid"])) / midpoint) * 100.0
+
+
+def evaluate_stability_policies(observations, limit_price, target_price, requested_qty):
+    """Classify fixed sub-second gates from captured quote samples."""
+    samples = {int(row.get("target_sample_delay_ms", -1)): row for row in observations}
+    q0, q100, q250, q1000 = (samples.get(x) for x in (0, 100, 250, 1000))
+    edge_pct = ((float(target_price) / float(limit_price)) - 1.0) * 100.0 if target_price and limit_price else None
+
+    def marketable(q):
+        return _valid_sample(q) and float(q["ask"]) <= float(limit_price)
+
+    def result(strategy_id, admitted, sample, reason, **evidence):
+        return {
+            "strategy_id": strategy_id, "admitted": bool(admitted),
+            "reason": reason,
+            "simulated_entry_price": float(sample["ask"]) if admitted and _valid_sample(sample) else None,
+            "decision_delay_ms": sample.get("target_sample_delay_ms") if isinstance(sample, dict) else None,
+            "paper_only": True, "broker_execution_enabled": False, **evidence,
+        }
+
+    valid_0_250 = _valid_sample(q0) and _valid_sample(q250)
+    bid_stable = valid_0_250 and float(q250["bid"]) >= float(q0["bid"])
+    bid_up = valid_0_250 and float(q250["bid"]) > float(q0["bid"])
+    contracted = valid_0_250 and _sample_spread_pct(q250) < _sample_spread_pct(q0)
+    stable_1000 = (
+        _valid_sample(q0) and _valid_sample(q1000)
+        and float(q1000["bid"]) >= float(q0["bid"])
+        and _sample_spread_pct(q1000) <= _sample_spread_pct(q0)
+    )
+    persistent = all(marketable(q) for q in (q0, q100, q250))
+    size_2x = (
+        marketable(q0) and q0.get("ask_size_raw") is not None
+        and float(q0["ask_size_raw"]) * ASK_SIZE_MULTIPLIER >= 2 * int(requested_qty)
+    )
+    edge_stable = (
+        bid_stable and marketable(q250) and edge_pct is not None
+        and _sample_spread_pct(q250) * 3.0 <= edge_pct
+    )
+    return [
+        result(STABILITY_POLICY_IDS[0], bid_stable and marketable(q250), q250, "BID_STABLE_AND_MARKETABLE" if bid_stable and marketable(q250) else "GATE_FAILED"),
+        result(STABILITY_POLICY_IDS[1], bid_up and marketable(q250), q250, "BID_UP_AND_MARKETABLE" if bid_up and marketable(q250) else "GATE_FAILED"),
+        result(STABILITY_POLICY_IDS[2], stable_1000 and marketable(q1000), q1000, "STABLE_THROUGH_1000MS" if stable_1000 and marketable(q1000) else "GATE_FAILED"),
+        result(STABILITY_POLICY_IDS[3], contracted and marketable(q250), q250, "SPREAD_CONTRACTED" if contracted and marketable(q250) else "GATE_FAILED"),
+        result(STABILITY_POLICY_IDS[4], persistent, q250, "ASK_PERSISTED" if persistent else "GATE_FAILED"),
+        result(STABILITY_POLICY_IDS[5], size_2x, q0, "DISPLAYED_SIZE_AT_LEAST_2X" if size_2x else "GATE_FAILED", requested_qty=int(requested_qty), ask_size_multiplier=ASK_SIZE_MULTIPLIER),
+        result(STABILITY_POLICY_IDS[6], edge_stable, q250, "EDGE_3X_AND_BID_STABLE" if edge_stable else "GATE_FAILED", signal_edge_pct=edge_pct, observed_spread_pct=_sample_spread_pct(q250) if _valid_sample(q250) else None),
+        result(STABILITY_POLICY_IDS[7], False, None, "LEVEL2_NOT_CONNECTED"),
+    ]
+
+
 def _append(payload):
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     with OUTPUT_PATH.open("a") as handle:
@@ -182,7 +251,8 @@ def observe_signal(event):
                 "broker_execution_enabled": False,
             }
         observations.append(result)
-    _append({
+    target_price = float(signal.get("target_price") or 0)
+    payload = {
         "record_type": "SIGNAL_MARKET_REPLAY",
         "recorded_at": utc_now().isoformat(),
         "strategy_id": STRATEGY_ID,
@@ -195,9 +265,15 @@ def observe_signal(event):
         "reference_quantity": qty,
         "quantity_source": f"floor_${REFERENCE_NOTIONAL:g}_notional_at_limit",
         "observations": observations,
+        "stability_family_version": STABILITY_FAMILY_VERSION,
+        "stability_policy_decisions": evaluate_stability_policies(
+            observations, limit_price, target_price, qty
+        ),
         "paper_only": True,
         "broker_execution_enabled": False,
-    })
+    }
+    _append(payload)
+    return payload
 
 
 def relevant_signal(event):
