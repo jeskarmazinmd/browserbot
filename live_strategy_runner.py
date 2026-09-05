@@ -36,6 +36,7 @@ from live_nh015_execution import (
     nh015_should_exit,
     partition_broker_preflight_findings,
 )
+from nh015_executable_shadow import NH015ExecutableShadow
 from strategies.c3_admission_family import (
     C3AdmissionFamily,
     FAMILY_STRATEGY_IDS as C3_ADMISSION_STRATEGY_IDS,
@@ -2265,6 +2266,17 @@ def main():
         f"active={len(paper_outcomes.active)} seen={len(paper_outcomes.seen)}",
         flush=True,
     )
+    nh015_exec_shadow = NH015ExecutableShadow(
+        DATA_ROOT,
+        eod_hour=EOD_EXIT_HOUR_ET,
+        eod_minute=EOD_EXIT_MINUTE_ET,
+    )
+    print(
+        "NH015_EXECUTABLE_SHADOW_ONLINE "
+        f"active={len(nh015_exec_shadow.active)} "
+        f"seen={len(nh015_exec_shadow.seen)}",
+        flush=True,
+    )
     multi_leg_outcomes = MultiLegPaperTracker(
         DATA_ROOT,
         eod_hour=EOD_EXIT_HOUR_ET,
@@ -2510,7 +2522,8 @@ def main():
 
             prices_now = latest_prices(df)
             if RUN_MODE == "LIVE":
-                execution_quotes = _nh015_execution_quotes(positions.keys())
+                execution_symbols = set(positions) | nh015_exec_shadow.symbols()
+                execution_quotes = _nh015_execution_quotes(execution_symbols)
                 execution_bids = {
                     symbol: quote["bid"]
                     for symbol, quote in execution_quotes.items()
@@ -2524,6 +2537,17 @@ def main():
                 )
                 live_book.rollover(quote_source.now())
                 live_book.publish_status()
+
+                for outcome in nh015_exec_shadow.update(
+                    execution_quotes, quote_source.now()
+                ):
+                    print(
+                        "NH015_EXEC_OUTCOME "
+                        f"symbol={outcome['symbol']} "
+                        f"reason={outcome['exit_reason']} "
+                        f"return={outcome['return_pct']:+.3f}%",
+                        flush=True,
+                    )
 
             now_utc = quote_source.now()
             for outcome in paper_outcomes.update(prices_now, now_utc):
@@ -3305,6 +3329,15 @@ def main():
                             },
                         )
                         paper_outcomes.register(nh015_duplicate)
+                        if RUN_MODE == "LIVE":
+                            executable_quote = _nh015_execution_quotes(
+                                [nh015_duplicate["symbol"]]
+                            ).get(nh015_duplicate["symbol"])
+                            nh015_exec_shadow.register(
+                                nh015_duplicate,
+                                executable_quote,
+                                now_utc,
+                            )
                         for decision in evaluate_time_of_day_children(
                             nh015_duplicate
                         ):
