@@ -6,8 +6,10 @@ from paper_outcome_tracker import PaperOutcomeTracker
 from strategies.derived_runtime import (
     DERIVED_STRATEGY_IDS,
     DISABLED_DERIVED_STRATEGY_IDS,
+    _clone,
     derive_signals,
 )
+from strategies import strategy_o
 
 
 def parent(strategy_id):
@@ -37,7 +39,7 @@ def parent(strategy_id):
 class DerivedRuntimeTests(unittest.TestCase):
     def test_parent_routes(self):
         a_ids = {s["strategy_id"] for s in derive_signals(parent("A"))}
-        self.assertEqual({"O", "R", "S"}, a_ids)
+        self.assertEqual({"R", "S"}, a_ids)
         self.assertEqual({s["strategy_id"] for s in derive_signals(parent("D"))}, set())
         self.assertEqual(
             {s["strategy_id"] for s in derive_signals(parent("B"))},
@@ -98,7 +100,13 @@ class DerivedRuntimeTests(unittest.TestCase):
     def test_o_waits_for_second_leg(self):
         with tempfile.TemporaryDirectory() as root:
             tracker = PaperOutcomeTracker(root)
-            o = next(s for s in derive_signals(parent("A")) if s["strategy_id"] == "O")
+            # O's implementation and historical replay remain testable even
+            # though prospective derivation is performance-pruned.
+            o = _clone(
+                parent("A"), "O", exit_model="second_leg",
+                entered=False, source_entry_price=100.0,
+                **strategy_o.CONFIG,
+            )
             tracker.register(o)
             initial = next(iter(tracker.active.values()))
             self.assertIsNone(initial.get("entry_timestamp"))

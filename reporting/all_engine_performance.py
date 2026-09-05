@@ -21,6 +21,7 @@ import zlib
 from zoneinfo import ZoneInfo
 
 from reporting.capital_performance import simulate_day
+from strategies.pruning import output_is_pruned
 
 
 NY = ZoneInfo("America/New_York")
@@ -539,6 +540,12 @@ def calculate(root="/data", day=None, as_of=None):
     for name in modern_names:
         modules[name] = {**simulate_slots(trades.get(name, [])), "engine": sources.get(name, "other")}
 
+    # Preserve historical ledgers while keeping retired outputs out of active
+    # snapshots and future daily-history rows.
+    modules = {
+        name: row for name, row in modules.items()
+        if not output_is_pruned(name)
+    }
     ranked = sorted(modules.items(), key=lambda item: item[1]["return_pct"], reverse=True)
     return {
         "calculation_version": 2,

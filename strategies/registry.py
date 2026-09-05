@@ -8,6 +8,7 @@ from multiprocessing.connection import wait
 import os
 import time
 from strategy_diagnostics import diagnostics
+from .pruning import PRUNED_OUTPUT_STRATEGY_IDS
 
 from . import strategy_a
 from . import strategy_b
@@ -35,7 +36,7 @@ DISABLED_FLASH_STRATEGY_IDS = frozenset({
     # Mature standalone leaf with persistently negative forward results.
     # Keep its module and historical outcomes; stop prospective evaluation.
     "C3L25Q2",
-})
+}) | PRUNED_OUTPUT_STRATEGY_IDS
 
 
 FLASH_STRATEGY_MODULES = {
@@ -274,7 +275,7 @@ DISABLED_RESEARCH_STRATEGY_IDS = frozenset({
     # Mature negative leaves through 2026-09-02.  These are output modules,
     # not shared signal producers; source and history remain available.
     "GE1", "EMA3", "CV1", "TD1", "GM1", "GR1", "EMA1T50", "GTMX",
-})
+}) | PRUNED_OUTPUT_STRATEGY_IDS
 
 ENABLED_STRATEGIES = [
     strategy

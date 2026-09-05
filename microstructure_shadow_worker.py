@@ -11,6 +11,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from microstructure_paper_tracker import MicrostructurePaperTracker
+from strategies.pruning import active_output_ids
 
 NY = ZoneInfo("America/New_York")
 SYMBOLS = (
@@ -18,10 +19,10 @@ SYMBOLS = (
     "SMH", "IYT", "GLD", "SLV", "USO", "TLT", "NVDA", "AMD", "AVGO", "MSFT", "AAPL",
     "GOOGL", "META", "AMZN", "TSLA", "NFLX", "ORCL", "CRM", "MU", "INTC",
 )
-STRATEGIES = (
+STRATEGIES = active_output_ids((
     "MSIMB1", "MSPERSIST1", "MSBIDPULL1", "MSFLIP1",
     "MSVEL1", "MSSPSHOCK1", "MSDEPTH1", "MSRECOV1",
-)
+))
 QUOTE_URL = "https://api.schwabapi.com/marketdata/v1/quotes"
 TOKEN_PATH = Path(os.environ.get("MICROSTRUCTURE_MARKET_TOKEN", "/data/schwab_token.json"))
 DATA_ROOT = Path(os.environ.get("MICROSTRUCTURE_DATA_ROOT", "/data"))

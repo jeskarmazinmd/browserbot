@@ -12,11 +12,12 @@ from pathlib import Path
 import requests
 
 from futures_paper_tracker import FuturesPaperTracker
+from strategies.pruning import active_output_ids
 
 ROOTS = ("/MES", "/MNQ", "/MGC", "/MCL", "/M6E")
-STRATEGIES = (
+STRATEGIES = active_output_ids((
     "FUTMES1", "FUTMNQ1", "FUTMESR1", "FUTMGCR1",
-)
+))
 QUOTE_URL = "https://api.schwabapi.com/marketdata/v1/quotes"
 TOKEN_PATH = Path("/data/schwab_token.json")
 DATA_ROOT = Path("/data")

@@ -20,7 +20,14 @@ def declared_strategies(filename):
     for node in tree.body:
         if isinstance(node, ast.Assign):
             if any(isinstance(target, ast.Name) and target.id == "STRATEGIES" for target in node.targets):
-                return tuple(ast.literal_eval(node.value))
+                value = node.value
+                if (
+                    isinstance(value, ast.Call)
+                    and isinstance(value.func, ast.Name)
+                    and value.func.id == "active_output_ids"
+                ):
+                    value = value.args[0]
+                return tuple(ast.literal_eval(value))
     raise AssertionError(f"STRATEGIES not found in {filename}")
 
 

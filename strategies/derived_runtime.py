@@ -2,6 +2,8 @@
 
 from copy import deepcopy
 
+from .pruning import PRUNED_OUTPUT_STRATEGY_IDS
+
 from . import (
     strategy_c1, strategy_c2, strategy_c3, strategy_c4,
     strategy_e, strategy_f, strategy_g, strategy_i,
@@ -23,7 +25,7 @@ DISABLED_DERIVED_STRATEGY_IDS = frozenset({
     "E", "F", "I", "J3", "J4", "J5", "L",
     "K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8", "K9",
     "M", "N", "P", "Q",
-})
+}) | PRUNED_OUTPUT_STRATEGY_IDS
 
 DERIVED_STRATEGY_IDS = frozenset({
     "C1", "C2", "C3", "C4", "E", "F", "G", "I",

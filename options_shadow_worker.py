@@ -7,12 +7,13 @@ import gzip,importlib,json,os,time
 import requests
 
 from options_paper_tracker import OptionsPaperTracker
+from strategies.pruning import active_output_ids
 
 NY=ZoneInfo("America/New_York")
 UNDERLYINGS=("SPY","QQQ","IWM","AAPL","NVDA","TSLA")
 # Failed strategy outputs disabled 2026-08-28. Keep collecting option-chain
 # tapes so replacement strategies can be researched against forward data.
-STRATEGIES=("OPTDIR1INV","OPTDIR2INV","OPTVERT1INV","OPTVERT2INV")
+STRATEGIES=active_output_ids(("OPTDIR1INV","OPTDIR2INV","OPTVERT1INV","OPTVERT2INV"))
 POLL_SECONDS=float(os.environ.get("OPTIONS_POLL_SECONDS","120"))
 DATA_ROOT=Path(os.environ.get("OPTIONS_DATA_ROOT","/data"))
 STATUS=DATA_ROOT/"options_shadow_status.json"

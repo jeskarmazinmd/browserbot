@@ -12,9 +12,10 @@ from pathlib import Path
 import requests
 
 from forex_paper_tracker import ForexPaperTracker
+from strategies.pruning import active_output_ids
 
 PAIRS = ("EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "USD/CAD", "NZD/USD", "USD/CHF", "EUR/GBP")
-STRATEGIES = ("FXEUR1", "FXGBP1", "FXJPY1", "FXAUD1", "FXCAD1", "FXLON1")
+STRATEGIES = active_output_ids(("FXEUR1", "FXGBP1", "FXJPY1", "FXAUD1", "FXCAD1", "FXLON1"))
 QUOTE_URL = "https://api.schwabapi.com/marketdata/v1/quotes"
 TOKEN_PATH = Path("/data/schwab_token.json")
 DATA_ROOT = Path("/data")

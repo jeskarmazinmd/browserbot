@@ -3,8 +3,13 @@
 Kept separate from strategies.registry so existing strategies remain untouched.
 """
 from . import strategy_gt1, strategy_gp1, strategy_gr1, strategy_ge1, strategy_gm1
+from .pruning import output_is_pruned
 
-MODULES = (strategy_gt1, strategy_gp1, strategy_gr1, strategy_ge1, strategy_gm1)
+MODULES = tuple(
+    module
+    for module in (strategy_gt1, strategy_gp1, strategy_gr1, strategy_ge1, strategy_gm1)
+    if not output_is_pruned(module.STRATEGY_ID)
+)
 
 
 def evaluate_all(context):
