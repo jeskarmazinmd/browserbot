@@ -6,11 +6,13 @@ client, and writes only its own observation/status files.
 """
 from __future__ import annotations
 
+from concurrent.futures import Future, ThreadPoolExecutor
 import json
 import math
 import os
+import threading
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from market_quotes import extract_quote_snapshot
@@ -31,6 +33,13 @@ SAMPLE_DELAYS_MS = tuple(
 MAX_QUOTE_AGE_MS = int(os.environ.get("NH015_OBSERVER_MAX_QUOTE_AGE_MS", "2000"))
 REFERENCE_NOTIONAL = float(os.environ.get("NH015_OBSERVER_REFERENCE_NOTIONAL", "1000"))
 ASK_SIZE_MULTIPLIER = float(os.environ.get("NH015_OBSERVER_ASK_SIZE_MULTIPLIER", "1"))
+MAX_CONCURRENT_OBSERVATIONS = int(
+    os.environ.get("NH015_OBSERVER_MAX_CONCURRENT_OBSERVATIONS", "16")
+)
+MAX_INFLIGHT_OBSERVATIONS = int(
+    os.environ.get("NH015_OBSERVER_MAX_INFLIGHT_OBSERVATIONS", "64")
+)
+_APPEND_LOCK = threading.Lock()
 STABILITY_FAMILY_VERSION = "nh015_quote_stability_v1_20260905"
 STABILITY_POLICY_IDS = (
     "C3N25S10NH015XBIDSTABLE250", "C3N25S10NH015XBIDUP250",
@@ -280,8 +289,10 @@ def evaluate_last_price_policies(observations, last_price, requested_qty):
 
 def _append(payload):
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with OUTPUT_PATH.open("a") as handle:
-        handle.write(json.dumps(payload, separators=(",", ":"), default=str) + "\n")
+    encoded = json.dumps(payload, separators=(",", ":"), default=str) + "\n"
+    with _APPEND_LOCK:
+        with OUTPUT_PATH.open("a") as handle:
+            handle.write(encoded)
 
 
 def _status(**payload):
@@ -298,7 +309,7 @@ def _status(**payload):
     temporary.replace(STATUS_PATH)
 
 
-def observe_signal(event):
+def observe_signal(event, detected_at=None):
     signal = event.get("signal") or {}
     symbol = str(event.get("symbol") or signal.get("symbol") or "").upper()
     setup_id = signal.get("setup_id") or signal.get("source_setup_id")
@@ -307,11 +318,13 @@ def observe_signal(event):
         raise ValueError("NH015 signal lacks symbol or entry price")
     signal_time = parse_utc(event["timestamp"])
     qty = reference_quantity(limit_price)
-    detected_at = utc_now()
-    started = time.monotonic()
+    detected_at = detected_at or utc_now()
+    observer_started_at = utc_now()
+    queue_delay_ms = (observer_started_at - detected_at).total_seconds() * 1000
     observations = []
     for delay_ms in SAMPLE_DELAYS_MS:
-        remaining = delay_ms / 1000 - (time.monotonic() - started)
+        target_at = detected_at + timedelta(milliseconds=delay_ms)
+        remaining = (target_at - utc_now()).total_seconds()
         if remaining > 0:
             time.sleep(remaining)
         requested_at = utc_now()
@@ -322,6 +335,12 @@ def observe_signal(event):
             result.update({
                 "target_sample_delay_ms": delay_ms,
                 "request_latency_ms": round((observed_at - requested_at).total_seconds() * 1000, 3),
+                "sample_delay_from_detection_ms": round(
+                    (observed_at - detected_at).total_seconds() * 1000, 3
+                ),
+                "sample_delay_from_signal_ms": round(
+                    (observed_at - signal_time).total_seconds() * 1000, 3
+                ),
             })
         except Exception as exc:
             result = {
@@ -343,6 +362,8 @@ def observe_signal(event):
         "symbol": symbol,
         "signal_event_time": signal_time.isoformat(),
         "observer_detected_at": detected_at.isoformat(),
+        "observer_started_at": observer_started_at.isoformat(),
+        "observer_queue_delay_ms": round(queue_delay_ms, 3),
         "detection_delay_ms": round((detected_at - signal_time).total_seconds() * 1000, 3),
         "limit_price": limit_price,
         "reference_quantity": qty,
@@ -379,11 +400,50 @@ def main():
     seen = errors = observations = 0
     EVENTS_PATH.parent.mkdir(parents=True, exist_ok=True)
     EVENTS_PATH.touch(exist_ok=True)
+    executor = ThreadPoolExecutor(
+        max_workers=max(1, MAX_CONCURRENT_OBSERVATIONS),
+        thread_name_prefix="nh015-observer",
+    )
+    inflight: set[Future] = set()
+
+    def publish_status(status="RUNNING", **extra):
+        _status(
+            status=status,
+            signals_seen=seen,
+            observations=observations,
+            reconciliations=reconciliations,
+            errors=errors,
+            inflight_observations=len(inflight),
+            max_concurrent_observations=MAX_CONCURRENT_OBSERVATIONS,
+            max_inflight_observations=MAX_INFLIGHT_OBSERVATIONS,
+            **extra,
+        )
+
+    def reap_completed():
+        nonlocal observations, errors
+        for future in tuple(inflight):
+            if not future.done():
+                continue
+            inflight.remove(future)
+            try:
+                future.result()
+                observations += 1
+            except Exception as exc:
+                errors += 1
+                _append({
+                    "record_type": "OBSERVER_JOB_ERROR",
+                    "recorded_at": utc_now().isoformat(),
+                    "error": f"{type(exc).__name__}: {exc}",
+                    "paper_only": True,
+                    "broker_execution_enabled": False,
+                })
+
     with EVENTS_PATH.open() as stream:
         stream.seek(0, os.SEEK_END)  # prospective only; never reinterpret old events
-        _status(status="RUNNING", observations=0, reconciliations=0, errors=0)
         reconciliations = 0
+        publish_status()
         while True:
+            reap_completed()
             line = stream.readline()
             if not line:
                 # bot_events.jsonl is bounded and may be atomically rotated.
@@ -403,8 +463,22 @@ def main():
                 event = json.loads(line)
                 if relevant_signal(event):
                     seen += 1
-                    observe_signal(event)
-                    observations += 1
+                    detected_at = utc_now()
+                    if len(inflight) >= max(1, MAX_INFLIGHT_OBSERVATIONS):
+                        errors += 1
+                        _append({
+                            "record_type": "SIGNAL_OBSERVATION_DROPPED",
+                            "recorded_at": detected_at.isoformat(),
+                            "strategy_id": STRATEGY_ID,
+                            "setup_id": (event.get("signal") or {}).get("setup_id"),
+                            "symbol": event.get("symbol") or (event.get("signal") or {}).get("symbol"),
+                            "reason": "OBSERVER_INFLIGHT_LIMIT",
+                            "inflight_observations": len(inflight),
+                            "paper_only": True,
+                            "broker_execution_enabled": False,
+                        })
+                    else:
+                        inflight.add(executor.submit(observe_signal, event, detected_at))
                 elif reconciliation_event(event):
                     _append({
                         "record_type": "LIVE_BROKER_RECONCILIATION",
@@ -416,15 +490,11 @@ def main():
                     reconciliations += 1
                 else:
                     continue
-                _status(
-                    status="RUNNING", signals_seen=seen, observations=observations,
-                    reconciliations=reconciliations, errors=errors,
-                )
+                publish_status()
             except Exception as exc:
                 errors += 1
-                _status(
-                    status="ERROR_CONTINUING", signals_seen=seen, observations=observations,
-                    reconciliations=reconciliations, errors=errors,
+                publish_status(
+                    "ERROR_CONTINUING",
                     last_error=f"{type(exc).__name__}: {exc}",
                 )
 

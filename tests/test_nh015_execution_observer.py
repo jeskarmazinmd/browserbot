@@ -171,6 +171,44 @@ class NH015ExecutionObserverTests(unittest.TestCase):
         self.assertEqual(99.95, decision["observed_ask"])
         self.assertEqual(100.0, decision["simulated_entry_price"])
 
+    def test_observe_signal_preserves_detection_and_queue_timing(self):
+        event = {
+            "timestamp": self.now.isoformat(),
+            "symbol": "TEST",
+            "signal": {
+                "setup_id": "C3N25S10NH015|TEST|timing",
+                "symbol": "TEST",
+                "entry_price": 10.0,
+                "target_price": 10.1,
+            },
+        }
+        detected_at = self.now + timedelta(milliseconds=25)
+        with (
+            patch.object(observer, "SAMPLE_DELAYS_MS", (0,)),
+            patch.object(observer, "utc_now", side_effect=[
+                detected_at + timedelta(milliseconds=5),
+                detected_at + timedelta(milliseconds=5),
+                detected_at + timedelta(milliseconds=5),
+                detected_at + timedelta(milliseconds=15),
+                detected_at + timedelta(milliseconds=20),
+            ]),
+            patch.object(observer, "fetch_snapshot", return_value=self.quote()),
+            patch.object(observer, "_append"),
+        ):
+            payload = observer.observe_signal(event, detected_at)
+        self.assertEqual(detected_at.isoformat(), payload["observer_detected_at"])
+        self.assertEqual(5.0, payload["observer_queue_delay_ms"])
+        sample = payload["observations"][0]
+        self.assertEqual(15.0, sample["sample_delay_from_detection_ms"])
+        self.assertEqual(40.0, sample["sample_delay_from_signal_ms"])
+
+    def test_observer_uses_bounded_concurrent_executor(self):
+        source = Path(observer.__file__).read_text()
+        self.assertIn("ThreadPoolExecutor", source)
+        self.assertIn("MAX_CONCURRENT_OBSERVATIONS", source)
+        self.assertIn("MAX_INFLIGHT_OBSERVATIONS", source)
+        self.assertIn("SIGNAL_OBSERVATION_DROPPED", source)
+
 
 if __name__ == "__main__":
     unittest.main()
