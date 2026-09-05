@@ -497,25 +497,41 @@ class NH015LiveBook:
 
 
 def nh015_should_exit(position: dict[str, Any], price: float, now: datetime) -> bool:
-    """Advance the live C2/15-second state and report an exit decision."""
+    """Advance NH015's executable-BID high/timer state and report an exit."""
     entry = float(position.get("actual_entry_price") or 0.0)
     if entry <= 0 or price <= 0:
         return False
-    high = float(position.get("highest_price_since_fill") or entry)
+
+    high = float(position.get("nh015_highest_bid") or entry)
+    high_at_raw = (
+        position.get("nh015_high_bid_at")
+        or position.get("entry_fill_time")
+    )
+
     if price > high:
-        position["highest_price_since_fill"] = price
-        position["mfe_at"] = now.isoformat()
+        position["nh015_highest_bid"] = price
+        position["nh015_high_bid_at"] = now.isoformat()
         high = price
+        high_at_raw = position["nh015_high_bid_at"]
+
     if not position.get("nh015_activated"):
         if price < entry * 1.003:
             return False
         position["nh015_activated"] = True
         position["nh015_activated_at"] = now.isoformat()
-    high_at_raw = position.get("mfe_at") or position.get("entry_fill_time")
+
+        # Activation itself establishes the first executable high-time if the
+        # position has not observed a higher bid since fill.
+        if not position.get("nh015_high_bid_at"):
+            position["nh015_highest_bid"] = max(high, price)
+            position["nh015_high_bid_at"] = now.isoformat()
+            high_at_raw = position["nh015_high_bid_at"]
+
     try:
         high_at = datetime.fromisoformat(str(high_at_raw).replace("Z", "+00:00"))
         if high_at.tzinfo is None:
             high_at = high_at.replace(tzinfo=timezone.utc)
     except (TypeError, ValueError):
         return False
+
     return (now - high_at).total_seconds() >= 15.0

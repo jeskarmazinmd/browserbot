@@ -314,22 +314,42 @@ class NH015LiveBookTests(unittest.TestCase):
         position = {
             "actual_entry_price": 100.0,
             "entry_fill_time": activated.isoformat(),
-            "highest_price_since_fill": 100.0,
-            "mfe_at": activated.isoformat(),
+            "highest_price_since_fill": 100.50,
+            "mfe_at": (activated + timedelta(seconds=99)).isoformat(),
         }
+
+        # Executable BID activates independently of generic last-price MFE.
         self.assertFalse(nh015_should_exit(position, 100.30, activated))
         self.assertTrue(position["nh015_activated"])
+        self.assertEqual(100.30, position["nh015_highest_bid"])
+        self.assertEqual(activated.isoformat(), position["nh015_high_bid_at"])
+
         self.assertFalse(
             nh015_should_exit(position, 100.29, activated + timedelta(seconds=14))
         )
+
+        # A new executable BID high resets the dedicated NH015 timer.
         self.assertFalse(
             nh015_should_exit(position, 100.40, activated + timedelta(seconds=15))
         )
+        self.assertEqual(100.40, position["nh015_highest_bid"])
+        self.assertEqual(
+            (activated + timedelta(seconds=15)).isoformat(),
+            position["nh015_high_bid_at"],
+        )
+
         self.assertFalse(
             nh015_should_exit(position, 100.39, activated + timedelta(seconds=29))
         )
         self.assertTrue(
             nh015_should_exit(position, 100.39, activated + timedelta(seconds=30))
+        )
+
+        # NH015 execution state must not overwrite generic MFE analytics.
+        self.assertEqual(100.50, position["highest_price_since_fill"])
+        self.assertEqual(
+            (activated + timedelta(seconds=99)).isoformat(),
+            position["mfe_at"],
         )
 
 if __name__ == "__main__":

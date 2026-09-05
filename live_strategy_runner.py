@@ -101,6 +101,10 @@ ENTRY_CUTOFF_MINUTE_ET = 30
 # DUP entry parity and prevents execution tolerance from consuming the small
 # recovery target.  Fill rate is measured rather than purchased with slippage.
 BUY_LIMIT_BUFFER_PCT = 0.0
+
+# NH015 live execution decisions require a fresh executable quote.
+# This is intentionally separate from the much looser research-tape age limit.
+NH015_EXECUTION_QUOTE_MAX_AGE_SECONDS = 5.0
 REBOUND_CONFIRMATION_PCT = 0.001  # Strategy A: 0.10% rebound
 MIN_REMAINING_UPSIDE_PCT = 0.20
 PENDING_REBOUND_TIMEOUT_SECONDS = 600  # Allow up to 10 minutes for a flat base/rebound
@@ -299,6 +303,97 @@ def _market_data_client():
             client.set_timeout(_EMA_VOLUME_REQUEST_TIMEOUT_SECONDS)
         _MARKET_DATA_CLIENT_LOCAL.client = client
     return client
+
+
+def _nh015_execution_quotes(symbols):
+    """Return fresh executable bid/ask quotes for NH015 live execution.
+
+    Missing, malformed, crossed, or stale quotes are omitted so execution
+    fails closed. This does not alter the research quote tape.
+    """
+    symbols = [
+        str(symbol).upper()
+        for symbol in dict.fromkeys(symbols)
+        if symbol
+    ]
+    if not symbols:
+        return {}
+
+    try:
+        response = _market_data_client().get_quotes(symbols)
+        if int(getattr(response, "status_code", 0)) != 200:
+            append_bot_event(
+                "NH015_EXECUTION_QUOTE_ERROR",
+                symbols=symbols,
+                status_code=getattr(response, "status_code", None),
+            )
+            return {}
+
+        payload = response.json() or {}
+        now_ms = time.time() * 1000.0
+        out = {}
+
+        for symbol in symbols:
+            root = payload.get(symbol) or payload.get(symbol.upper()) or {}
+            quote = root.get("quote") or {}
+
+            try:
+                bid = float(quote.get("bidPrice") or 0)
+                ask = float(quote.get("askPrice") or 0)
+                bid_time_ms = float(quote.get("bidTime") or 0)
+                ask_time_ms = float(quote.get("askTime") or 0)
+                quote_time_ms = float(quote.get("quoteTime") or 0)
+
+                if (
+                    bid <= 0
+                    or ask <= 0
+                    or ask < bid
+                    or bid_time_ms <= 0
+                    or ask_time_ms <= 0
+                ):
+                    continue
+
+                bid_age_seconds = abs(now_ms - bid_time_ms) / 1000.0
+                ask_age_seconds = abs(now_ms - ask_time_ms) / 1000.0
+
+                if (
+                    bid_age_seconds > NH015_EXECUTION_QUOTE_MAX_AGE_SECONDS
+                    or ask_age_seconds > NH015_EXECUTION_QUOTE_MAX_AGE_SECONDS
+                ):
+                    continue
+
+                midpoint = (bid + ask) / 2.0
+                spread_pct = (
+                    ((ask - bid) / midpoint) * 100.0
+                    if midpoint > 0
+                    else None
+                )
+
+                out[symbol] = {
+                    "bid": bid,
+                    "ask": ask,
+                    "quote_time_ms": quote_time_ms,
+                    "bid_time_ms": bid_time_ms,
+                    "ask_time_ms": ask_time_ms,
+                    "bid_age_seconds": bid_age_seconds,
+                    "ask_age_seconds": ask_age_seconds,
+                    "age_seconds": max(bid_age_seconds, ask_age_seconds),
+                    "spread_pct": spread_pct,
+                }
+
+            except (TypeError, ValueError):
+                continue
+
+        return out
+
+    except Exception as exc:
+        append_bot_event(
+            "NH015_EXECUTION_QUOTE_ERROR",
+            symbols=symbols,
+            error_type=type(exc).__name__,
+            error=str(exc),
+        )
+        return {}
 
 
 def _minute_candles(symbol, lookback_minutes=45):
@@ -1451,7 +1546,13 @@ def _ensure_nh015_protective_exits(trader, sym, pos, quantity, live_book=None):
     return False
 
 
-def manage_exits(trader, positions, prices_now, live_book=None):
+def manage_exits(
+    trader,
+    positions,
+    prices_now,
+    live_book=None,
+    execution_bids=None,
+):
     """Reconcile orders and positions using Schwab as the source of truth.
 
     The broker-hosted OCO handles target and stop exits. The runner only
@@ -1771,6 +1872,8 @@ def manage_exits(trader, positions, prices_now, live_book=None):
         ):
             continue
         current_px = prices_now.get(sym)
+
+        # Keep generic MFE/MAE analytics on the ordinary trade/last-price tape.
         if current_px is not None and pos.get("actual_entry_price"):
             current_px = float(current_px)
             if current_px > float(pos.get("highest_price_since_fill", current_px)):
@@ -1779,6 +1882,16 @@ def manage_exits(trader, positions, prices_now, live_book=None):
             if current_px < float(pos.get("lowest_price_since_fill", current_px)):
                 pos["lowest_price_since_fill"] = current_px
                 pos["mae_at"] = now_utc.isoformat()
+
+        # NH015's live timeout is an executable-exit decision, so it uses only
+        # a fresh BID. Missing/stale bid data fails closed and leaves the
+        # broker-hosted protective OCO working.
+        nh015_execution_px = None
+        if (
+            pos.get("strategy_id") == LIVE_NH015_STRATEGY_ID
+            and execution_bids is not None
+        ):
+            nh015_execution_px = execution_bids.get(sym)
 
         risk_halted = bool(
             live_book is not None
@@ -1790,7 +1903,7 @@ def manage_exits(trader, positions, prices_now, live_book=None):
             sym,
             pos,
             actual_qty,
-            current_px,
+            nh015_execution_px,
             now_utc,
         ):
             continue
@@ -2397,7 +2510,18 @@ def main():
 
             prices_now = latest_prices(df)
             if RUN_MODE == "LIVE":
-                manage_exits(trader, positions, prices_now, live_book=live_book)
+                execution_quotes = _nh015_execution_quotes(positions.keys())
+                execution_bids = {
+                    symbol: quote["bid"]
+                    for symbol, quote in execution_quotes.items()
+                }
+                manage_exits(
+                    trader,
+                    positions,
+                    prices_now,
+                    live_book=live_book,
+                    execution_bids=execution_bids,
+                )
                 live_book.rollover(quote_source.now())
                 live_book.publish_status()
 
@@ -3319,6 +3443,46 @@ def main():
 
                     qty = allocation.shares
                     buy_limit_price = round(e["entry_price"] * (1 + BUY_LIMIT_BUFFER_PCT), 2)
+
+                    execution_quote = _nh015_execution_quotes([sym]).get(sym)
+                    if execution_quote is None:
+                        append_bot_event(
+                            "NH015_LIVE_ENTRY_SKIPPED_NO_EXECUTABLE_QUOTE",
+                            symbol=sym,
+                            buy_limit_price=buy_limit_price,
+                            signal=e,
+                        )
+                        continue
+
+                    current_bid = float(execution_quote["bid"])
+                    current_ask = float(execution_quote["ask"])
+
+                    # An IOC can fill at our limit or better. Do not raise the
+                    # limit merely because the displayed ask moved above the
+                    # strategy's entry price.
+                    if current_ask > buy_limit_price:
+                        append_bot_event(
+                            "NH015_LIVE_ENTRY_SKIPPED_ASK_ABOVE_LIMIT",
+                            symbol=sym,
+                            bid=current_bid,
+                            ask=current_ask,
+                            buy_limit_price=buy_limit_price,
+                            quote_age_seconds=execution_quote["age_seconds"],
+                            spread_pct=execution_quote["spread_pct"],
+                            signal=e,
+                        )
+                        continue
+
+                    append_bot_event(
+                        "NH015_LIVE_EXECUTABLE_QUOTE_ACCEPTED",
+                        symbol=sym,
+                        bid=current_bid,
+                        ask=current_ask,
+                        buy_limit_price=buy_limit_price,
+                        quote_age_seconds=execution_quote["age_seconds"],
+                        spread_pct=execution_quote["spread_pct"],
+                    )
+
                     preflight_findings = _nh015_broker_entry_preflight(
                         trader,
                         positions,
