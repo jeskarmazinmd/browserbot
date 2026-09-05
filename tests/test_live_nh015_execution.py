@@ -133,6 +133,16 @@ class NH015LiveBookTests(unittest.TestCase):
         self.assertLess(partition_at, attempt_at)
         self.assertLess(attempt_at, transport_at)
 
+    def test_live_ioc_entry_uses_zero_price_buffer(self):
+        root = Path(__file__).parents[1]
+        runner = (root / "live_strategy_runner.py").read_text()
+        self.assertIn("BUY_LIMIT_BUFFER_PCT = 0.0", runner)
+        self.assertIn(
+            'buy_limit_price = round(e["entry_price"] * '
+            '(1 + BUY_LIMIT_BUFFER_PCT), 2)',
+            runner,
+        )
+
     def test_production_image_and_runner_are_wired_fail_closed(self):
         root = Path(__file__).parents[1]
         dockerfile = (root / "Dockerfile").read_text()

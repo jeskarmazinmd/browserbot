@@ -98,7 +98,10 @@ ENTRY_CUTOFF_HOUR_ET = 15
 ENTRY_CUTOFF_MINUTE_ET = 30
 
 
-BUY_LIMIT_BUFFER_PCT = 0.002
+# Commission IOC entries at the model price first.  A zero buffer preserves
+# DUP entry parity and prevents execution tolerance from consuming the small
+# recovery target.  Fill rate is measured rather than purchased with slippage.
+BUY_LIMIT_BUFFER_PCT = 0.0
 REBOUND_CONFIRMATION_PCT = 0.001  # Strategy A: 0.10% rebound
 MIN_REMAINING_UPSIDE_PCT = 0.20
 PENDING_REBOUND_TIMEOUT_SECONDS = 600  # Allow up to 10 minutes for a flat base/rebound
