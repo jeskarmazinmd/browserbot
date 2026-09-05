@@ -19,12 +19,14 @@ COPY leaderboard_writer.py .
 COPY bot_output.py .
 COPY bounded_jsonl.py .
 COPY live_strategy_runner.py .
+COPY live_nh015_execution.py .
 COPY paper_outcome_tracker.py .
 COPY multi_leg_paper_tracker.py .
 COPY strategy_diagnostics.py .
 COPY strategy_diagnostics_report.py .
 COPY quote_source.py .
 COPY market_quotes.py .
+COPY nh015_execution_observer.py .
 COPY market_evidence.py .
 COPY xs_shadow_worker.py .
 COPY options_shadow_worker.py .
@@ -78,6 +80,7 @@ COPY options_rv_strategies /app/options_rv_strategies
 COPY detectors /app/detectors
 COPY reporting /app/reporting
 COPY research_lab /app/research_lab
+COPY research_tools /app/research_tools
 COPY schwab_bot_dashboard /app/schwab_bot_dashboard
 
 CMD ["python", "-u", "supervisor.py"]

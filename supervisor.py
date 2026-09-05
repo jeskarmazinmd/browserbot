@@ -50,6 +50,7 @@ WORKERS = {
 # become part of the production failure domain.  An optional worker that exits
 # stays stopped until the next normal machine restart/deploy.
 OPTIONAL_WORKERS = {
+    "nh015_execution_observer": [sys.executable, "-u", "nh015_execution_observer.py"],
     "all_engine_performance": [
         sys.executable,
         "-u",
@@ -70,6 +71,30 @@ OPTIONAL_WORKERS = {
     "futures_curve_shadow": [sys.executable, "-u", "futures_curve_shadow_worker.py"],
     "options_rv_shadow": [sys.executable, "-u", "options_rv_shadow_worker.py"],
 }
+
+
+def env_flag(name, default=False):
+    """Parse a conservative boolean environment flag."""
+    raw = os.environ.get(
+        name,
+        "1" if default else "0",
+    )
+
+    return raw.strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+
+
+if env_flag("FACTORY_SHADOW_ENABLED", False):
+    OPTIONAL_WORKERS["factory_shadow"] = [
+        sys.executable,
+        "-u",
+        "-m",
+        "research_tools.module_factory.factory_shadow_worker",
+    ]
 
 EXIT_LOG = Path("/data/worker_supervisor.jsonl")
 ELIGIBILITY_REFRESH = [sys.executable, "-u", "refresh_eligible_symbols.py"]
