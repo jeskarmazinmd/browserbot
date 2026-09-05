@@ -409,6 +409,43 @@ class NH015LiveBook:
         self.checkpoint()
         self._audit("ENTRY_SUBMISSION_FAILED", setup_id=setup_id, response=response)
 
+    def record_fill(
+        self,
+        setup_id: str,
+        filled_quantity: float,
+        average_price: float | None,
+    ) -> None:
+        """Resize a submitted reservation to the actual IOC fill, idempotently."""
+        active = self.state["active"].get(setup_id)
+        attempt = self.state["attempted"].get(setup_id)
+        if active is None or attempt is None or attempt.get("fill_recorded"):
+            return
+        quantity = int(float(filled_quantity))
+        if quantity <= 0:
+            return
+        old_reserved = float(active["reserved_cost"])
+        new_reserved = quantity * float(active["model_entry_price"])
+        released = max(0.0, old_reserved - new_reserved)
+        active.update({
+            "shares": quantity,
+            "filled_quantity": quantity,
+            "average_fill_price": average_price,
+            "reserved_cost": new_reserved,
+            "status": "ENTRY_FILLED",
+        })
+        attempt.update(active)
+        attempt["fill_recorded"] = True
+        self.state["cash"] = float(self.state["cash"]) + released
+        self.state["deployed"] = float(self.state["deployed"]) - released
+        self.checkpoint()
+        self._audit(
+            "ENTRY_FILL_RECORDED",
+            setup_id=setup_id,
+            filled_quantity=quantity,
+            average_price=average_price,
+            released_reservation=released,
+        )
+
     def release_unfilled(self, setup_id: str, reason: str) -> None:
         active = self.state["active"].pop(setup_id, None)
         if active is None:

@@ -50,6 +50,9 @@ OPTIONAL_FIELDS = (
     "c3_market_gate_operator", "c3_market_gate_threshold",
     "c3_market_gate_value", "c3_market_gate_cutoff",
     "c3_market_gate_components",
+    "experimental_child", "discovery_period", "prospective_start_utc",
+    "conditional_filter", "time_of_day_label", "entry_minute_et",
+    "time_of_day_sweep_version",
 )
 
 

@@ -26,6 +26,7 @@ from strategies.registry import (
 from strategies.capacity_filters import apply_capacity_filters
 from strategies.c3_exit_duration_sweep import derive_duration_signals
 from strategies.c3_nh015_duplicate import derive_nh015_duplicate
+from strategies.c3_nh015_time_of_day import evaluate_time_of_day_children
 from live_nh015_execution import (
     NH015LiveBook,
     STRATEGY_ID as LIVE_NH015_STRATEGY_ID,
@@ -1348,6 +1349,115 @@ def _nh015_broker_entry_preflight(trader, positions, symbol, qty, limit_price):
     return list(dict.fromkeys(errors))
 
 
+def _ensure_nh015_protective_exits(trader, sym, pos, quantity, live_book=None):
+    """Create or recover one protective OCO for the confirmed IOC fill."""
+    if pos.get("strategy_id") != LIVE_NH015_STRATEGY_ID:
+        return True
+    quantity = int(float(quantity or 0))
+    if quantity <= 0:
+        return False
+    if pos.get("protective_order_id"):
+        if int(float(pos.get("protective_qty") or 0)) == quantity:
+            return True
+        cancellation = trader.cancel_active_exit_orders(sym)
+        append_bot_event(
+            "NH015_PROTECTIVE_OCO_RESIZE_CANCEL",
+            symbol=sym,
+            old_qty=pos.get("protective_qty"),
+            new_qty=quantity,
+            response=cancellation,
+            position=pos,
+        )
+        if not cancellation.get("ok"):
+            if live_book is not None:
+                live_book.halt(
+                    "protective_exit_resize_unconfirmed",
+                    symbol=sym,
+                    filled_quantity=quantity,
+                    response=cancellation,
+                )
+            return False
+        pos.pop("protective_order_id", None)
+        pos.pop("protective_qty", None)
+
+    # Crash-safe recovery: the OCO may have been accepted immediately before
+    # the local position checkpoint was written.
+    existing = trader.find_active_exit_orders(sym)
+    if existing.get("ok") and existing.get("orders"):
+        existing_quantities = {
+            int(float(order.get("quantity") or 0))
+            for order in existing["orders"]
+        }
+        if existing_quantities != {quantity}:
+            cancellation = trader.cancel_active_exit_orders(sym)
+            append_bot_event(
+                "NH015_PROTECTIVE_OCO_RECOVERY_RESIZE_CANCEL",
+                symbol=sym,
+                existing_quantities=sorted(existing_quantities),
+                new_qty=quantity,
+                response=cancellation,
+                position=pos,
+            )
+            if not cancellation.get("ok"):
+                if live_book is not None:
+                    live_book.halt(
+                        "protective_exit_recovery_resize_unconfirmed",
+                        symbol=sym,
+                        filled_quantity=quantity,
+                        response=cancellation,
+                    )
+                return False
+            existing = {"ok": True, "orders": []}
+    if existing.get("ok") and existing.get("orders"):
+        order = existing["orders"][0]
+        ancestors = order.get("ancestor_order_ids") or []
+        pos["protective_order_id"] = str(
+            ancestors[-1] if ancestors else order["order_id"]
+        )
+        pos["protective_qty"] = quantity
+        pos["protective_recovered"] = True
+        append_bot_event(
+            "NH015_PROTECTIVE_OCO_RECOVERED",
+            symbol=sym,
+            qty=quantity,
+            response=existing,
+            position=pos,
+        )
+        return True
+
+    response = trader.place_oco_exit_order(
+        sym,
+        qty=quantity,
+        target_price=float(pos["target_price"]),
+        stop_price=float(pos["stop_price"]),
+    )
+    pos["protective_submission_response"] = response
+    pos["last_protective_attempt_at"] = datetime.now(timezone.utc).isoformat()
+    append_bot_event(
+        "NH015_PROTECTIVE_OCO_RESPONSE",
+        symbol=sym,
+        qty=quantity,
+        response=response,
+        position=pos,
+    )
+    if response.get("ok") and response.get("order_id"):
+        pos["protective_order_id"] = str(response["order_id"])
+        pos["protective_qty"] = quantity
+        return True
+
+    # Stop admitting new risk for the day while reconciliation retries.  An
+    # ambiguous transport failure must not trigger a second exit order until
+    # recent broker orders have been checked again.
+    if live_book is not None:
+        live_book.halt(
+            "protective_exit_unconfirmed",
+            symbol=sym,
+            filled_quantity=quantity,
+            response=response,
+        )
+    return False
+
+
 def manage_exits(trader, positions, prices_now, live_book=None):
     """Reconcile orders and positions using Schwab as the source of truth.
 
@@ -1533,11 +1643,25 @@ def manage_exits(trader, positions, prices_now, live_book=None):
                             pos["entry_fill_regime"] = latest_regime()
                             pos["entry_fill_time"] = fill.get("fill_time") or now_utc.isoformat()
                             pos["filled_qty"] = float(fill.get("filled_quantity") or pos.get("qty") or 0)
+                            if live_book and pos.get("strategy_id") == LIVE_NH015_STRATEGY_ID:
+                                live_book.record_fill(
+                                    pos.get("setup_id", ""),
+                                    pos["filled_qty"],
+                                    pos["actual_entry_price"],
+                                )
                             pos.setdefault("highest_price_since_fill", pos["actual_entry_price"])
                             pos.setdefault("lowest_price_since_fill", pos["actual_entry_price"])
                             pos.setdefault("mfe_at", pos["entry_fill_time"])
                             pos.setdefault("mae_at", pos["entry_fill_time"])
                             pos["state"] = "POSITION_OPEN"
+                            pos["actual_qty"] = pos["filled_qty"]
+                            _ensure_nh015_protective_exits(
+                                trader,
+                                sym,
+                                pos,
+                                pos["filled_qty"],
+                                live_book,
+                            )
                             closed = _finalize_real_trade(trader, sym, pos, now_utc)
                             if closed:
                                 if live_book and pos.get("strategy_id") == LIVE_NH015_STRATEGY_ID:
@@ -1552,6 +1676,54 @@ def manage_exits(trader, positions, prices_now, live_book=None):
                         continue
 
                     if status in terminal_failure_statuses:
+                        # IOC commonly reports CANCELED after a partial fill.
+                        # Execution legs, not the terminal label, decide whether
+                        # a real position exists.
+                        fill = trader.get_order_fill_summary(entry_order_id)
+                        if (
+                            fill.get("ok")
+                            and float(fill.get("filled_quantity") or 0) > 0
+                            and fill.get("average_price")
+                        ):
+                            pos["actual_entry_price"] = float(fill["average_price"])
+                            pos["entry_fill_regime"] = latest_regime()
+                            pos["entry_fill_time"] = (
+                                fill.get("fill_time") or now_utc.isoformat()
+                            )
+                            pos["filled_qty"] = float(fill["filled_quantity"])
+                            pos["actual_qty"] = pos["filled_qty"]
+                            pos["state"] = "POSITION_OPEN"
+                            pos.setdefault(
+                                "highest_price_since_fill",
+                                pos["actual_entry_price"],
+                            )
+                            pos.setdefault(
+                                "lowest_price_since_fill",
+                                pos["actual_entry_price"],
+                            )
+                            pos.setdefault("mfe_at", pos["entry_fill_time"])
+                            pos.setdefault("mae_at", pos["entry_fill_time"])
+                            if live_book and pos.get("strategy_id") == LIVE_NH015_STRATEGY_ID:
+                                live_book.record_fill(
+                                    pos.get("setup_id", ""),
+                                    pos["filled_qty"],
+                                    pos["actual_entry_price"],
+                                )
+                            _ensure_nh015_protective_exits(
+                                trader,
+                                sym,
+                                pos,
+                                pos["filled_qty"],
+                                live_book,
+                            )
+                            append_bot_event(
+                                "ENTRY_PARTIAL_FILL_CONFIRMED",
+                                symbol=sym,
+                                terminal_status=status,
+                                fill=fill,
+                                position=pos,
+                            )
+                            continue
                         print(
                             f"ENTRY_TERMINAL_WITHOUT_POSITION "
                             f"{sym} status={status}",
@@ -1584,6 +1756,12 @@ def manage_exits(trader, positions, prices_now, live_book=None):
                 pos["entry_fill_regime"] = latest_regime()
                 pos["entry_fill_time"] = fill.get("fill_time") or now_utc.isoformat()
                 pos["filled_qty"] = float(fill.get("filled_quantity") or actual_qty)
+                if live_book and pos.get("strategy_id") == LIVE_NH015_STRATEGY_ID:
+                    live_book.record_fill(
+                        pos.get("setup_id", ""),
+                        pos["filled_qty"],
+                        pos["actual_entry_price"],
+                    )
                 pos["highest_price_since_fill"] = pos["actual_entry_price"]
                 pos["lowest_price_since_fill"] = pos["actual_entry_price"]
                 pos["mfe_at"] = pos["entry_fill_time"]
@@ -1591,6 +1769,14 @@ def manage_exits(trader, positions, prices_now, live_book=None):
                 append_bot_event("ENTRY_FILL_CONFIRMED", symbol=sym, fill=fill, position=pos)
 
         pos["state"] = "POSITION_OPEN"
+        if not _ensure_nh015_protective_exits(
+            trader,
+            sym,
+            pos,
+            actual_qty,
+            live_book,
+        ):
+            continue
         current_px = prices_now.get(sym)
         if current_px is not None and pos.get("actual_entry_price"):
             current_px = float(current_px)
@@ -3010,6 +3196,53 @@ def main():
                             },
                         )
                         paper_outcomes.register(nh015_duplicate)
+                        for decision in evaluate_time_of_day_children(
+                            nh015_duplicate
+                        ):
+                            time_signal = decision.get("signal")
+                            if not decision["admitted"]:
+                                append_strategy_event(
+                                    decision["strategy_id"],
+                                    "REFRAINED",
+                                    symbol=decision["symbol"],
+                                    source_setup_id=decision[
+                                        "source_setup_id"
+                                    ],
+                                    entry_minute_et=decision[
+                                        "entry_minute_et"
+                                    ],
+                                    conditional_filter=decision[
+                                        "conditional_filter"
+                                    ],
+                                    reason=decision["reason"],
+                                    experiment=(
+                                        "nh015_selected_time_children_v1"
+                                    ),
+                                )
+                                continue
+                            append_strategy_event(
+                                time_signal["strategy_id"],
+                                "SIGNAL",
+                                symbol=time_signal["symbol"],
+                                signal=time_signal,
+                                signal_regime=latest_regime(),
+                                thresholds={
+                                    "DERIVED_FROM": "C3N25S10NH015DUP",
+                                    "LIVE_ORDER_PLACEMENT": False,
+                                    "EXIT_MODEL": "c2",
+                                    "NO_NEW_HIGH_SECONDS": 15.0,
+                                    "CONDITIONAL_FILTER": time_signal[
+                                        "conditional_filter"
+                                    ],
+                                    "PROSPECTIVE_START_UTC": time_signal[
+                                        "prospective_start_utc"
+                                    ],
+                                    "EXPERIMENT": (
+                                        "nh015_selected_time_children_v1"
+                                    ),
+                                },
+                            )
+                            paper_outcomes.register(time_signal)
                     for m2_family_signal in derive_m2_family_signals(e):
                         append_strategy_event(
                             m2_family_signal["strategy_id"],
@@ -3129,13 +3362,13 @@ def main():
                     live_book.record_attempt(e, allocation, now_utc)
 
                     print(
-                        f"NH015_ENTRY_TRIGGER_OCO_ATTEMPT {sym} qty={qty} "
+                        f"NH015_IOC_ENTRY_ATTEMPT {sym} qty={qty} "
                         f"buy_limit={buy_limit_price:.2f} target={e['target_price']:.2f} stop={e['stop_price']:.2f}",
                         flush=True
                     )
 
                     append_bot_event(
-                        "ENTRY_TRIGGER_OCO_ATTEMPT",
+                        "IOC_ENTRY_ATTEMPT",
                         symbol=sym,
                         strategy_id=LIVE_NH015_STRATEGY_ID,
                         qty=qty,
@@ -3147,12 +3380,10 @@ def main():
 
                     try:
                         if RUN_MODE == "LIVE":
-                            resp = trader.place_entry_trigger_oco_order(
+                            resp = trader.place_ioc_limit_buy_order(
                                 sym,
                                 qty=qty,
                                 buy_limit_price=buy_limit_price,
-                                target_price=e["target_price"],
-                                stop_price=e["stop_price"],
                             )
                         else:
                             resp = {
@@ -3161,9 +3392,9 @@ def main():
                                 "order_id": None,
                                 "message": "Replay mode - simulated entry",
                             }
-                        print(f"ENTRY_TRIGGER_OCO_RESPONSE {sym}: {resp}", flush=True)
+                        print(f"IOC_ENTRY_RESPONSE {sym}: {resp}", flush=True)
                         append_bot_event(
-                            "ENTRY_TRIGGER_OCO_RESPONSE",
+                            "IOC_ENTRY_RESPONSE",
                             symbol=sym,
                             strategy_id=LIVE_NH015_STRATEGY_ID,
                             qty=qty,
@@ -3175,9 +3406,9 @@ def main():
                         )
                     except Exception as ex:
                         resp = {"ok": False, "error": str(ex), "exception_type": type(ex).__name__}
-                        print(f"ENTRY_TRIGGER_OCO_ERROR {sym}: {type(ex).__name__}: {ex}", flush=True)
+                        print(f"IOC_ENTRY_ERROR {sym}: {type(ex).__name__}: {ex}", flush=True)
                         append_bot_event(
-                            "ENTRY_TRIGGER_OCO_ERROR",
+                            "IOC_ENTRY_ERROR",
                             symbol=sym,
                             strategy_id=LIVE_NH015_STRATEGY_ID,
                             qty=qty,

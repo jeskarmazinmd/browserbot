@@ -125,10 +125,10 @@ class NH015LiveBookTests(unittest.TestCase):
             "partition_broker_preflight_findings(preflight_findings)"
         )
         attempt_at = runner.index(
-            '"ENTRY_TRIGGER_OCO_ATTEMPT"', partition_at
+            '"IOC_ENTRY_ATTEMPT"', partition_at
         )
         transport_at = runner.index(
-            "trader.place_entry_trigger_oco_order(", attempt_at
+            "trader.place_ioc_limit_buy_order(", attempt_at
         )
         self.assertLess(partition_at, attempt_at)
         self.assertLess(attempt_at, transport_at)
@@ -187,6 +187,49 @@ class NH015LiveBookTests(unittest.TestCase):
         duplicate, errors = loaded.allocation(signal, self.now)
         self.assertIsNone(duplicate)
         self.assertIn("setup_already_attempted", errors)
+
+    def test_partial_ioc_fill_releases_unused_reservation_once(self):
+        book = NH015LiveBook(self.root, self.now)
+        signal = self.signal()
+        allocation, _ = book.allocation(signal, self.now)
+        book.record_attempt(signal, allocation, self.now)
+        book.record_submission(signal["setup_id"], "123")
+        book.record_fill(signal["setup_id"], 40, 10.01)
+
+        self.assertEqual(4600.0, book.state["cash"])
+        self.assertEqual(400.0, book.state["deployed"])
+        active = book.state["active"][signal["setup_id"]]
+        self.assertEqual(40, active["shares"])
+        self.assertEqual(40, active["filled_quantity"])
+        self.assertEqual(400.0, active["reserved_cost"])
+
+        book.record_fill(signal["setup_id"], 40, 10.01)
+        self.assertEqual(4600.0, book.state["cash"])
+        self.assertEqual(400.0, book.state["deployed"])
+
+    def test_full_ioc_fill_keeps_full_reservation(self):
+        book = NH015LiveBook(self.root, self.now)
+        signal = self.signal()
+        allocation, _ = book.allocation(signal, self.now)
+        book.record_attempt(signal, allocation, self.now)
+        book.record_submission(signal["setup_id"], "123")
+        book.record_fill(signal["setup_id"], 100, 10.01)
+        self.assertEqual(4000.0, book.state["cash"])
+        self.assertEqual(1000.0, book.state["deployed"])
+
+    def test_zero_ioc_fill_releases_full_reservation(self):
+        book = NH015LiveBook(self.root, self.now)
+        signal = self.signal()
+        allocation, _ = book.allocation(signal, self.now)
+        book.record_attempt(signal, allocation, self.now)
+        book.record_submission(signal["setup_id"], "123")
+        book.release_unfilled(signal["setup_id"], "entry_canceled")
+        self.assertEqual(5000.0, book.state["cash"])
+        self.assertEqual(0.0, book.state["deployed"])
+        self.assertEqual(
+            "ENTRY_UNFILLED",
+            book.state["attempted"][signal["setup_id"]]["status"],
+        )
 
     def test_new_day_rolls_equity_forward_only_when_flat(self):
         book = NH015LiveBook(self.root, self.now)

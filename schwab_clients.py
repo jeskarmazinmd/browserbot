@@ -173,6 +173,7 @@ class SchwabTradeClient:
 
         account = body.get("securitiesAccount", body)
         result["positions"] = account.get("positions", []) or []
+        result["balances"] = account.get("currentBalances", {}) or {}
         return result
 
     def get_net_position_qty(self, symbol):
@@ -464,6 +465,11 @@ class SchwabTradeClient:
                     "status": status,
                     "order_type": node.get("orderType"),
                     "strategy_type": node.get("orderStrategyType"),
+                    "quantity": sum(
+                        float(leg.get("quantity", 0) or 0)
+                        for leg in node.get("orderLegCollection", []) or []
+                        if str(leg.get("instruction") or "").upper() == "SELL"
+                    ),
                     "ancestor_order_ids": ancestor_ids,
                 })
 
@@ -591,7 +597,66 @@ class SchwabTradeClient:
         result["order_id"] = self._order_id_from_response(result)
         return result
 
-    def place_eod_sell_order(self, symbol, qty=1):
+    def place_ioc_limit_buy_order(self, symbol, qty, buy_limit_price):
+        """Submit a marketable limit entry that cannot remain working."""
+        payload = {
+            "orderStrategyType": "SINGLE",
+            "session": "NORMAL",
+            "duration": "IMMEDIATE_OR_CANCEL",
+            "orderType": "LIMIT",
+            "price": f"{buy_limit_price:.2f}",
+            "orderLegCollection": [{
+                "instruction": "BUY",
+                "quantity": qty,
+                "instrument": {"symbol": symbol, "assetType": "EQUITY"},
+            }],
+        }
+        result = self._post_order(payload)
+        result["order_id"] = self._order_id_from_response(result)
+        return result
+
+    def place_oco_exit_order(self, symbol, qty, target_price, stop_price):
+        """Protect an existing position using its broker-confirmed quantity."""
+        payload = {
+            "orderStrategyType": "OCO",
+            "childOrderStrategies": [
+                {
+                    "orderStrategyType": "SINGLE",
+                    "session": "NORMAL",
+                    "duration": "GOOD_TILL_CANCEL",
+                    "orderType": "LIMIT",
+                    "price": f"{target_price:.2f}",
+                    "orderLegCollection": [{
+                        "instruction": "SELL",
+                        "quantity": qty,
+                        "instrument": {
+                            "symbol": symbol,
+                            "assetType": "EQUITY",
+                        },
+                    }],
+                },
+                {
+                    "orderStrategyType": "SINGLE",
+                    "session": "NORMAL",
+                    "duration": "GOOD_TILL_CANCEL",
+                    "orderType": "STOP",
+                    "stopPrice": f"{stop_price:.2f}",
+                    "orderLegCollection": [{
+                        "instruction": "SELL",
+                        "quantity": qty,
+                        "instrument": {
+                            "symbol": symbol,
+                            "assetType": "EQUITY",
+                        },
+                    }],
+                },
+            ],
+        }
+        result = self._post_order(payload)
+        result["order_id"] = self._order_id_from_response(result)
+        return result
+
+    def place_market_sell_order(self, symbol, qty=1):
         payload = {
             "orderType": "MARKET",
             "session": "NORMAL",
@@ -606,6 +671,9 @@ class SchwabTradeClient:
         result = self._post_order(payload)
         result["order_id"] = self._order_id_from_response(result)
         return result
+
+    def place_eod_sell_order(self, symbol, qty=1):
+        return self.place_market_sell_order(symbol, qty=qty)
 
     def place_order(self, symbol, qty=1):
         if not self.enabled:
