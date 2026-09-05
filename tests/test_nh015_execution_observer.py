@@ -125,6 +125,52 @@ class NH015ExecutionObserverTests(unittest.TestCase):
         self.assertFalse(by_id["C3N25S10NH015XBIDUP250"]["admitted"])
         self.assertFalse(by_id["C3N25S10NH015XEDGE3STABLE"]["admitted"])
 
+    @staticmethod
+    def last_sample(delay, ask, outcome="FULL", fill_qty=10):
+        return {
+            "target_sample_delay_ms": delay,
+            "outcome": outcome,
+            "reason": "test",
+            "bid": ask - 0.01,
+            "ask": ask,
+            "estimated_fill_qty": fill_qty,
+        }
+
+    def test_last_price_family_separates_ioc_250_and_1000ms_fills(self):
+        rows = [
+            self.last_sample(0, 100.02, "ZERO", 0),
+            self.last_sample(100, 100.01, "ZERO", 0),
+            self.last_sample(250, 100.00),
+            self.last_sample(500, 99.99),
+            self.last_sample(1000, 99.98),
+        ]
+        decisions = observer.evaluate_last_price_policies(rows, 100.0, 10)
+        by_id = {row["strategy_id"]: row for row in decisions}
+        self.assertEqual(set(observer.LAST_PRICE_POLICY_IDS), set(by_id))
+        self.assertFalse(by_id["C3N25S10NH015XLASTIOC"]["admitted"])
+        self.assertTrue(by_id["C3N25S10NH015XLAST250"]["admitted"])
+        self.assertEqual(250, by_id["C3N25S10NH015XLAST250"]["fill_delay_ms"])
+        self.assertTrue(by_id["C3N25S10NH015XLAST1000"]["admitted"])
+        self.assertEqual(250, by_id["C3N25S10NH015XLAST1000"]["fill_delay_ms"])
+
+    def test_last_price_family_requires_complete_displayed_fill(self):
+        rows = [
+            self.last_sample(0, 100.00, "PARTIAL", 4),
+            self.last_sample(100, 100.00, "PARTIAL", 4),
+            self.last_sample(250, 100.00, "PARTIAL", 4),
+            self.last_sample(500, 100.00, "PARTIAL", 4),
+            self.last_sample(1000, 100.00, "PARTIAL", 4),
+        ]
+        decisions = observer.evaluate_last_price_policies(rows, 100.0, 10)
+        self.assertTrue(all(not row["admitted"] for row in decisions))
+
+    def test_last_price_family_never_invents_price_improvement(self):
+        rows = [self.last_sample(0, 99.95)]
+        decision = observer.evaluate_last_price_policies(rows, 100.0, 10)[0]
+        self.assertTrue(decision["admitted"])
+        self.assertEqual(99.95, decision["observed_ask"])
+        self.assertEqual(100.0, decision["simulated_entry_price"])
+
 
 if __name__ == "__main__":
     unittest.main()

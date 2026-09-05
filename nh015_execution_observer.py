@@ -38,6 +38,12 @@ STABILITY_POLICY_IDS = (
     "C3N25S10NH015XASKPERSIST", "C3N25S10NH015XSIZE2X",
     "C3N25S10NH015XEDGE3STABLE", "C3N25S10NH015XDEPTHIMB",
 )
+LAST_PRICE_FAMILY_VERSION = "nh015_last_price_family_v1_20260905"
+LAST_PRICE_POLICY_IDS = (
+    "C3N25S10NH015XLASTIOC",
+    "C3N25S10NH015XLAST250",
+    "C3N25S10NH015XLAST1000",
+)
 
 
 def utc_now():
@@ -195,6 +201,83 @@ def evaluate_stability_policies(observations, limit_price, target_price, request
     ]
 
 
+def evaluate_last_price_policies(observations, last_price, requested_qty):
+    """Test fixed signal-LAST limits without assuming a queued passive fill.
+
+    Each captured sample was already classified by ``estimate_ioc`` against
+    the immutable signal price.  A policy is admitted only when a complete
+    reference-size fill was demonstrably marketable at one of its permitted
+    observation times.  The simulated entry remains the limit price, even if
+    the observed ask was lower, so price improvement is never invented.
+    """
+    samples = {
+        int(row.get("target_sample_delay_ms", -1)): row
+        for row in observations
+        if isinstance(row, dict)
+    }
+
+    def decision(strategy_id, horizon_ms):
+        eligible_delays = sorted(
+            delay for delay in samples
+            if 0 <= delay <= int(horizon_ms)
+        )
+        fill_sample = next(
+            (
+                samples[delay]
+                for delay in eligible_delays
+                if samples[delay].get("outcome") == "FULL"
+                and _valid_sample(samples[delay])
+                and float(samples[delay]["ask"]) <= float(last_price)
+                and int(samples[delay].get("estimated_fill_qty") or 0)
+                >= int(requested_qty)
+            ),
+            None,
+        )
+        evidence = [
+            {
+                "delay_ms": delay,
+                "outcome": samples[delay].get("outcome"),
+                "reason": samples[delay].get("reason"),
+                "ask": samples[delay].get("ask"),
+                "estimated_fill_qty": samples[delay].get("estimated_fill_qty"),
+            }
+            for delay in eligible_delays
+        ]
+        if fill_sample is None:
+            return {
+                "strategy_id": strategy_id,
+                "admitted": False,
+                "reason": f"NO_FULL_FILL_BY_{int(horizon_ms)}MS",
+                "limit_price": float(last_price),
+                "requested_qty": int(requested_qty),
+                "fill_deadline_ms": int(horizon_ms),
+                "fill_evidence": evidence,
+                "paper_only": True,
+                "broker_execution_enabled": False,
+            }
+        return {
+            "strategy_id": strategy_id,
+            "admitted": True,
+            "reason": "FULL_FILL_EVIDENCE_AT_OR_BELOW_LAST",
+            "limit_price": float(last_price),
+            "simulated_entry_price": float(last_price),
+            "observed_ask": float(fill_sample["ask"]),
+            "requested_qty": int(requested_qty),
+            "estimated_fill_qty": int(fill_sample["estimated_fill_qty"]),
+            "fill_delay_ms": int(fill_sample["target_sample_delay_ms"]),
+            "fill_deadline_ms": int(horizon_ms),
+            "fill_evidence": evidence,
+            "paper_only": True,
+            "broker_execution_enabled": False,
+        }
+
+    return [
+        decision(LAST_PRICE_POLICY_IDS[0], 0),
+        decision(LAST_PRICE_POLICY_IDS[1], 250),
+        decision(LAST_PRICE_POLICY_IDS[2], 1000),
+    ]
+
+
 def _append(payload):
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     with OUTPUT_PATH.open("a") as handle:
@@ -268,6 +351,10 @@ def observe_signal(event):
         "stability_family_version": STABILITY_FAMILY_VERSION,
         "stability_policy_decisions": evaluate_stability_policies(
             observations, limit_price, target_price, qty
+        ),
+        "last_price_family_version": LAST_PRICE_FAMILY_VERSION,
+        "last_price_policy_decisions": evaluate_last_price_policies(
+            observations, limit_price, qty
         ),
         "paper_only": True,
         "broker_execution_enabled": False,
