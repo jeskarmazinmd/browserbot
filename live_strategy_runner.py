@@ -86,7 +86,6 @@ FLASH_WINDOW_MINUTES = 3
 MIN_PRE_CRASH_SLOPE_PCT_PER_HOUR = 0.50
 MIN_PRE_CRASH_RETURN_PCT = 0.25
 FLASH_DROP_PCT = 1.0
-# Strategy H aliases retained for reporting/near-miss code. Rules live in strategy_h.py.
 NEAR_MISS_SCORE_CUTOFF = 0.25
 MAX_FLASH_DROP_PCT = 12.0
 MIN_FLASH_DOLLAR_VOLUME_3M = 100_000
@@ -119,15 +118,6 @@ STRATEGY_CONFIGS = flash_strategy_configs()
 STRATEGY_A = "A"
 STRATEGY_B = "B"
 STRATEGY_D = "D"
-STRATEGY_H = "H"
-
-# Reporting and near-miss aliases derived from module-owned Strategy H rules.
-STRATEGY_H_MIN_FLASH_DROP_PCT = STRATEGY_CONFIGS[STRATEGY_H]["flash_drop_pct"]
-STRATEGY_H_MAX_FLASH_DROP_PCT = STRATEGY_CONFIGS[STRATEGY_H]["max_flash_drop_pct"]
-STRATEGY_H_MIN_PRE_R2 = STRATEGY_CONFIGS[STRATEGY_H]["min_pre_r2"]
-STRATEGY_H_MAX_PRE_SLOPE_PCT_PER_HOUR = (
-    STRATEGY_CONFIGS[STRATEGY_H]["max_pre_slope_pct_per_hour"]
-)
 
 # Independent strategy orchestration settings. Individual strategy rules and
 # thresholds live exclusively in strategies/strategy_*.py.
@@ -2969,7 +2959,6 @@ def main():
             events_a = [e for e in events if e.get("strategy_id") == STRATEGY_A]
             events_b = [e for e in events if e.get("strategy_id") == STRATEGY_B]
             events_d = [e for e in events if e.get("strategy_id") == STRATEGY_D]
-            events_h = [e for e in events if e.get("strategy_id") == STRATEGY_H]
             events_by_flash_strategy = {
                 strategy_id: []
                 for strategy_id in STRATEGY_CONFIGS
@@ -3024,22 +3013,15 @@ def main():
                     flash_nearest[strategy_id] = dict(candidate)
 
             for measurement in near_events:
-                for strategy_id in (STRATEGY_A, STRATEGY_B, STRATEGY_D, STRATEGY_H):
+                for strategy_id in (STRATEGY_A, STRATEGY_B, STRATEGY_D):
                     candidate = score_flash_near_miss(strategy_id, measurement)
                     if candidate is None:
                         continue
                     retain_nearest(strategy_id, candidate)
-                    extra_thresholds = None
-                    if strategy_id == STRATEGY_H:
-                        extra_thresholds = {
-                            "MIN_PRE_R2": STRATEGY_H_MIN_PRE_R2,
-                            "MAX_PRE_CRASH_SLOPE_PCT_PER_HOUR": STRATEGY_H_MAX_PRE_SLOPE_PCT_PER_HOUR,
-                        }
                     log_threshold_candidate(
                         strategy_id,
                         candidate,
                         STRATEGY_CONFIGS[strategy_id]["flash_drop_pct"],
-                        extra_thresholds=extra_thresholds,
                     )
 
             for strategy_id, signal_rows in events_by_flash_strategy.items():

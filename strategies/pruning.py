@@ -11,7 +11,7 @@ PRUNED_OUTPUT_STRATEGY_IDS = frozenset({
     "CSRANK20INV", "CSRANK5INV", "CSRELSPY1INV", "CSREV1INV",
     "CSVOLADJ1", "EMA1", "EMA2", "ENTROPY1", "EVTSEC8K1INV",
     "EVTVOL1INV", "FUTMES1", "FUTMGCR1", "FUTMNQ1", "FXLON1",
-    "GP1", "LEADBASK1", "LEADBASK2", "M3", "MIDREV1",
+    "GP1", "H", "LEADBASK1", "LEADBASK2", "M3", "MIDREV1",
     "MKTNEUT1", "MSBIDPULL1", "MSDEPTH1", "MSFLIP1", "MSIMB1",
     "MSPERSIST1", "MSRECOV1", "MSVEL1", "O", "OPTDIR1INV",
     "OPTDIR2INV", "OPTVERT1INV", "OPTVERT2INV", "OR1",
@@ -25,7 +25,7 @@ PRUNED_OUTPUT_STRATEGY_IDS = frozenset({
 # produce signals consumed by successful descendants; others are the live or
 # parity paths currently under execution study.
 DEPENDENCY_PROTECTED_STRATEGY_IDS = frozenset({
-    "A", "B", "D", "H", "M2", "C3N25S10", "C3N25S10DUP",
+    "A", "B", "D", "M2", "C3N25S10", "C3N25S10DUP",
     "C3N25S10NH015", "C3N25S10NH015DUP",
 })
 

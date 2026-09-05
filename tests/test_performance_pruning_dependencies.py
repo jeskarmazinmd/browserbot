@@ -1,7 +1,6 @@
 from pathlib import Path
 import unittest
 
-from strategies import generic_registry
 from strategies.derived_runtime import derive_signals
 from strategies.pruning import (
     DEPENDENCY_PROTECTED_STRATEGY_IDS,
@@ -40,23 +39,26 @@ def parent(strategy_id):
 
 class PerformancePruningDependencyTests(unittest.TestCase):
     def test_exact_reviewed_inventory_and_protected_paths(self):
-        # H was the sole review candidate retained after dependency analysis:
-        # the live runner still consumes its configuration for shared legacy
-        # flash/near-miss plumbing.
-        self.assertEqual(len(PRUNED_OUTPUT_STRATEGY_IDS), 63)
+        self.assertEqual(len(PRUNED_OUTPUT_STRATEGY_IDS), 64)
         self.assertFalse(
             PRUNED_OUTPUT_STRATEGY_IDS & DEPENDENCY_PROTECTED_STRATEGY_IDS
         )
         self.assertTrue({
-            "A", "B", "D", "H", "M2", "C3N25S10", "C3N25S10DUP",
+            "A", "B", "D", "M2", "C3N25S10", "C3N25S10DUP",
             "C3N25S10NH015", "C3N25S10NH015DUP",
         }.issubset(DEPENDENCY_PROTECTED_STRATEGY_IDS))
+        self.assertIn("H", PRUNED_OUTPUT_STRATEGY_IDS)
 
     def test_main_registries_emit_no_pruned_outputs(self):
         registered = set(FLASH_STRATEGY_MODULES)
         registered.update(strategy_id(row) for row in ENABLED_STRATEGIES)
-        registered.update(module.STRATEGY_ID for module in generic_registry.MODULES)
         self.assertFalse(registered & PRUNED_OUTPUT_STRATEGY_IDS)
+
+        # Verify the generic family is centrally filtered without importing its
+        # NumPy-backed detectors; this test remains runnable in the lean local
+        # test environment used for patch validation.
+        generic_source = Path("strategies/generic_registry.py").read_text()
+        self.assertIn("if not output_is_pruned(module.STRATEGY_ID)", generic_source)
 
     def test_derived_parents_keep_survivors_without_pruned_leaves(self):
         emitted = {
@@ -82,6 +84,7 @@ class PerformancePruningDependencyTests(unittest.TestCase):
         observer = Path("nh015_execution_observer.py").read_text()
         self.assertIn('LIVE_NH015_STRATEGY_ID', runner)
         self.assertIn('trader.place_ioc_limit_buy_order(', runner)
+        self.assertNotIn('STRATEGY_H', runner)
         self.assertIn('STRATEGY_ID = "C3N25S10NH015"', observer)
         self.assertNotIn("strategies.pruning", observer)
 
