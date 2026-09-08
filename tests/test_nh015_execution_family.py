@@ -46,6 +46,62 @@ class NH015ExecutionFamilyTests(unittest.TestCase):
             "spread_pct": spread_pct,
         }
 
+    def test_bidask_v2_uses_isolated_files_and_metadata(self):
+        tracker = NH015ExecutionFamily(self.root)
+
+        self.assertEqual(
+            "nh015_execution_family_v2_bidask_outcomes.jsonl",
+            tracker.ledger_path.name,
+        )
+        self.assertEqual(
+            "nh015_execution_family_v2_bidask_active.json",
+            tracker.state_path.name,
+        )
+        self.assertEqual(
+            "nh015_execution_family_v2_bidask_status.json",
+            tracker.status_path.name,
+        )
+
+        status = json.loads(tracker.status_path.read_text())
+        self.assertEqual(
+            "nh015_execution_family_v2_bidask_20260908",
+            status["family_version"],
+        )
+        self.assertEqual("BIDASK_EXEC_V1", status["execution_model"])
+        self.assertEqual("ASK", status["entry_price_source"])
+        self.assertEqual("BID", status["exit_price_source"])
+        self.assertEqual(0, status["pending"])
+        self.assertEqual(0, status["active"])
+        self.assertEqual(0, status["seen"])
+
+    def test_bidask_v2_uses_isolated_files_and_metadata(self):
+        tracker = NH015ExecutionFamily(self.root)
+
+        self.assertEqual(
+            "nh015_execution_family_v2_bidask_outcomes.jsonl",
+            tracker.ledger_path.name,
+        )
+        self.assertEqual(
+            "nh015_execution_family_v2_bidask_active.json",
+            tracker.state_path.name,
+        )
+        self.assertEqual(
+            "nh015_execution_family_v2_bidask_status.json",
+            tracker.status_path.name,
+        )
+
+        status = json.loads(tracker.status_path.read_text())
+        self.assertEqual(
+            "nh015_execution_family_v2_bidask_20260908",
+            status["family_version"],
+        )
+        self.assertEqual("BIDASK_EXEC_V1", status["execution_model"])
+        self.assertEqual("ASK", status["entry_price_source"])
+        self.assertEqual("BID", status["exit_price_source"])
+        self.assertEqual(0, status["pending"])
+        self.assertEqual(0, status["active"])
+        self.assertEqual(0, status["seen"])
+
     def test_fixed_family_registers_every_policy_once(self):
         tracker = NH015ExecutionFamily(self.root)
         rows = tracker.register(self.signal(), self.quote(), self.now)

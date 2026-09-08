@@ -25,7 +25,7 @@ from zoneinfo import ZoneInfo
 
 
 SOURCE_STRATEGY_ID = "C3N25S10NH015DUP"
-FAMILY_VERSION = "nh015_execution_family_v1_20260905"
+FAMILY_VERSION = "nh015_execution_family_v2_bidask_20260908"
 NY = ZoneInfo("America/New_York")
 
 
@@ -92,9 +92,9 @@ class NH015ExecutionFamily:
     def __init__(self, data_root: Path, *, eod_hour: int = 15, eod_minute: int = 55):
         self.root = Path(data_root)
         self.root.mkdir(parents=True, exist_ok=True)
-        self.ledger_path = self.root / "nh015_execution_family_outcomes.jsonl"
-        self.state_path = self.root / "nh015_execution_family_active.json"
-        self.status_path = self.root / "nh015_execution_family_status.json"
+        self.ledger_path = self.root / "nh015_execution_family_v2_bidask_outcomes.jsonl"
+        self.state_path = self.root / "nh015_execution_family_v2_bidask_active.json"
+        self.status_path = self.root / "nh015_execution_family_v2_bidask_status.json"
         self.eod_hour = int(eod_hour)
         self.eod_minute = int(eod_minute)
         self.pending: dict[str, dict[str, Any]] = {}
@@ -143,6 +143,9 @@ class NH015ExecutionFamily:
             {
                 "updated_at": datetime.now(timezone.utc).isoformat(),
                 "family_version": FAMILY_VERSION,
+                "execution_model": EXECUTION_MODEL,
+                "entry_price_source": "ASK",
+                "exit_price_source": "BID",
                 "source_strategy_id": SOURCE_STRATEGY_ID,
                 "paper_only": True,
                 "broker_execution_enabled": False,
