@@ -8,6 +8,12 @@ fill is recorded. This module has no broker or trading-client dependency.
 
 from __future__ import annotations
 
+from executable_paper_engine import (
+    EXECUTION_MODEL,
+    classify_long_limit,
+    executable_long_mark,
+)
+
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta, timezone
 import json
@@ -252,6 +258,9 @@ class NH015ExecutionFamily:
                 "entry_spread_pct": spread,
                 "paper_only": True,
                 "broker_execution_enabled": False,
+                "execution_model": EXECUTION_MODEL,
+                "entry_price_source": "ASK",
+                "exit_price_source": "BID",
                 "policy": asdict(policy),
             }
             reason = None
@@ -274,18 +283,48 @@ class NH015ExecutionFamily:
 
             if policy.entry_mode == "IOC":
                 limit = round(model_entry * (1.0 + policy.buffer_fraction), 2)
-                if ask > limit:
+                requested_qty = max(1, int(1000.0 / model_entry))
+
+                execution = classify_long_limit(
+                    quote,
+                    limit_price=limit,
+                    requested_qty=requested_qty,
+                    now=timestamp,
+                )
+
+                if execution.outcome not in {"FULL", "PARTIAL"}:
                     row = {
-                        **common, "event_type": "FAMILY_SKIP",
-                        "limit_price": limit, "reason": "ASK_ABOVE_LIMIT",
+                        **common,
+                        "event_type": "FAMILY_SKIP",
+                        "limit_price": limit,
+                        "reason": execution.reason,
+                        "execution": execution.as_dict(),
                     }
                     self._append(row)
                     self.counts[policy.strategy_id]["skips"] += 1
                 else:
-                    row = self._entry(common, policy, ask, bid, timestamp, limit)
+                    row = self._entry(
+                        common,
+                        policy,
+                        float(execution.fill_price),
+                        bid,
+                        timestamp,
+                        limit,
+                    )
+                    row.update({
+                        "requested_qty": requested_qty,
+                        "filled_qty": int(execution.filled_qty),
+                        "entry_notional": (
+                            int(execution.filled_qty)
+                            * float(execution.fill_price)
+                        ),
+                        "fill_outcome": execution.outcome,
+                        "execution": execution.as_dict(),
+                    })
                     self.active[key] = row
                     self._append(row)
                     self.counts[policy.strategy_id]["entries"] += 1
+
                 emitted.append(row)
                 continue
 
@@ -296,6 +335,7 @@ class NH015ExecutionFamily:
                 "limit_price": limit,
                 "placed_at": timestamp.isoformat(),
                 "expires_at": (timestamp + timedelta(seconds=policy.passive_seconds)).isoformat(),
+                "requested_qty": max(1, int(1000.0 / model_entry)),
             }
             self.pending[key] = row
             self._append(row)
@@ -365,10 +405,43 @@ class NH015ExecutionFamily:
             valid = bid is not None and ask is not None and ask >= bid
             expired = now >= _utc(record["expires_at"]) or at_eod
             limit = float(record["limit_price"])
-            fillable = valid and (ask < limit if policy.require_trade_through else ask <= limit)
+            requested_qty = int(
+                record.get("requested_qty")
+                or max(1, int(1000.0 / float(record["model_entry_price"])))
+            )
+
+            execution = classify_long_limit(
+                quote,
+                limit_price=limit,
+                requested_qty=requested_qty,
+                now=now,
+                require_trade_through=policy.require_trade_through,
+            )
+
+            fillable = execution.outcome in {"FULL", "PARTIAL"}
+
             if fillable:
-                entry = self._entry(record, policy, ask, bid, now, limit)
-                entry["passive_wait_seconds"] = (now - _utc(record["placed_at"])).total_seconds()
+                entry = self._entry(
+                    record,
+                    policy,
+                    float(execution.fill_price),
+                    bid,
+                    now,
+                    limit,
+                )
+                entry.update({
+                    "requested_qty": requested_qty,
+                    "filled_qty": int(execution.filled_qty),
+                    "entry_notional": (
+                        int(execution.filled_qty)
+                        * float(execution.fill_price)
+                    ),
+                    "fill_outcome": execution.outcome,
+                    "execution": execution.as_dict(),
+                    "passive_wait_seconds": (
+                        now - _utc(record["placed_at"])
+                    ).total_seconds(),
+                })
                 self._append(entry)
                 self.active[key] = entry
                 del self.pending[key]
@@ -390,18 +463,24 @@ class NH015ExecutionFamily:
 
         for key, record in list(self.active.items()):
             quote = quotes.get(str(record["symbol"]).upper()) or {}
-            bid = _positive(quote.get("bid"))
             signal_day = _utc(record["signal_timestamp"]).astimezone(NY).date()
-            if bid is None:
-                if not (at_eod or now_et.date() > signal_day):
-                    continue
-                bid = _positive(record.get("last_bid"))
-                if bid is None:
-                    continue
-            else:
+
+            mark = executable_long_mark(quote, now=now)
+
+            if mark.get("state") == "EXECUTABLE":
+                bid = float(mark["price"])
                 record["last_bid"] = bid
                 record["last_bid_at"] = now.isoformat()
+                record["last_mark_execution"] = mark
                 changed = True
+            else:
+                record["last_mark_unknown"] = {
+                    "at": now.isoformat(),
+                    "reason": mark.get("reason"),
+                    "eod_due": bool(at_eod or now_et.date() > signal_day),
+                }
+                changed = True
+                continue
 
             if bid <= float(record["stop_price"]):
                 reason = "STOP"
@@ -422,6 +501,13 @@ class NH015ExecutionFamily:
                 "exit_bid": bid,
                 "exit_reason": reason,
                 "return_pct": (bid / float(record["entry_price"]) - 1.0) * 100.0,
+                "filled_qty": int(record.get("filled_qty") or 0),
+                "pnl_dollars": (
+                    bid - float(record["entry_price"])
+                ) * int(record.get("filled_qty") or 0),
+                "execution_model": EXECUTION_MODEL,
+                "entry_price_source": "ASK",
+                "exit_price_source": "BID",
             }
             self._append(row)
             del self.active[key]

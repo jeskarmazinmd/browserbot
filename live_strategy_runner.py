@@ -374,6 +374,9 @@ def _nh015_execution_quotes(symbols):
                 out[symbol] = {
                     "bid": bid,
                     "ask": ask,
+                    "bid_size_raw": quote.get("bidSize"),
+                    "ask_size_raw": quote.get("askSize"),
+                    "realtime": root.get("realtime") is True,
                     "quote_time_ms": quote_time_ms,
                     "bid_time_ms": bid_time_ms,
                     "ask_time_ms": ask_time_ms,

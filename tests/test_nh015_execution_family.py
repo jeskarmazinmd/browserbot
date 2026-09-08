@@ -29,9 +29,22 @@ class NH015ExecutionFamilyTests(unittest.TestCase):
             "stop_price": 99.0,
         }
 
-    @staticmethod
-    def quote(bid=99.96, ask=100.0):
-        return {"bid": bid, "ask": ask, "spread_pct": 0.04}
+    def quote(self, bid=99.96, ask=100.0, *, at=None, ask_size=1000):
+        at = at or self.now
+        timestamp_ms = int(at.timestamp() * 1000)
+        midpoint = (bid + ask) / 2.0
+        spread_pct = ((ask - bid) / midpoint) * 100.0
+
+        return {
+            "bid": bid,
+            "ask": ask,
+            "bid_time_ms": timestamp_ms,
+            "ask_time_ms": timestamp_ms,
+            "realtime": True,
+            "bid_size_raw": 1000,
+            "ask_size_raw": ask_size,
+            "spread_pct": spread_pct,
+        }
 
     def test_fixed_family_registers_every_policy_once(self):
         tracker = NH015ExecutionFamily(self.root)
@@ -65,13 +78,22 @@ class NH015ExecutionFamilyTests(unittest.TestCase):
         tracker = NH015ExecutionFamily(self.root)
         tracker.register(self.signal(), self.quote(), self.now)
         # Midpoint is 99.98. Touch fills MID but not MIDTHRU; BID remains pending.
-        tracker.update({"XYZ": self.quote(99.96, 99.98)}, self.now + timedelta(seconds=5))
+        at_5s = self.now + timedelta(seconds=5)
+        tracker.update(
+            {"XYZ": self.quote(99.96, 99.98, at=at_5s)},
+            at_5s,
+        )
         active_ids = {r["strategy_id"] for r in tracker.active.values()}
         pending_ids = {r["strategy_id"] for r in tracker.pending.values()}
         self.assertIn("C3N25S10NH015XMID", active_ids)
         self.assertIn("C3N25S10NH015XMIDTHRU", pending_ids)
         self.assertIn("C3N25S10NH015XBIDTHRU", pending_ids)
-        tracker.update({"XYZ": self.quote(99.90, 99.95)}, self.now + timedelta(seconds=10))
+
+        at_10s = self.now + timedelta(seconds=10)
+        tracker.update(
+            {"XYZ": self.quote(99.90, 99.95, at=at_10s)},
+            at_10s,
+        )
         active_ids = {r["strategy_id"] for r in tracker.active.values()}
         self.assertIn("C3N25S10NH015XMIDTHRU", active_ids)
         self.assertIn("C3N25S10NH015XBIDTHRU", active_ids)
@@ -79,7 +101,11 @@ class NH015ExecutionFamilyTests(unittest.TestCase):
     def test_unfilled_passive_orders_expire(self):
         tracker = NH015ExecutionFamily(self.root)
         tracker.register(self.signal(), self.quote(), self.now)
-        rows = tracker.update({"XYZ": self.quote(100.1, 100.2)}, self.now + timedelta(seconds=30))
+        at_30s = self.now + timedelta(seconds=30)
+        rows = tracker.update(
+            {"XYZ": self.quote(100.1, 100.2, at=at_30s)},
+            at_30s,
+        )
         expired = [row for row in rows if row["event_type"] == "FAMILY_EXPIRE"]
         self.assertEqual(3, len(expired))
         self.assertEqual({}, tracker.pending)
@@ -87,11 +113,25 @@ class NH015ExecutionFamilyTests(unittest.TestCase):
     def test_longer_policy_uses_sixty_second_timer(self):
         tracker = NH015ExecutionFamily(self.root)
         tracker.register(self.signal(), self.quote(), self.now)
-        tracker.update({"XYZ": self.quote(100.31, 100.32)}, self.now + timedelta(seconds=5))
-        rows = tracker.update({"XYZ": self.quote(100.31, 100.32)}, self.now + timedelta(seconds=20))
+        at_5s = self.now + timedelta(seconds=5)
+        tracker.update(
+            {"XYZ": self.quote(100.31, 100.32, at=at_5s)},
+            at_5s,
+        )
+
+        at_20s = self.now + timedelta(seconds=20)
+        rows = tracker.update(
+            {"XYZ": self.quote(100.31, 100.32, at=at_20s)},
+            at_20s,
+        )
         exits = {r["strategy_id"] for r in rows if r["event_type"] == "FAMILY_EXIT"}
         self.assertNotIn("C3N25S10NH015XLONG60", exits)
-        rows = tracker.update({"XYZ": self.quote(100.31, 100.32)}, self.now + timedelta(seconds=65))
+
+        at_65s = self.now + timedelta(seconds=65)
+        rows = tracker.update(
+            {"XYZ": self.quote(100.31, 100.32, at=at_65s)},
+            at_65s,
+        )
         exits = {r["strategy_id"] for r in rows if r["event_type"] == "FAMILY_EXIT"}
         self.assertIn("C3N25S10NH015XLONG60", exits)
 
@@ -101,7 +141,11 @@ class NH015ExecutionFamilyTests(unittest.TestCase):
         restarted = NH015ExecutionFamily(self.root)
         self.assertEqual(6, len(restarted.active))
         self.assertEqual(3, len(restarted.pending))
-        restarted.update({"XYZ": self.quote(101.0, 101.01)}, self.now + timedelta(seconds=1))
+        at_1s = self.now + timedelta(seconds=1)
+        restarted.update(
+            {"XYZ": self.quote(101.0, 101.01, at=at_1s)},
+            at_1s,
+        )
         stale = restarted.state_path.read_text()
         final = NH015ExecutionFamily(self.root)
         self.assertEqual(0, len(final.active))
