@@ -110,7 +110,7 @@ def main():
                 for strategy in strategies:
                     try:decisions.extend(strategy.evaluate(snap))
                     except Exception:errors+=1
-            tracker.open_decisions(decisions);decisions_total+=len(decisions)
+            tracker.open_decisions(decisions,usable);decisions_total+=len(decisions)
             _atomic({"updated_at":now.isoformat(),"status":"RUNNING" if usable else "WAITING_FRESH_QUOTES","strategies":len(strategies),"universe_symbols":len(symbols),"universe_source":source,"fresh_symbols":len(usable),"active_paper_positions":len(tracker.active),"decisions":decisions_total,"errors":errors,"requests":requests_total,"poll_seconds":POLL_SECONDS,"broker_execution_enabled":False})
         except Exception as exc:
             errors+=1;_atomic({"updated_at":now.isoformat(),"status":"ERROR_BACKOFF","error":f"{type(exc).__name__}: {exc}","strategies":len(strategies),"errors":errors,"requests":requests_total,"broker_execution_enabled":False})

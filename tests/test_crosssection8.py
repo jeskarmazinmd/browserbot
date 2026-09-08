@@ -83,9 +83,9 @@ class CrossSection8Tests(unittest.TestCase):
             short_q=self._quote(now,bid=100,ask=100.1,bid_size=100,ask_size=100)
 
             t.open_decisions([
-                {**common,**long_q,"symbol":"AAA","side":"LONG"},
-                {**common,**short_q,"symbol":"BBB","side":"SHORT"},
-            ])
+                {**common,"symbol":"AAA","side":"LONG","bid":99.9,"ask":100},
+                {**common,"symbol":"BBB","side":"SHORT","bid":100,"ask":100.1},
+            ], {"AAA":long_q,"BBB":short_q})
 
             self.assertEqual(len(t.active),2)
 
@@ -109,15 +109,50 @@ class CrossSection8Tests(unittest.TestCase):
             self.assertAlmostEqual(closes[0]["pnl"],10)
             self.assertAlmostEqual(closes[1]["pnl"],10)
 
+    def test_entry_execution_uses_quote_map_not_signal_prices(self):
+        with tempfile.TemporaryDirectory() as root:
+            t=CrossSectionPaperTracker(root,1000)
+            now=datetime(2026,8,10,14,0,tzinfo=timezone.utc)
+
+            q=self._quote(
+                now,
+                bid=99.9,
+                ask=100.0,
+                bid_size=100,
+                ask_size=100,
+            )
+
+            d={
+                "strategy_id":"X",
+                "timestamp":now,
+                "symbol":"AAA",
+                "side":"LONG",
+                "bid":1.0,
+                "ask":1.01,
+                "target_pct":10,
+                "stop_pct":10,
+                "max_hold_minutes":10,
+            }
+
+            self.assertEqual(
+                t.open_decisions([d], {"AAA":q}),
+                1,
+            )
+
+            row=next(iter(t.active.values()))
+            self.assertEqual(row["entry_price"],100.0)
+            self.assertEqual(row["requested_shares"],10)
+            self.assertEqual(row["execution"]["price_source"],"ASK")
+
     def test_partial_entry_owns_only_filled_quantity(self):
         with tempfile.TemporaryDirectory() as root:
             t=CrossSectionPaperTracker(root,1000)
             now=datetime(2026,8,10,14,0,tzinfo=timezone.utc)
             q=self._quote(now,bid=99.9,ask=100,bid_size=100,ask_size=4)
             d={"strategy_id":"X","timestamp":now,"symbol":"AAA","side":"LONG",
-               "target_pct":10,"stop_pct":10,"max_hold_minutes":10,**q}
+               "target_pct":10,"stop_pct":10,"max_hold_minutes":10}
 
-            self.assertEqual(t.open_decisions([d]),1)
+            self.assertEqual(t.open_decisions([d], {"AAA":q}),1)
             row=next(iter(t.active.values()))
             self.assertEqual(row["requested_shares"],10)
             self.assertEqual(row["shares"],4)
@@ -129,8 +164,8 @@ class CrossSection8Tests(unittest.TestCase):
             now=datetime(2026,8,10,14,0,tzinfo=timezone.utc)
             q=self._quote(now,bid=99.9,ask=100,bid_size=100,ask_size=100)
             d={"strategy_id":"X","timestamp":now,"symbol":"AAA","side":"LONG",
-               "target_pct":10,"stop_pct":10,"max_hold_minutes":1,**q}
-            t.open_decisions([d])
+               "target_pct":10,"stop_pct":10,"max_hold_minutes":1}
+            t.open_decisions([d], {"AAA":q})
 
             later=now+timedelta(minutes=2)
             t.update(later,{
@@ -153,9 +188,9 @@ class CrossSection8Tests(unittest.TestCase):
             stale=now-timedelta(seconds=5)
             q=self._quote(stale,bid=99.9,ask=100,bid_size=100,ask_size=100)
             d={"strategy_id":"X","timestamp":now,"symbol":"AAA","side":"LONG",
-               "target_pct":10,"stop_pct":10,"max_hold_minutes":10,**q}
+               "target_pct":10,"stop_pct":10,"max_hold_minutes":10}
 
-            self.assertEqual(t.open_decisions([d]),0)
+            self.assertEqual(t.open_decisions([d], {"AAA":q}),0)
             self.assertEqual(len(t.active),0)
 
             rows=[json.loads(x) for x in Path(root,"crosssection_paper_v2_bidask_outcomes.jsonl").read_text().splitlines()]
@@ -169,9 +204,9 @@ class CrossSection8Tests(unittest.TestCase):
 
             q=self._quote(now,bid=99.9,ask=100,bid_size=100,ask_size=100)
             d={"strategy_id":"X","timestamp":now,"symbol":"AAA","side":"LONG",
-               "target_pct":10,"stop_pct":10,"max_hold_minutes":1,**q}
+               "target_pct":10,"stop_pct":10,"max_hold_minutes":1}
 
-            self.assertEqual(t.open_decisions([d]),1)
+            self.assertEqual(t.open_decisions([d], {"AAA":q}),1)
             self.assertEqual(len(t.active),1)
 
             later=now+timedelta(minutes=2)
@@ -201,9 +236,9 @@ class CrossSection8Tests(unittest.TestCase):
 
             q=self._quote(now,bid=99.9,ask=100,bid_size=100,ask_size=100)
             d={"strategy_id":"X","timestamp":now,"symbol":"AAA","side":"LONG",
-               "target_pct":10,"stop_pct":10,"max_hold_minutes":1,**q}
+               "target_pct":10,"stop_pct":10,"max_hold_minutes":1}
 
-            self.assertEqual(t.open_decisions([d]),1)
+            self.assertEqual(t.open_decisions([d], {"AAA":q}),1)
 
             later=now+timedelta(minutes=2)
             exit_q=self._quote(
@@ -232,9 +267,9 @@ class CrossSection8Tests(unittest.TestCase):
             q=self._quote(now,bid=99.9,ask=100,bid_size=100,ask_size=100)
             q.pop("ask_size_raw")
             d={"strategy_id":"X","timestamp":now,"symbol":"AAA","side":"LONG",
-               "target_pct":10,"stop_pct":10,"max_hold_minutes":10,**q}
+               "target_pct":10,"stop_pct":10,"max_hold_minutes":10}
 
-            self.assertEqual(t.open_decisions([d]),0)
+            self.assertEqual(t.open_decisions([d], {"AAA":q}),0)
             self.assertEqual(len(t.active),0)
 
             rows=[json.loads(x) for x in Path(root,"crosssection_paper_v2_bidask_outcomes.jsonl").read_text().splitlines()]

@@ -66,7 +66,7 @@ class CrossSectionPaperTracker:
             "pricing":"BIDASK_EXEC_V1; LONG BUY@ask SELL@bid; SHORT SELL@bid BUY@ask; displayed top-of-book liquidity",
         })
 
-    def open_decisions(self,decisions):
+    def open_decisions(self,decisions,quotes):
         opened=0
         for d in decisions:
             side=str(d.get("side","")).upper()
@@ -75,9 +75,13 @@ class CrossSectionPaperTracker:
             symbol=str(d.get("symbol","")).upper().strip()
             if not symbol: continue
 
+            q=quotes.get(symbol)
+            if not q:
+                continue
+
             try:
-                bid=float(d.get("bid") or 0)
-                ask=float(d.get("ask") or 0)
+                bid=float(q.get("bid") or 0)
+                ask=float(q.get("ask") or 0)
             except (TypeError,ValueError):
                 continue
             if bid<=0 or ask<bid: continue
@@ -91,7 +95,7 @@ class CrossSectionPaperTracker:
 
             action="BUY" if side=="LONG" else "SELL"
             execution=classify_limit_order(
-                d,
+                q,
                 action=action,
                 limit_price=model_entry,
                 requested_qty=requested_shares,
