@@ -25,7 +25,7 @@ def _atomic(path, payload):
 class CrossSectionPaperTracker:
     def __init__(self, root="/data", notional=1000.0):
         self.root=Path(root); self.notional=float(notional)
-        self.ledger=self.root/"crosssection_paper_outcomes.jsonl"; self.status_path=self.root/"crosssection_paper_status.json"
+        self.ledger=self.root/"crosssection_paper_v2_bidask_outcomes.jsonl"; self.status_path=self.root/"crosssection_paper_v2_bidask_status.json"
         self.active={}; self.seen=set(); self.completed=0; self._restore(); self._status()
 
     def _restore(self):

@@ -43,6 +43,18 @@ class CrossSection8Tests(unittest.TestCase):
         q.update(extra)
         return q
 
+    def test_tracker_uses_isolated_bidask_v2_paths(self):
+        with tempfile.TemporaryDirectory() as root:
+            t=CrossSectionPaperTracker(root,1000)
+            self.assertEqual(
+                t.ledger.name,
+                "crosssection_paper_v2_bidask_outcomes.jsonl",
+            )
+            self.assertEqual(
+                t.status_path.name,
+                "crosssection_paper_v2_bidask_status.json",
+            )
+
     def test_normalize_and_fresh(self):
         now=datetime(2026,8,10,14,0,tzinfo=timezone.utc);ms=int(now.timestamp()*1000)
         q=normalize("xyz",{"realtime":True,"quote":{
@@ -83,7 +95,7 @@ class CrossSection8Tests(unittest.TestCase):
                 "BBB":self._quote(later,bid=98.9,ask=99,bid_size=100,ask_size=100),
             })
 
-            rows=[json.loads(x) for x in Path(root,"crosssection_paper_outcomes.jsonl").read_text().splitlines()]
+            rows=[json.loads(x) for x in Path(root,"crosssection_paper_v2_bidask_outcomes.jsonl").read_text().splitlines()]
             opens=[r for r in rows if r["event"]=="OPEN"]
             closes=[r for r in rows if r["event"]=="CLOSE"]
 
@@ -128,7 +140,7 @@ class CrossSection8Tests(unittest.TestCase):
             row=next(iter(t.active.values()))
             self.assertEqual(row["shares"],7)
 
-            rows=[json.loads(x) for x in Path(root,"crosssection_paper_outcomes.jsonl").read_text().splitlines()]
+            rows=[json.loads(x) for x in Path(root,"crosssection_paper_v2_bidask_outcomes.jsonl").read_text().splitlines()]
             close=[r for r in rows if r["event"]=="CLOSE"][-1]
             self.assertEqual(close["shares"],3)
             self.assertEqual(close["remaining_shares"],7)
@@ -146,7 +158,7 @@ class CrossSection8Tests(unittest.TestCase):
             self.assertEqual(t.open_decisions([d]),0)
             self.assertEqual(len(t.active),0)
 
-            rows=[json.loads(x) for x in Path(root,"crosssection_paper_outcomes.jsonl").read_text().splitlines()]
+            rows=[json.loads(x) for x in Path(root,"crosssection_paper_v2_bidask_outcomes.jsonl").read_text().splitlines()]
             self.assertEqual(rows[-1]["event"],"OPEN_ATTEMPT")
             self.assertEqual(rows[-1]["execution"]["outcome"],"UNKNOWN")
 
@@ -178,7 +190,7 @@ class CrossSection8Tests(unittest.TestCase):
 
             rows=[
                 json.loads(x)
-                for x in Path(root,"crosssection_paper_outcomes.jsonl").read_text().splitlines()
+                for x in Path(root,"crosssection_paper_v2_bidask_outcomes.jsonl").read_text().splitlines()
             ]
             self.assertEqual([r["event"] for r in rows],["OPEN"])
 
@@ -208,7 +220,7 @@ class CrossSection8Tests(unittest.TestCase):
 
             rows=[
                 json.loads(x)
-                for x in Path(root,"crosssection_paper_outcomes.jsonl").read_text().splitlines()
+                for x in Path(root,"crosssection_paper_v2_bidask_outcomes.jsonl").read_text().splitlines()
             ]
             self.assertEqual(rows[-1]["event"],"CLOSE_ATTEMPT")
             self.assertEqual(rows[-1]["execution"]["outcome"],"UNKNOWN")
@@ -225,7 +237,7 @@ class CrossSection8Tests(unittest.TestCase):
             self.assertEqual(t.open_decisions([d]),0)
             self.assertEqual(len(t.active),0)
 
-            rows=[json.loads(x) for x in Path(root,"crosssection_paper_outcomes.jsonl").read_text().splitlines()]
+            rows=[json.loads(x) for x in Path(root,"crosssection_paper_v2_bidask_outcomes.jsonl").read_text().splitlines()]
             self.assertEqual(rows[-1]["execution"]["outcome"],"UNKNOWN")
 
     def test_all_strategies_survive_broad_synthetic_stream(self):
