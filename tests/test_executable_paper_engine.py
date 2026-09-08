@@ -201,6 +201,29 @@ class TestGenericBidAskExecution(unittest.TestCase):
         )
         self.assertEqual(r.outcome, "UNKNOWN")
 
+    def test_generic_serialization_identifies_actual_side(self):
+        q, now = self._quote()
+
+        buy = classify_limit_order(
+            q, action="BUY", limit_price=100.00,
+            requested_qty=10, now=now,
+        ).as_dict()
+
+        sell = classify_limit_order(
+            q, action="SELL", limit_price=99.90,
+            requested_qty=10, now=now,
+        ).as_dict()
+
+        self.assertEqual(buy["action"], "BUY")
+        self.assertEqual(buy["price_source"], "ASK")
+        self.assertNotIn("entry_price_source", buy)
+        self.assertNotIn("exit_price_source", buy)
+
+        self.assertEqual(sell["action"], "SELL")
+        self.assertEqual(sell["price_source"], "BID")
+        self.assertNotIn("entry_price_source", sell)
+        self.assertNotIn("exit_price_source", sell)
+
     def test_marks_use_liquidation_side(self):
         q, now = self._quote()
 

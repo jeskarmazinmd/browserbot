@@ -95,16 +95,29 @@ class ExecutionDecision:
     quote_age_ms: float | None
     displayed_qty: int | None
     limit_price: float
+    action: str | None = None
+    price_source: str | None = None
 
     def as_dict(self) -> dict[str, Any]:
         result = asdict(self)
         result.update(
             execution_model=EXECUTION_MODEL,
-            entry_price_source="ASK",
-            exit_price_source="BID",
             quote_freshness_enforced=True,
             liquidity_checked=True,
         )
+
+        if self.action in {"BUY", "SELL"}:
+            result["price_source"] = (
+                self.price_source
+                or ("ASK" if self.action == "BUY" else "BID")
+            )
+        else:
+            # Backward-compatible metadata for the original long-only NH015 API.
+            result.update(
+                entry_price_source="ASK",
+                exit_price_source="BID",
+            )
+
         return result
 
 
@@ -155,6 +168,8 @@ def classify_limit_order(
             fill_price=fill_price,
             quote_age_ms=quote_age_ms,
             displayed_qty=displayed_qty,
+            action=action,
+            price_source="ASK" if action == "BUY" else "BID",
         )
 
     if action not in {"BUY", "SELL"}:
