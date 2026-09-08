@@ -22,6 +22,7 @@ COPY live_strategy_runner.py .
 COPY live_nh015_execution.py .
 COPY nh015_executable_shadow.py .
 COPY nh015_execution_family.py .
+COPY executable_paper_engine.py .
 COPY paper_outcome_tracker.py .
 COPY multi_leg_paper_tracker.py .
 COPY strategy_diagnostics.py .

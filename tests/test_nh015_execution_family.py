@@ -172,6 +172,7 @@ class NH015ExecutionFamilyTests(unittest.TestCase):
         self.assertIn("nh015_execution_family.register(", runner)
         self.assertIn("nh015_execution_family.update(", runner)
         self.assertIn("COPY nh015_execution_family.py .", dockerfile)
+        self.assertIn("COPY executable_paper_engine.py .", dockerfile)
 
 
 if __name__ == "__main__":
