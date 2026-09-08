@@ -40,7 +40,7 @@ def quotes(symbols):
     with urllib.request.urlopen(request,timeout=20) as response: payload=json.loads(response.read())
     out={}
     for symbol,p in payload.items():
-        q=p.get("quote") or {};out[symbol]={"symbol":symbol,"bid":q.get("bidPrice"),"ask":q.get("askPrice"),"last":q.get("lastPrice"),"totalVolume":q.get("totalVolume"),"quoteTime":q.get("quoteTime"),"realtime":p.get("realtime") is True}
+        q=p.get("quote") or {};out[symbol]={"symbol":symbol,"bid":q.get("bidPrice"),"ask":q.get("askPrice"),"last":q.get("lastPrice"),"totalVolume":q.get("totalVolume"),"quoteTime":q.get("quoteTime"),"quote_time_ms":q.get("quoteTime"),"bid_time_ms":q.get("bidTime"),"ask_time_ms":q.get("askTime"),"bid_size_raw":q.get("bidSize"),"ask_size_raw":q.get("askSize"),"realtime":p.get("realtime") is True}
     return {s:q for s,q in out.items() if q["realtime"] and float(q.get("bid") or 0)>0 and float(q.get("ask") or 0)>=float(q.get("bid") or 0)}
 def load_strategies():
     result=[]
@@ -66,7 +66,7 @@ def main():
                     if key in handled:continue
                     try:
                         emitted=False
-                        for d in strategy.evaluate(enriched,q):emitted=True;decisions+=int(tracker.register(d))
+                        for d in strategy.evaluate(enriched,q):emitted=True;decisions+=int(tracker.register(d,q))
                         if emitted:handled.add(key)
                     except Exception:errors+=1
         state="WAITING_EVENT_FEED" if not FEED.exists() else "WAITING_VALID_EVENTS" if not events else "RUNNING" if regular(now) else "WAITING_REGULAR_MARKET"
