@@ -61,7 +61,23 @@ def fetch_quotes(symbols):
         r=requests.get(QUOTE_URL,headers=headers,params={"symbols":",".join(batch)},timeout=20); requests_count+=1; r.raise_for_status(); out.update(r.json())
     return out,requests_count
 def normalize(symbol,payload):
-    q=payload.get("quote") or {}; return {"symbol":str(symbol).upper(),"realtime":payload.get("realtime") is True,"bid":q.get("bidPrice"),"ask":q.get("askPrice"),"last":q.get("lastPrice"),"mark":q.get("mark"),"close":q.get("closePrice"),"open":q.get("openPrice"),"quote_time_ms":q.get("quoteTime"),"total_volume":q.get("totalVolume")}
+    q=payload.get("quote") or {}
+    return {
+        "symbol":str(symbol).upper(),
+        "realtime":payload.get("realtime") is True,
+        "bid":q.get("bidPrice"),
+        "ask":q.get("askPrice"),
+        "bid_size_raw":q.get("bidSize"),
+        "ask_size_raw":q.get("askSize"),
+        "bid_time_ms":q.get("bidTime"),
+        "ask_time_ms":q.get("askTime"),
+        "last":q.get("lastPrice"),
+        "mark":q.get("mark"),
+        "close":q.get("closePrice"),
+        "open":q.get("openPrice"),
+        "quote_time_ms":q.get("quoteTime"),
+        "total_volume":q.get("totalVolume"),
+    }
 def fresh(q,now):
     try:
         bid=float(q["bid"]);ask=float(q["ask"]);age=abs(now.timestamp()-float(q["quote_time_ms"])/1000);return q.get("realtime") is True and bid>0 and ask>=bid and age<=MAX_AGE
