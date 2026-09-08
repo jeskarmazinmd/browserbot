@@ -1,9 +1,12 @@
+import unittest
 from datetime import datetime, timezone
 
 from executable_paper_engine import (
     EXECUTION_MODEL,
+    classify_limit_order,
     classify_long_limit,
     executable_long_mark,
+    executable_mark,
 )
 
 
@@ -130,3 +133,84 @@ def test_crossed_quote_is_unknown():
     )
 
     assert result.outcome == "UNKNOWN"
+
+
+class TestGenericBidAskExecution(unittest.TestCase):
+
+    def _quote(self, **overrides):
+        now = datetime.now(timezone.utc)
+        ms = int(now.timestamp() * 1000)
+        q = {
+            "bid": 99.90,
+            "ask": 100.00,
+            "bid_time_ms": ms,
+            "ask_time_ms": ms,
+            "realtime": True,
+            "bid_size_raw": 50,
+            "ask_size_raw": 40,
+        }
+        q.update(overrides)
+        return q, now
+
+    def test_buy_executes_at_ask(self):
+        q, now = self._quote()
+        r = classify_limit_order(
+            q, action="BUY", limit_price=100.00,
+            requested_qty=10, now=now,
+        )
+        self.assertEqual(r.outcome, "FULL")
+        self.assertEqual(r.fill_price, 100.00)
+        self.assertEqual(r.filled_qty, 10)
+
+    def test_sell_executes_at_bid(self):
+        q, now = self._quote()
+        r = classify_limit_order(
+            q, action="SELL", limit_price=99.90,
+            requested_qty=10, now=now,
+        )
+        self.assertEqual(r.outcome, "FULL")
+        self.assertEqual(r.fill_price, 99.90)
+        self.assertEqual(r.filled_qty, 10)
+
+    def test_buy_partial_uses_ask_size(self):
+        q, now = self._quote(ask_size_raw=4)
+        r = classify_limit_order(
+            q, action="BUY", limit_price=100.00,
+            requested_qty=10, now=now,
+        )
+        self.assertEqual(r.outcome, "PARTIAL")
+        self.assertEqual(r.filled_qty, 4)
+        self.assertEqual(r.fill_price, 100.00)
+
+    def test_sell_partial_uses_bid_size(self):
+        q, now = self._quote(bid_size_raw=3)
+        r = classify_limit_order(
+            q, action="SELL", limit_price=99.90,
+            requested_qty=10, now=now,
+        )
+        self.assertEqual(r.outcome, "PARTIAL")
+        self.assertEqual(r.filled_qty, 3)
+        self.assertEqual(r.fill_price, 99.90)
+
+    def test_stale_sell_is_unknown(self):
+        q, now = self._quote()
+        q["bid_time_ms"] -= 5000
+        r = classify_limit_order(
+            q, action="SELL", limit_price=99.90,
+            requested_qty=10, now=now,
+        )
+        self.assertEqual(r.outcome, "UNKNOWN")
+
+    def test_marks_use_liquidation_side(self):
+        q, now = self._quote()
+
+        long_mark = executable_mark(q, action="SELL", now=now)
+        short_mark = executable_mark(q, action="BUY", now=now)
+
+        self.assertEqual(long_mark["state"], "EXECUTABLE")
+        self.assertEqual(long_mark["price"], 99.90)
+        self.assertEqual(long_mark["price_source"], "BID")
+
+        self.assertEqual(short_mark["state"], "EXECUTABLE")
+        self.assertEqual(short_mark["price"], 100.00)
+        self.assertEqual(short_mark["price_source"], "ASK")

@@ -60,23 +60,19 @@ def _quote_age_ms(
     # For a long entry ASK freshness is controlling.
     # For a long liquidation BID freshness is controlling.
     if side == "ASK":
-        timestamp = (
-            _number(quote.get("ask_time_ms"))
-            or _number(quote.get("quote_time_ms"))
-        )
-        precalculated = (
-            _number(quote.get("ask_age_seconds"))
-            or _number(quote.get("age_seconds"))
-        )
+        timestamp = _number(quote.get("ask_time_ms"))
+        if timestamp is None:
+            timestamp = _number(quote.get("quote_time_ms"))
+        precalculated = _number(quote.get("ask_age_seconds"))
+        if precalculated is None:
+            precalculated = _number(quote.get("age_seconds"))
     else:
-        timestamp = (
-            _number(quote.get("bid_time_ms"))
-            or _number(quote.get("quote_time_ms"))
-        )
-        precalculated = (
-            _number(quote.get("bid_age_seconds"))
-            or _number(quote.get("age_seconds"))
-        )
+        timestamp = _number(quote.get("bid_time_ms"))
+        if timestamp is None:
+            timestamp = _number(quote.get("quote_time_ms"))
+        precalculated = _number(quote.get("bid_age_seconds"))
+        if precalculated is None:
+            precalculated = _number(quote.get("age_seconds"))
 
     if timestamp is not None and timestamp > 0:
         return now.timestamp() * 1000.0 - timestamp
@@ -110,6 +106,217 @@ class ExecutionDecision:
             liquidity_checked=True,
         )
         return result
+
+
+
+def classify_limit_order(
+    quote: Mapping[str, Any] | None,
+    *,
+    action: str,
+    limit_price: float,
+    requested_qty: int,
+    now: datetime | str | None = None,
+    max_quote_age_ms: float = 2000.0,
+    size_multiplier: float = 1.0,
+    require_trade_through: bool = False,
+) -> ExecutionDecision:
+    """Classify an executable top-of-book BUY or SELL limit order.
+
+    BUY consumes ASK liquidity.
+    SELL consumes BID liquidity.
+    """
+    now = _utc(now)
+    quote = quote or {}
+    action = str(action).upper().strip()
+
+    bid = _positive(quote.get("bid"))
+    ask = _positive(quote.get("ask"))
+
+    try:
+        requested_qty = int(requested_qty)
+    except (TypeError, ValueError):
+        requested_qty = 0
+
+    limit = _positive(limit_price) or 0.0
+    base = dict(
+        bid=bid,
+        ask=ask,
+        requested_qty=requested_qty,
+        limit_price=limit,
+    )
+
+    def decision(outcome, reason, *, filled_qty=None, fill_price=None,
+                 quote_age_ms=None, displayed_qty=None):
+        return ExecutionDecision(
+            outcome,
+            reason,
+            **base,
+            filled_qty=filled_qty,
+            fill_price=fill_price,
+            quote_age_ms=quote_age_ms,
+            displayed_qty=displayed_qty,
+        )
+
+    if action not in {"BUY", "SELL"}:
+        return decision("UNKNOWN", "invalid_action")
+
+    if requested_qty <= 0 or limit <= 0:
+        return decision("UNKNOWN", "invalid_order")
+
+    if bid is None or ask is None or ask < bid:
+        return decision("UNKNOWN", "invalid_top_of_book")
+
+    if "realtime" in quote and quote.get("realtime") is not True:
+        return decision("UNKNOWN", "quote_not_realtime")
+
+    quote_side = "ASK" if action == "BUY" else "BID"
+    age_ms = _quote_age_ms(quote, now, side=quote_side)
+
+    if age_ms is None:
+        return decision("UNKNOWN", "missing_quote_timestamp")
+
+    if age_ms < -1000.0 or age_ms > max_quote_age_ms:
+        return decision(
+            "UNKNOWN",
+            "stale_or_future_quote",
+            quote_age_ms=age_ms,
+        )
+
+    executable_price = ask if action == "BUY" else bid
+
+    if action == "BUY":
+        marketable = (
+            executable_price < limit
+            if require_trade_through
+            else executable_price <= limit
+        )
+        no_fill_reason = "ask_above_limit"
+        size_keys = ("ask_size_raw", "ask_size")
+        no_size_reason = "marketable_but_ask_size_missing"
+        zero_size_reason = "no_displayed_ask_size"
+        partial_reason = "displayed_ask_size_below_quantity"
+    else:
+        marketable = (
+            executable_price > limit
+            if require_trade_through
+            else executable_price >= limit
+        )
+        no_fill_reason = "bid_below_limit"
+        size_keys = ("bid_size_raw", "bid_size")
+        no_size_reason = "marketable_but_bid_size_missing"
+        zero_size_reason = "no_displayed_bid_size"
+        partial_reason = "displayed_bid_size_below_quantity"
+
+    if not marketable:
+        return decision(
+            "ZERO",
+            no_fill_reason,
+            filled_qty=0,
+            quote_age_ms=age_ms,
+        )
+
+    raw_size = quote.get(size_keys[0])
+    if raw_size is None:
+        raw_size = quote.get(size_keys[1])
+
+    size = _number(raw_size)
+    if size is None:
+        return decision(
+            "UNKNOWN",
+            no_size_reason,
+            quote_age_ms=age_ms,
+        )
+
+    displayed_qty = max(
+        0,
+        math.floor(size * float(size_multiplier)),
+    )
+    filled_qty = min(requested_qty, displayed_qty)
+
+    if filled_qty <= 0:
+        return decision(
+            "ZERO",
+            zero_size_reason,
+            filled_qty=0,
+            quote_age_ms=age_ms,
+            displayed_qty=displayed_qty,
+        )
+
+    if filled_qty < requested_qty:
+        return decision(
+            "PARTIAL",
+            partial_reason,
+            filled_qty=filled_qty,
+            fill_price=executable_price,
+            quote_age_ms=age_ms,
+            displayed_qty=displayed_qty,
+        )
+
+    return decision(
+        "FULL",
+        "marketable_with_displayed_size",
+        filled_qty=filled_qty,
+        fill_price=executable_price,
+        quote_age_ms=age_ms,
+        displayed_qty=displayed_qty,
+    )
+
+
+def executable_mark(
+    quote: Mapping[str, Any] | None,
+    *,
+    action: str,
+    now: datetime | str | None = None,
+    max_quote_age_ms: float = 2000.0,
+) -> dict[str, Any]:
+    """Return the fresh top-of-book price executable for BUY or SELL."""
+    now = _utc(now)
+    quote = quote or {}
+    action = str(action).upper().strip()
+
+    bid = _positive(quote.get("bid"))
+    ask = _positive(quote.get("ask"))
+
+    def unknown(reason, age=None):
+        result = {
+            "state": "UNKNOWN",
+            "reason": reason,
+            "price": None,
+            "execution_model": EXECUTION_MODEL,
+        }
+        if age is not None:
+            result["quote_age_ms"] = age
+        return result
+
+    if action not in {"BUY", "SELL"}:
+        return unknown("invalid_action")
+
+    if bid is None or ask is None or ask < bid:
+        return unknown("invalid_top_of_book")
+
+    if "realtime" in quote and quote.get("realtime") is not True:
+        return unknown("quote_not_realtime")
+
+    quote_side = "ASK" if action == "BUY" else "BID"
+    age_ms = _quote_age_ms(quote, now, side=quote_side)
+
+    if age_ms is None:
+        return unknown("missing_quote_timestamp")
+
+    if age_ms < -1000.0 or age_ms > max_quote_age_ms:
+        return unknown("stale_or_future_quote", age_ms)
+
+    price = ask if action == "BUY" else bid
+    return {
+        "state": "EXECUTABLE",
+        "reason": "fresh_ask" if action == "BUY" else "fresh_bid",
+        "price": price,
+        "bid": bid,
+        "ask": ask,
+        "quote_age_ms": age_ms,
+        "execution_model": EXECUTION_MODEL,
+        "price_source": quote_side,
+    }
 
 
 def classify_long_limit(
