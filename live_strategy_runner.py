@@ -3365,15 +3365,16 @@ def main():
                             executable_quote = _nh015_execution_quotes(
                                 [nh015_duplicate["symbol"]]
                             ).get(nh015_duplicate["symbol"])
+                            execution_now_utc = datetime.now(timezone.utc)
                             nh015_exec_shadow.register(
                                 nh015_duplicate,
                                 executable_quote,
-                                now_utc,
+                                execution_now_utc,
                             )
                             nh015_execution_family.register(
                                 nh015_duplicate,
                                 executable_quote,
-                                now_utc,
+                                execution_now_utc,
                             )
                         for decision in evaluate_time_of_day_children(
                             nh015_duplicate
