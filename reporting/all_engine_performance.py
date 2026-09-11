@@ -348,6 +348,7 @@ def options_rv_closed_pnl(row, commission_per_side=0.65):
 
 def simulate_slots(trades):
     active, total, taken, skipped = [], 0.0, 0, 0
+    open_taken, closed_taken = 0, 0
     ordered = sorted(trades, key=lambda item: (item["opened"], item["id"]))
     for order, trade in enumerate(ordered):
         while active and active[0][0] <= trade["opened"]:
@@ -358,8 +359,13 @@ def simulate_slots(trades):
         heapq.heappush(active, (trade["closed"], order))
         total += trade["pnl"]
         taken += 1
+        if trade.get("is_open", False):
+            open_taken += 1
+        else:
+            closed_taken += 1
     return {
         "signals": len(ordered), "taken": taken, "skipped": skipped,
+        "open_taken": open_taken, "closed_taken": closed_taken,
         "pnl": total, "return_pct": total / STARTING_CASH * 100.0,
     }
 
@@ -423,7 +429,7 @@ def calculate(root="/data", day=None, as_of=None):
 
     trades, modern_names = defaultdict(list), set()
 
-    def add(name, opened, closed, pnl, engine, identifier):
+    def add(name, opened, closed, pnl, engine, identifier, *, is_open=False):
         if not name or opened is None or pnl is None:
             return
         modern_names.add(name)
@@ -431,7 +437,107 @@ def calculate(root="/data", day=None, as_of=None):
         trades[name].append({
             "opened": opened, "closed": closed or cutoff,
             "pnl": float(pnl), "engine": engine, "id": identifier,
+            "is_open": bool(is_open),
         })
+
+    def add_single_leg_execution_ledger(
+        filename, suffix, engine, entry_event, exit_event
+    ):
+        entries, exits = {}, {}
+        for row in read_json_lines(root / filename):
+            setup = str(row.get("setup_id") or "")
+            event = str(row.get("event_type") or "").upper()
+            if not setup:
+                continue
+            if event == entry_event:
+                entries[setup] = row
+            elif event == exit_event:
+                exits[setup] = row
+
+        for setup, entry in entries.items():
+            entry_time = opened_time(entry)
+            if market_day(entry) != day or entry_time is None or entry_time > cutoff:
+                continue
+            exit_row = exits.get(setup)
+            exit_time = parse_time((exit_row or {}).get("exit_timestamp"))
+            recorded = exit_row is not None and exit_time is not None and exit_time <= cutoff
+            if recorded:
+                pnl = closed_pnl(exit_row)
+                closed_at = exit_time
+            else:
+                quote = equity_quote(entry.get("symbol"), marks)
+                try:
+                    entry_price = float(entry["entry_price"])
+                    notional = float(entry.get("notional") or 0)
+                    bid = float(quote["bid"])
+                    pnl = notional * (bid / entry_price - 1.0)
+                except (KeyError, TypeError, ValueError, ZeroDivisionError):
+                    diagnostics["unmarked_by_engine"][engine] += 1
+                    continue
+                closed_at = cutoff
+            add(
+                f"{strategy_name(entry)}{suffix}",
+                entry_time,
+                closed_at,
+                pnl,
+                engine,
+                setup,
+                is_open=not recorded,
+            )
+
+    # BA is a strict parent-event twin. The old v2 ledger remains visible as
+    # IOCL1 because it estimates quote freshness, displayed liquidity and fills.
+    add_single_leg_execution_ledger(
+        "paper_signal_v3_bidask_repricing_outcomes.jsonl",
+        "BA",
+        "main_bidask_repricing",
+        "BA_REPRICE_ENTRY",
+        "BA_REPRICE_EXIT",
+    )
+    add_single_leg_execution_ledger(
+        "paper_signal_v2_bidask_outcomes.jsonl",
+        "IOCL1",
+        "main_iocl1",
+        "PAPER_ENTRY",
+        "PAPER_EXIT",
+    )
+
+    # Generic coordinated strategies use a distinct atomic bid/ask ledger.
+    bidask_groups, bidask_group_exits = {}, {}
+    for row in read_json_lines(root / "multi_leg_paper_v2_bidask_outcomes.jsonl"):
+        identifier = str(row.get("group_id") or "")
+        event = str(row.get("event_type") or "").upper()
+        if not identifier:
+            continue
+        if event == "MULTI_LEG_ENTRY":
+            bidask_groups[identifier] = row
+        elif event == "MULTI_LEG_EXIT":
+            bidask_group_exits[identifier] = row
+    for identifier, entry in bidask_groups.items():
+        entry_time = opened_time(entry)
+        if market_day(entry) != day or entry_time is None or entry_time > cutoff:
+            continue
+        exit_row = bidask_group_exits.get(identifier)
+        exit_time = parse_time((exit_row or {}).get("exit_timestamp"))
+        use_recorded_exit = exit_row is not None and exit_time is not None and exit_time <= cutoff
+        if use_recorded_exit:
+            pnl = closed_pnl(exit_row)
+            closed_at = exit_time
+        else:
+            pnl = close_equity_legs(entry, marks)
+            closed_at = cutoff
+        if pnl is None:
+            diagnostics["unmarked_by_engine"]["multi_leg_bidask"] += 1
+            continue
+        add(
+            f"{strategy_name(entry)}BA",
+            entry_time,
+            closed_at,
+            pnl,
+            "multi_leg_bidask",
+            identifier,
+            is_open=not use_recorded_exit,
+        )
 
     specs = {
         "crosssection_paper_outcomes.jsonl": ("crosssection", lambda row: close_equity(row, marks)),
@@ -474,7 +580,10 @@ def calculate(root="/data", day=None, as_of=None):
             if pnl is None:
                 diagnostics["unmarked_by_engine"][engine] += 1
                 continue
-            add(strategy_name(entry), opened_time(entry), closed_at, pnl, engine, identifier)
+            add(
+                strategy_name(entry), opened_time(entry), closed_at, pnl, engine, identifier,
+                is_open=not use_recorded_exit,
+            )
 
     for row in read_json_lines(root / "event_paper_outcomes.jsonl"):
         name = strategy_name(row)
@@ -496,8 +605,9 @@ def calculate(root="/data", day=None, as_of=None):
             except (KeyError, TypeError, ValueError):
                 diagnostics["unmarked_by_engine"]["event"] += 1
                 continue
-        add(name, entry_time, recorded_close if recorded_close and recorded_close <= cutoff else cutoff,
-            pnl, "event", row_id(row))
+        use_recorded_exit = recorded_close is not None and recorded_close <= cutoff
+        add(name, entry_time, recorded_close if use_recorded_exit else cutoff,
+            pnl, "event", row_id(row), is_open=not use_recorded_exit)
 
     rv_active = {}
     try:
@@ -522,7 +632,10 @@ def calculate(root="/data", day=None, as_of=None):
             if pnl is None:
                 diagnostics["unmarked_by_engine"]["options_rv"] += 1
             else:
-                add(name, entry_time, closed_at, pnl, "options_rv", row_id(row))
+                add(
+                    name, entry_time, closed_at, pnl, "options_rv", row_id(row),
+                    is_open=recorded_close is None or recorded_close > cutoff,
+                )
     for identifier, row in rv_active.items():
         name = strategy_name(row)
         if name:
@@ -535,7 +648,7 @@ def calculate(root="/data", day=None, as_of=None):
         if pnl is None:
             diagnostics["unmarked_by_engine"]["options_rv"] += 1
             continue
-        add(name, entry_time, cutoff, pnl, "options_rv", str(identifier))
+        add(name, entry_time, cutoff, pnl, "options_rv", str(identifier), is_open=True)
 
     for name in modern_names:
         modules[name] = {**simulate_slots(trades.get(name, [])), "engine": sources.get(name, "other")}

@@ -49,8 +49,13 @@ from strategies.c3_market_gate_family import (
 from strategies.m2_forward_family import derive_m2_family_signals
 from strategies.ema_volume_batch import BoundedVolumeConfirmation
 from regime_logger import log_regime, latest_regime
-from paper_outcome_tracker import PaperOutcomeTracker
+from paper_outcome_tracker import PaperOutcomeTracker, _utc
+from bidask_paper_outcome_tracker import (
+    BidAskRepricingTracker,
+    IocL1PaperOutcomeTracker,
+)
 from multi_leg_paper_tracker import MultiLegPaperTracker
+from bidask_multi_leg_paper_tracker import BidAskMultiLegPaperTracker
 from strategy_diagnostics import diagnostics
 from schwab_token_guard import (
     ManualReauthRequired,
@@ -2270,6 +2275,45 @@ def main():
         f"active={len(paper_outcomes.active)} seen={len(paper_outcomes.seen)}",
         flush=True,
     )
+    bidask_repricing_outcomes = BidAskRepricingTracker(
+        DATA_ROOT,
+        eod_hour=EOD_EXIT_HOUR_ET,
+        eod_minute=EOD_EXIT_MINUTE_ET,
+    )
+    print(
+        "BIDASK_REPRICING_TRACKER_ONLINE "
+        f"active={len(bidask_repricing_outcomes.active)} "
+        f"pending_entries={len(bidask_repricing_outcomes.pending_entries)} "
+        f"seen={len(bidask_repricing_outcomes.seen_entries)}",
+        flush=True,
+    )
+    iocl1_paper_outcomes = IocL1PaperOutcomeTracker(
+        DATA_ROOT,
+        eod_hour=EOD_EXIT_HOUR_ET,
+        eod_minute=EOD_EXIT_MINUTE_ET,
+    )
+    print(
+        "IOCL1_PAPER_OUTCOME_TRACKER_ONLINE "
+        f"active={len(iocl1_paper_outcomes.active)} "
+        f"pending={len(iocl1_paper_outcomes.pending)} "
+        f"seen={len(iocl1_paper_outcomes.seen)}",
+        flush=True,
+    )
+
+    def register_single_leg_paper(signal):
+        """Register LAST first; shadows may only consume accepted trades."""
+        accepted = paper_outcomes.register(signal)
+        if accepted and RUN_MODE == "LIVE":
+            timestamp = _utc(signal.get("timestamp"))
+            setup_id = paper_outcomes._setup_id(signal, timestamp)
+            parent_entry = paper_outcomes.active.get(setup_id)
+            if parent_entry is not None:
+                bidask_repricing_outcomes.register_parent_entry(
+                    parent_entry,
+                    now=timestamp,
+                )
+            iocl1_paper_outcomes.register(signal)
+        return accepted
     nh015_exec_shadow = NH015ExecutableShadow(
         DATA_ROOT,
         eod_hour=EOD_EXIT_HOUR_ET,
@@ -2301,6 +2345,18 @@ def main():
     print(
         "MULTI_LEG_PAPER_TRACKER_ONLINE "
         f"active={len(multi_leg_outcomes.active)} seen={len(multi_leg_outcomes.seen)}",
+        flush=True,
+    )
+    bidask_multi_leg_outcomes = BidAskMultiLegPaperTracker(
+        DATA_ROOT,
+        eod_hour=EOD_EXIT_HOUR_ET,
+        eod_minute=EOD_EXIT_MINUTE_ET,
+    )
+    print(
+        "BIDASK_MULTI_LEG_TRACKER_ONLINE "
+        f"active={len(bidask_multi_leg_outcomes.active)} "
+        f"pending={len(bidask_multi_leg_outcomes.pending)} "
+        f"seen={len(bidask_multi_leg_outcomes.seen)}",
         flush=True,
     )
     minute_strategy_pool = MinuteStrategyPool()
@@ -2542,6 +2598,9 @@ def main():
                     set(positions)
                     | nh015_exec_shadow.symbols()
                     | nh015_execution_family.symbols()
+                    | bidask_repricing_outcomes.symbols()
+                    | iocl1_paper_outcomes.symbols()
+                    | bidask_multi_leg_outcomes.symbols()
                 )
                 execution_quotes = _nh015_execution_quotes(execution_symbols)
                 execution_bids = {
@@ -2581,14 +2640,57 @@ def main():
                             flush=True,
                         )
 
+                # Pure BA resolves prices only. Parent LAST events remain the
+                # sole authority for whether and when a trade enters/exits.
+                bidask_repricing_outcomes.update_quotes(
+                    execution_quotes, quote_source.now()
+                )
+
+                for outcome in iocl1_paper_outcomes.update_quotes(
+                    execution_quotes, quote_source.now()
+                ):
+                    print(
+                        "IOCL1_PAPER_OUTCOME "
+                        f"strategy={outcome['strategy_id']} "
+                        f"symbol={outcome['symbol']} "
+                        f"reason={outcome['exit_reason']} "
+                        f"return={outcome['return_pct']:+.3f}%",
+                        flush=True,
+                    )
+
+                for outcome in bidask_multi_leg_outcomes.update_quotes(
+                    execution_quotes, quote_source.now()
+                ):
+                    print(
+                        "BIDASK_MULTI_LEG_OUTCOME "
+                        f"strategy={outcome['strategy_id']} "
+                        f"group={outcome['group_id']} "
+                        f"reason={outcome['exit_reason']} "
+                        f"return={outcome['return_pct']:+.3f}%",
+                        flush=True,
+                    )
+
             now_utc = quote_source.now()
-            for outcome in paper_outcomes.update(prices_now, now_utc):
+            parent_outcomes = paper_outcomes.update(prices_now, now_utc)
+            for outcome in parent_outcomes:
                 print(
                     "PAPER_OUTCOME "
                     f"strategy={outcome['strategy_id']} symbol={outcome['symbol']} "
                     f"reason={outcome['exit_reason']} pnl={outcome['pnl']:+.2f}",
                     flush=True,
                 )
+            if RUN_MODE == "LIVE":
+                for outcome in bidask_repricing_outcomes.register_parent_exits(
+                    parent_outcomes, execution_quotes, now_utc
+                ):
+                    print(
+                        "BIDASK_REPRICED_OUTCOME "
+                        f"strategy={outcome['strategy_id']} "
+                        f"symbol={outcome['symbol']} "
+                        f"reason={outcome['exit_reason']} "
+                        f"return={outcome['return_pct']:+.3f}%",
+                        flush=True,
+                    )
             for outcome in multi_leg_outcomes.update(prices_now, now_utc):
                 print(
                     "MULTI_LEG_PAPER_OUTCOME "
@@ -2798,6 +2900,8 @@ def main():
                         **dict(signal.data or {}),
                     }
                     if multi_leg_outcomes.register(multi_payload):
+                        if RUN_MODE == "LIVE":
+                            bidask_multi_leg_outcomes.register(multi_payload)
                         append_strategy_event(
                             str(signal.strategy_id),
                             "MULTI_LEG_SIGNAL",
@@ -2878,7 +2982,7 @@ def main():
                             "CADENCE": "minute",
                         },
                     )
-                    paper_outcomes.register(independent)
+                    register_single_leg_paper(independent)
 
             if warming_minute_pipeline and minute_snapshots:
                 print(
@@ -3265,7 +3369,7 @@ def main():
                             "REBOUND_CONFIRMATION_PCT": STRATEGY_CONFIGS[e.get("strategy_id", STRATEGY_A)]["rebound_confirmation_pct"],
                         },
                     )
-                    paper_outcomes.register(e)
+                    register_single_leg_paper(e)
                     for admission_signal in c3_admission_by_source.get(
                         (e.get("symbol"), e.get("timestamp")),
                         [],
@@ -3289,7 +3393,7 @@ def main():
                                 "EXPERIMENT": "c3_admission_family",
                             },
                         )
-                        paper_outcomes.register(admission_signal)
+                        register_single_leg_paper(admission_signal)
                     for market_gate_signal in c3_market_gate_by_source.get(
                         (e.get("symbol"), e.get("timestamp")),
                         [],
@@ -3313,7 +3417,7 @@ def main():
                                 "EXPERIMENT": "c3_market_gate_family",
                             },
                         )
-                        paper_outcomes.register(market_gate_signal)
+                        register_single_leg_paper(market_gate_signal)
                     for decision in c3_market_gate_refrains_by_source.get(
                         (e.get("symbol"), e.get("timestamp")),
                         [],
@@ -3341,7 +3445,7 @@ def main():
                                 "EXPERIMENT": "c3_nnh_duration_sweep",
                             },
                         )
-                        paper_outcomes.register(duration_signal)
+                        register_single_leg_paper(duration_signal)
                         if duration_signal["strategy_id"] == LIVE_NH015_STRATEGY_ID:
                             live_nh015_candidates.append(duration_signal)
                     nh015_duplicate = derive_nh015_duplicate(e)
@@ -3360,7 +3464,7 @@ def main():
                                 "EXPERIMENT": "c3_nh015_duplicate_parity",
                             },
                         )
-                        paper_outcomes.register(nh015_duplicate)
+                        register_single_leg_paper(nh015_duplicate)
                         if RUN_MODE == "LIVE":
                             executable_quote = _nh015_execution_quotes(
                                 [nh015_duplicate["symbol"]]
@@ -3422,7 +3526,7 @@ def main():
                                     ),
                                 },
                             )
-                            paper_outcomes.register(time_signal)
+                            register_single_leg_paper(time_signal)
                     for m2_family_signal in derive_m2_family_signals(e):
                         append_strategy_event(
                             m2_family_signal["strategy_id"],
@@ -3453,7 +3557,7 @@ def main():
                                 "EXPERIMENT": "m2_forward_exit_family",
                             },
                         )
-                        paper_outcomes.register(m2_family_signal)
+                        register_single_leg_paper(m2_family_signal)
                     if e.get("strategy_id") in parent_signal_counts:
                         parent_signal_counts[e["strategy_id"]] += 1
                     for derived in derive_signals(e):
@@ -3469,7 +3573,7 @@ def main():
                                 "EXIT_MODEL": derived["exit_model"],
                             },
                         )
-                        paper_outcomes.register(derived)
+                        register_single_leg_paper(derived)
                         derived_signal_counts[derived["strategy_id"]] += 1
 
                 for e in live_nh015_candidates:
