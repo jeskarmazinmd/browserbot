@@ -96,6 +96,24 @@ if env_flag("FACTORY_SHADOW_ENABLED", False):
         "research_tools.module_factory.factory_shadow_worker",
     ]
 
+if env_flag("FACTORY_LITERATURE_ENABLED", False):
+    OPTIONAL_WORKERS["factory_literature"] = [
+        sys.executable,
+        "-u",
+        "-m",
+        "research_tools.module_factory.literature_scientist",
+        "--loop",
+    ]
+
+if env_flag("FACTORY_RESEARCH_ENABLED", False):
+    OPTIONAL_WORKERS["factory_research"] = [
+        sys.executable,
+        "-u",
+        "-m",
+        "research_tools.module_factory.rolling_controller",
+        "--loop",
+    ]
+
 EXIT_LOG = Path("/data/worker_supervisor.jsonl")
 ELIGIBILITY_REFRESH = [sys.executable, "-u", "refresh_eligible_symbols.py"]
 DATA_MAINTENANCE = [sys.executable, "-u", "data_maintenance.py"]
