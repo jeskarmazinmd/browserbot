@@ -2663,10 +2663,10 @@ def main():
                     execution_symbols, include_repricing=True,
                     priority_symbols=priority_execution_symbols,
                 )
-                paired_quote_provider.reset(
-                    execution_quotes,
-                    attempted_symbols=execution_symbols,
-                )
+                # Seed only quotes actually returned by the bulk request.
+                # A requested-but-missing symbol must remain eligible for one
+                # targeted same-cycle fetch if a parent signal accepts it.
+                paired_quote_provider.reset(execution_quotes)
                 execution_bids = {
                     symbol: quote["bid"]
                     for symbol, quote in execution_quotes.items()
