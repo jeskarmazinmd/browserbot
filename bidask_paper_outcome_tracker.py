@@ -129,15 +129,24 @@ def register_paired_single_leg_signal(
     parent_entry = dict(parent_entry)
     parent_entry["parent_recorded_at"] = datetime.now(timezone.utc).isoformat()
     symbol = str(parent_entry.get("symbol") or "").upper()
-    # Register both twins before quote resolution.  A quote/API failure can
-    # leave a price pending, but can never lose or delay the mirrored signal.
-    repricing_tracker.register_parent_entry(parent_entry, now=processing_time)
-    ioc_tracker.register(signal)
+
+    # Resolve top-of-book once in the same processing cycle as the accepted
+    # parent event.  Both execution shadows see this identical cached snapshot.
+    # The pure V3 B/A twin must never recover an earlier event from a later
+    # quote: if ASK is absent here, that twin is immediately unpriced.
     try:
         quotes = quote_provider([symbol]) or {}
     except Exception:
         quotes = {}
-    repricing_tracker.update_quotes(quotes, processing_time)
+
+    repricing_tracker.register_parent_entry(
+        parent_entry,
+        quote=quotes.get(symbol),
+        now=processing_time,
+    )
+
+    # IOC/L1 remains the separate execution experiment.
+    ioc_tracker.register(signal)
     ioc_tracker.update_quotes(quotes, processing_time)
     return True
 
@@ -348,13 +357,15 @@ class BidAskPaperOutcomeTracker(PaperOutcomeTracker):
 
 
 class BidAskRepricingTracker:
-    """Pure bid/ask twin of accepted LAST paper trades.
+    """Exact-cycle bid/ask twin of accepted LAST paper trades.
 
-    This tracker never decides whether a trade exists, never resizes it and
-    never runs an exit model.  Parent PAPER_ENTRY/PAPER_EXIT events are the
-    authority; only entry and exit prices are replaced by fresh ASK/BID marks.
-    Missing quotes remain pending/unpriced and are reported as parity failures,
-    rather than silently deleting a parent trade.
+    The LAST parent is the sole authority for whether and when a trade exists.
+    This tracker copies the parent's entry and exit events exactly and changes
+    only executable pricing: LONG entry@ASK and LONG exit@BID.
+
+    Pricing is event-synchronous.  A quote must be available in the same
+    processing cycle as the parent event.  Missing exact-cycle top-of-book is
+    quarantined immediately and is never filled later from a future quote.
     """
 
     def __init__(self, data_root, *, file_stem=REPRICING_FILE_STEM, **_kwargs):
@@ -362,6 +373,8 @@ class BidAskRepricingTracker:
         self.root.mkdir(parents=True, exist_ok=True)
         self.ledger_path = self.root / f"{file_stem}_outcomes.jsonl"
         self.status_path = self.root / f"{file_stem}_status.json"
+        # Keep the historical filename for compatibility, but exact-cycle V3
+        # never intentionally persists pending work.
         self.state_path = self.root / f"{file_stem}_pending.json"
         self.quarantine_path = self.root / f"{file_stem}_quarantine.jsonl"
         self.active = {}
@@ -369,6 +382,8 @@ class BidAskRepricingTracker:
         self.pending_exits = OrderedDict()
         self.seen_entries = set()
         self.seen_exits = set()
+        self.parent_entries_seen = set()
+        self.parent_exits_seen = set()
         self.completed = 0
         self.quarantined_entries = 0
         self.quarantined_exits = 0
@@ -405,17 +420,22 @@ class BidAskRepricingTracker:
                 with self.quarantine_path.open(errors="replace") as rows:
                     for line in rows:
                         try:
-                            event = str(
-                                json.loads(line).get("event_type") or ""
-                            ).upper()
+                            row = json.loads(line)
+                            event = str(row.get("event_type") or "").upper()
+                            setup_id = self._setup_id(row)
                         except (TypeError, ValueError):
                             continue
                         if event == "BA_REPRICE_ENTRY_UNAVAILABLE":
                             self.quarantined_entries += 1
+                            if setup_id:
+                                self.parent_entries_seen.add(setup_id)
                         elif event == "BA_REPRICE_EXIT_UNAVAILABLE":
                             self.quarantined_exits += 1
+                            if setup_id:
+                                self.parent_exits_seen.add(setup_id)
             except OSError:
                 pass
+
         if self.ledger_path.exists():
             try:
                 rows = self.ledger_path.open(errors="replace")
@@ -433,55 +453,64 @@ class BidAskRepricingTracker:
                             continue
                         event = str(row.get("event_type") or "").upper()
                         if event == "BA_REPRICE_ENTRY":
+                            self.parent_entries_seen.add(setup_id)
                             self.seen_entries.add(setup_id)
                             self.active[setup_id] = row
                         elif event == "BA_REPRICE_EXIT":
+                            self.parent_exits_seen.add(setup_id)
                             self.seen_exits.add(setup_id)
                             self.active.pop(setup_id, None)
                             self.completed += 1
+
+        # Old versions persisted delayed-repricing work here.  On upgrade it
+        # must never be resumed with a future quote.  Quarantine it immediately.
         if self.state_path.exists():
             try:
                 state = json.loads(self.state_path.read_text())
                 recovered_at = datetime.now(timezone.utc)
+
                 for row in state.get("pending_entries", []):
                     setup_id = self._setup_id(row)
-                    queued_at = row.get("queued_at")
-                    stale = True
-                    try:
-                        stale = (
-                            recovered_at - _utc(queued_at)
-                        ).total_seconds() > MAX_REPRICING_RECOVERY_AGE_SECONDS
-                    except (TypeError, ValueError):
-                        pass
-                    if setup_id and setup_id not in self.seen_entries and stale:
-                        self._quarantine(
-                            "BA_REPRICE_ENTRY_UNAVAILABLE", row, recovered_at
-                        )
-                        self.quarantined_entries += 1
-                    elif setup_id and setup_id not in self.seen_entries:
-                        self.pending_entries[setup_id] = row
+                    if not setup_id or setup_id in self.seen_entries:
+                        continue
+                    self.parent_entries_seen.add(setup_id)
+                    self._quarantine(
+                        "BA_REPRICE_ENTRY_UNAVAILABLE",
+                        row,
+                        recovered_at,
+                        reason="legacy_pending_entry_discarded_exact_cycle_required",
+                    )
+                    self.quarantined_entries += 1
+
                 for row in state.get("pending_exits", []):
                     setup_id = self._setup_id(row)
-                    exit_at = row.get("exit_timestamp")
-                    stale = True
-                    try:
-                        stale = (
-                            recovered_at - _utc(exit_at)
-                        ).total_seconds() > MAX_REPRICING_EXIT_DELAY_SECONDS
-                    except (TypeError, ValueError):
-                        pass
-                    if setup_id and setup_id not in self.seen_exits and stale:
-                        self._quarantine(
-                            "BA_REPRICE_EXIT_UNAVAILABLE", row, recovered_at
-                        )
-                        self.active.pop(setup_id, None)
-                        self.quarantined_exits += 1
-                    elif setup_id and setup_id not in self.seen_exits:
-                        self.pending_exits[setup_id] = row
+                    if not setup_id or setup_id in self.seen_exits:
+                        continue
+                    self.parent_exits_seen.add(setup_id)
+                    self._quarantine(
+                        "BA_REPRICE_EXIT_UNAVAILABLE",
+                        row,
+                        recovered_at,
+                        reason="legacy_pending_exit_discarded_exact_cycle_required",
+                    )
+                    # Parent exit is authoritative: this B/A twin is no longer
+                    # active even though its exact-cycle exit price is missing.
+                    self.active.pop(setup_id, None)
+                    self.quarantined_exits += 1
             except (OSError, TypeError, ValueError):
                 pass
 
-    def _quarantine(self, event_type, row, recovered_at, *, reason="historical_top_of_book_unavailable_after_restart"):
+        self.pending_entries.clear()
+        self.pending_exits.clear()
+
+    def _quarantine(
+        self,
+        event_type,
+        row,
+        recovered_at,
+        *,
+        reason="exact_cycle_top_of_book_unavailable",
+    ):
         audit = {
             "event_type": event_type,
             "recorded_at": recovered_at.isoformat(),
@@ -489,7 +518,9 @@ class BidAskRepricingTracker:
             "strategy_id": row.get("strategy_id"),
             "symbol": row.get("symbol"),
             "signal_timestamp": row.get("signal_timestamp"),
-            "parent_entry_timestamp": row.get("parent_entry_timestamp"),
+            "parent_entry_timestamp": (
+                row.get("parent_entry_timestamp") or row.get("entry_timestamp")
+            ),
             "parent_exit_timestamp": row.get("exit_timestamp"),
             "reason": reason,
             "paper_only": True,
@@ -499,35 +530,40 @@ class BidAskRepricingTracker:
             handle.write(json.dumps(audit, separators=(",", ":")) + "\n")
 
     def _write_status(self):
-        expected_entries = set(self.seen_entries) | set(self.pending_entries)
-        expected_exits = set(self.seen_exits) | set(self.pending_exits)
         self._atomic_json(self.state_path, {
             "updated_at": datetime.now(timezone.utc).isoformat(),
-            "pending_entries": list(self.pending_entries.values()),
-            "pending_exits": list(self.pending_exits.values()),
+            "pending_entries": [],
+            "pending_exits": [],
         })
         self._atomic_json(self.status_path, {
             "updated_at": datetime.now(timezone.utc).isoformat(),
-            "execution_model": "BIDASK_REPRICE_V1",
-            "pricing": "parent trade twin; LONG entry@ask exit@bid",
+            "execution_model": "BIDASK_REPRICE_V1_EXACT_CYCLE",
+            "pricing": "parent trade twin; exact-cycle LONG entry@ask exit@bid",
             "parent_is_trade_authority": True,
+            "exact_cycle_pricing": True,
+            "future_quote_recovery_enabled": False,
             "selection_recomputed": False,
             "exit_model_recomputed": False,
             "quantity_recomputed": False,
             "active": len(self.active),
-            "pending_entries": len(self.pending_entries),
-            "pending_exits": len(self.pending_exits),
+            "pending_entries": 0,
+            "pending_exits": 0,
             "seen_entries": len(self.seen_entries),
             "seen_exits": len(self.seen_exits),
             "completed": self.completed,
-            "parity_ok": not self.pending_entries and not self.pending_exits and not self.quarantined_entries and not self.quarantined_exits,
+            "parity_ok": (
+                not self.quarantined_entries
+                and not self.quarantined_exits
+            ),
             "paired_coverage": {
-                "parent_entries_seen": len(expected_entries),
+                "parent_entries_seen": len(self.parent_entries_seen),
                 "repriced_entries": len(self.seen_entries),
-                "pending_entry_prices": len(self.pending_entries),
-                "parent_exits_seen": len(expected_exits),
+                "pending_entry_prices": 0,
+                "unpriced_entries": self.quarantined_entries,
+                "parent_exits_seen": len(self.parent_exits_seen),
                 "repriced_exits": len(self.seen_exits),
-                "pending_exit_prices": len(self.pending_exits),
+                "pending_exit_prices": 0,
+                "unpriced_exits": self.quarantined_exits,
             },
             "historical_unpriced_quarantined": {
                 "entries": self.quarantined_entries,
@@ -535,133 +571,140 @@ class BidAskRepricingTracker:
                 "path": str(self.quarantine_path),
             },
             "broker_execution_enabled": False,
-            "live_promotion_ready": not self.pending_entries and not self.pending_exits and not self.quarantined_entries and not self.quarantined_exits,
+            "live_promotion_ready": (
+                not self.quarantined_entries
+                and not self.quarantined_exits
+            ),
         })
 
     def symbols(self):
+        # Only successfully priced B/A entries remain active.  There is no
+        # delayed repricing queue in exact-cycle mode.
         result = {
             str(row.get("symbol") or "").upper()
             for row in self.active.values()
         }
-        result.update(
-            str(row.get("symbol") or "").upper()
-            for row in self.pending_entries.values()
-        )
-        result.update(
-            str(row.get("symbol") or "").upper()
-            for row in self.pending_exits.values()
-        )
         result.discard("")
         return result
 
     def register_parent_entry(self, parent_entry, quote=None, now=None):
-        """Accept only a record already accepted by the LAST tracker."""
+        """Mirror a parent entry now, using only this call's quote."""
         setup_id = self._setup_id(parent_entry)
-        if not setup_id or setup_id in self.seen_entries or setup_id in self.pending_entries:
+        if (
+            not setup_id
+            or setup_id in self.parent_entries_seen
+            or setup_id in self.seen_entries
+        ):
             return False
-        queued = dict(parent_entry)
-        queued["parent_entry_price"] = parent_entry.get("entry_price")
-        queued["parent_entry_timestamp"] = parent_entry.get("entry_timestamp")
-        queued["queued_at"] = _utc(now or datetime.now(timezone.utc)).isoformat()
-        self.pending_entries[setup_id] = queued
-        self.update_quotes({str(queued.get("symbol") or "").upper(): quote} if quote else {}, now)
+
+        now = _utc(now or datetime.now(timezone.utc))
+        self.parent_entries_seen.add(setup_id)
+
+        parent = dict(parent_entry)
+        parent["parent_entry_price"] = parent_entry.get("entry_price")
+        parent["parent_entry_timestamp"] = parent_entry.get("entry_timestamp")
+        parent["queued_at"] = now.isoformat()
+
+        quote = quote or {}
+        ask = self._positive(quote.get("ask"))
+
+        if ask is None:
+            self._quarantine(
+                "BA_REPRICE_ENTRY_UNAVAILABLE",
+                parent,
+                now,
+                reason="entry_ask_unavailable_in_parent_cycle",
+            )
+            self.quarantined_entries += 1
+            self._write_status()
+            return True
+
+        row = {
+            **parent,
+            "event_type": "BA_REPRICE_ENTRY",
+            "recorded_at": now.isoformat(),
+            "setup_id": setup_id,
+            "entry_price": ask,
+            "entry_ask": ask,
+            "entry_bid": self._positive(quote.get("bid")),
+            "entry_timestamp": (
+                parent.get("entry_timestamp") or parent.get("signal_timestamp")
+            ),
+            "execution_model": "BIDASK_REPRICE_V1_EXACT_CYCLE",
+            "parent_strategy_id": parent.get("strategy_id"),
+            "parent_setup_id": setup_id,
+            "parent_recorded_at": parent.get("parent_recorded_at"),
+            "mirror_registered_at": now.isoformat(),
+            "quote_resolved_at": now.isoformat(),
+            "trade_intent": canonical_trade_intent(parent),
+            "paper_only": True,
+            "broker_execution_enabled": False,
+        }
+        self._append(row)
+        self.active[setup_id] = row
+        self.seen_entries.add(setup_id)
         self._write_status()
         return True
 
     def register_parent_exits(self, parent_exits, quotes, now=None):
-        for parent_exit in parent_exits:
-            setup_id = self._setup_id(parent_exit)
-            if not setup_id or setup_id in self.seen_exits or setup_id in self.pending_exits:
-                continue
-            self.pending_exits[setup_id] = dict(parent_exit)
-        return self.update_quotes(quotes, now)
-
-    def update_quotes(self, quotes, now=None):
+        """Mirror parent exits now, using only quotes supplied in this call."""
         now = _utc(now or datetime.now(timezone.utc))
         completed = []
 
-        for setup_id, parent in list(self.pending_entries.items()):
-            try:
-                expired = (now - _utc(parent["queued_at"])).total_seconds() > MAX_REPRICING_RECOVERY_AGE_SECONDS
-            except (KeyError, TypeError, ValueError):
-                expired = True
-            if expired:
-                self._quarantine(
-                    "BA_REPRICE_ENTRY_UNAVAILABLE", parent, now,
-                    reason="entry_quote_unavailable_within_60_seconds",
-                )
-                self.pending_entries.pop(setup_id, None)
-                self.quarantined_entries += 1
+        for parent_exit in parent_exits:
+            setup_id = self._setup_id(parent_exit)
+            if (
+                not setup_id
+                or setup_id in self.parent_exits_seen
+                or setup_id in self.seen_exits
+            ):
                 continue
-            symbol = str(parent.get("symbol") or "").upper()
-            quote = quotes.get(symbol) or {}
-            ask = self._positive(quote.get("ask"))
-            if ask is None:
-                continue
-            row = {
-                **parent,
-                "event_type": "BA_REPRICE_ENTRY",
-                "recorded_at": datetime.now(timezone.utc).isoformat(),
-                "setup_id": setup_id,
-                "entry_price": ask,
-                "entry_ask": ask,
-                "entry_bid": self._positive(quote.get("bid")),
-                "entry_timestamp": parent.get("entry_timestamp") or parent.get("signal_timestamp"),
-                "execution_model": "BIDASK_REPRICE_V1",
-                "parent_strategy_id": parent.get("strategy_id"),
-                "parent_setup_id": setup_id,
-                "parent_recorded_at": parent.get("parent_recorded_at"),
-                "mirror_registered_at": parent.get("queued_at"),
-                "quote_resolved_at": now.isoformat(),
-                "trade_intent": canonical_trade_intent(parent),
-                "paper_only": True,
-                "broker_execution_enabled": False,
-            }
-            self._append(row)
-            self.active[setup_id] = row
-            self.seen_entries.add(setup_id)
-            del self.pending_entries[setup_id]
 
-        for setup_id, parent_exit in list(self.pending_exits.items()):
-            try:
-                exit_at = _utc(parent_exit["exit_timestamp"])
-                delay = (now - exit_at).total_seconds()
-            except (KeyError, TypeError, ValueError):
-                delay = MAX_REPRICING_EXIT_DELAY_SECONDS + 1
-            if delay > MAX_REPRICING_EXIT_DELAY_SECONDS or delay < -5:
+            self.parent_exits_seen.add(setup_id)
+            entry = self.active.get(setup_id)
+
+            if entry is None:
+                # This normally means the exact-cycle entry itself was
+                # unpriced.  The parent exit is still observed and must not
+                # create a later pricing opportunity.
                 self._quarantine(
-                    "BA_REPRICE_EXIT_UNAVAILABLE", parent_exit, now,
-                    reason="exit_bid_unavailable_within_120_seconds",
+                    "BA_REPRICE_EXIT_UNAVAILABLE",
+                    parent_exit,
+                    now,
+                    reason="exact_cycle_entry_unpriced_no_ba_position",
                 )
-                self.pending_exits.pop(setup_id, None)
+                self.quarantined_exits += 1
+                continue
+
+            symbol = str(entry.get("symbol") or "").upper()
+            quote = (quotes or {}).get(symbol) or {}
+            bid = self._positive(quote.get("bid"))
+
+            if bid is None:
+                self._quarantine(
+                    "BA_REPRICE_EXIT_UNAVAILABLE",
+                    parent_exit,
+                    now,
+                    reason="exit_bid_unavailable_in_parent_cycle",
+                )
                 self.active.pop(setup_id, None)
                 self.quarantined_exits += 1
                 continue
-            entry = self.active.get(setup_id)
-            if entry is None:
-                continue
-            symbol = str(entry.get("symbol") or "").upper()
-            quote = quotes.get(symbol) or {}
-            bid = self._positive(quote.get("bid"))
-            if bid is None:
-                continue
-            bid_time_ms = self._positive(quote.get("bid_time_ms"))
-            if bid_time_ms is not None:
-                bid_at = datetime.fromtimestamp(bid_time_ms / 1000.0, timezone.utc)
-                if (bid_at - exit_at).total_seconds() > MAX_REPRICING_EXIT_DELAY_SECONDS:
-                    continue
+
             entry_price = float(entry["entry_price"])
             notional = float(entry.get("notional") or 0.0)
+            bid_time_ms = self._positive(quote.get("bid_time_ms"))
+
             row = {
                 **entry,
                 "event_type": "BA_REPRICE_EXIT",
-                "recorded_at": datetime.now(timezone.utc).isoformat(),
+                "recorded_at": now.isoformat(),
                 "exit_timestamp": parent_exit.get("exit_timestamp"),
                 "exit_price": bid,
                 "exit_bid": bid,
                 "exit_bid_time_ms": bid_time_ms,
                 "exit_quote_resolved_at": now.isoformat(),
-                "exit_resolution_delay_seconds": delay,
+                "exit_resolution_delay_seconds": 0.0,
                 "exit_ask": self._positive(quote.get("ask")),
                 "exit_reason": parent_exit.get("exit_reason"),
                 "parent_exit_price": parent_exit.get("exit_price"),
@@ -671,13 +714,21 @@ class BidAskRepricingTracker:
             }
             self._append(row)
             self.active.pop(setup_id, None)
-            self.pending_exits.pop(setup_id, None)
             self.seen_exits.add(setup_id)
             self.completed += 1
             completed.append(row)
 
         self._write_status()
         return completed
+
+    def update_quotes(self, quotes, now=None):
+        """Do not retroactively price parent events from later quotes.
+
+        Kept as a compatibility no-op because the runner may still call this
+        method for the separate quote-update cycle.
+        """
+        self._write_status()
+        return []
 
 
 # Explicit name for the pre-existing estimated fill/liquidity experiment.

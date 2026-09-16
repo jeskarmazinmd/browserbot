@@ -2704,26 +2704,9 @@ def main():
                             flush=True,
                         )
 
-                # Pure BA resolves prices only. Parent LAST events remain the
-                # sole authority for whether and when a trade enters/exits.
-                bidask_repricing_outcomes.update_quotes(
-                    repricing_quotes, quote_source.now()
-                )
-                if bidask_repricing_outcomes.pending_exits:
-                    retry_minute = int(time.time() // 60)
-                    if getattr(bidask_repricing_outcomes, "_last_retry_diagnostic_minute", None) != retry_minute:
-                        bidask_repricing_outcomes._last_retry_diagnostic_minute = retry_minute
-                        pending_symbols = {
-                            str(row.get("symbol") or "").upper()
-                            for row in bidask_repricing_outcomes.pending_exits.values()
-                        }
-                        append_bot_event(
-                            "BIDASK_REPRICE_EXIT_RETRY",
-                            pending_exits=len(bidask_repricing_outcomes.pending_exits),
-                            pending_symbols=len(pending_symbols),
-                            usable_bids=len(pending_symbols & repricing_quotes.keys()),
-                            usable_live_quotes=len(pending_symbols & execution_quotes.keys()),
-                        )
+                # Exact-cycle V3 B/A never resolves an old parent event from a
+                # later quote. Parent entry/exit events are the sole authority,
+                # and pricing is performed synchronously at those events.
 
                 for outcome in iocl1_paper_outcomes.update_quotes(
                     execution_quotes, quote_source.now()
@@ -2759,8 +2742,27 @@ def main():
                     flush=True,
                 )
             if RUN_MODE == "LIVE":
+                # Parent LAST has decided the exits. Fetch top-of-book now for
+                # exactly those symbols so the B/A twin uses the exit-cycle BID,
+                # never an earlier loop snapshot and never a future retry.
+                parent_exit_symbols = {
+                    str(outcome.get("symbol") or "").upper()
+                    for outcome in parent_outcomes
+                    if outcome.get("symbol")
+                }
+                if parent_exit_symbols:
+                    _, parent_exit_repricing_quotes = _nh015_execution_quotes(
+                        parent_exit_symbols,
+                        include_repricing=True,
+                        priority_symbols=parent_exit_symbols,
+                    )
+                else:
+                    parent_exit_repricing_quotes = {}
+
                 for outcome in bidask_repricing_outcomes.register_parent_exits(
-                    parent_outcomes, repricing_quotes, now_utc
+                    parent_outcomes,
+                    parent_exit_repricing_quotes,
+                    now_utc,
                 ):
                     print(
                         "BIDASK_REPRICED_OUTCOME "

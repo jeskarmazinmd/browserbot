@@ -118,55 +118,78 @@ class BidAskRepricingTrackerTest(unittest.TestCase):
     def test_only_accepted_parent_trade_is_registered_and_exit_is_copied(self):
         with tempfile.TemporaryDirectory() as root:
             parent = PaperOutcomeTracker(root)
-            self.assertTrue(parent.register(signal()))
-            parent_entry = parent.active[signal()["setup_id"]]
-
             ba = BidAskRepricingTracker(root)
-            self.assertTrue(ba.register_parent_entry(parent_entry, now=NOW))
-            self.assertEqual(set(ba.pending_entries), {signal()["setup_id"]})
 
-            ba.update_quotes({"ABC": {"bid": 99.9, "ask": 100.1}}, NOW)
-            entry = ba.active[signal()["setup_id"]]
-            self.assertEqual(entry["entry_price"], 100.1)
-            self.assertEqual(entry["entry_timestamp"], parent_entry["entry_timestamp"])
-            self.assertEqual(entry["notional"], parent_entry["notional"])
-            self.assertEqual(entry["trade_intent"]["trade_id"], signal()["setup_id"])
+            self.assertTrue(parent.register(signal()))
+            setup_id = signal()["setup_id"]
+
+            self.assertTrue(
+                ba.register_parent_entry(
+                    parent.active[setup_id],
+                    quote={"bid": 100.0, "ask": 100.1},
+                    now=NOW,
+                )
+            )
+            self.assertFalse(ba.pending_entries)
+            self.assertIn(setup_id, ba.active)
+            self.assertEqual(ba.active[setup_id]["entry_price"], 100.1)
+
+            exit_time = NOW + timedelta(seconds=30)
+            parent_exit = dict(
+                parent.active[setup_id],
+                exit_timestamp=exit_time.isoformat(),
+                exit_price=100.5,
+                exit_reason="STOP",
+            )
+            result = ba.register_parent_exits(
+                [parent_exit],
+                {"ABC": {"bid": 100.4, "ask": 100.5}},
+                exit_time,
+            )
+
+            self.assertEqual(len(result), 1)
+            self.assertEqual(result[0]["exit_price"], 100.4)
             self.assertEqual(
-                entry["trade_intent"]["source_strategy_id"], "C3N25S10"
+                result[0]["exit_timestamp"],
+                parent_exit["exit_timestamp"],
             )
-
-            parent_exit = {
-                **parent_entry,
-                "exit_timestamp": "2026-09-11T14:37:12+00:00",
-                "exit_reason": "ADAPTIVE_TRAIL",
-                "exit_price": 100.8,
-            }
-            exits = ba.register_parent_exits(
-                [parent_exit], {"ABC": {"bid": 100.7, "ask": 100.8}},
-                datetime.fromisoformat(parent_exit["exit_timestamp"]),
+            self.assertEqual(result[0]["exit_reason"], "STOP")
+            self.assertEqual(
+                result[0]["parent_exit_timestamp"],
+                parent_exit["exit_timestamp"],
             )
-            self.assertEqual(len(exits), 1)
-            self.assertEqual(exits[0]["exit_timestamp"], parent_exit["exit_timestamp"])
-            self.assertEqual(exits[0]["exit_reason"], parent_exit["exit_reason"])
-            self.assertEqual(exits[0]["exit_price"], 100.7)
-            self.assertNotIn(signal()["setup_id"], ba.active)
+            self.assertFalse(ba.pending_exits)
+            self.assertNotIn(setup_id, ba.active)
 
-    def test_missing_quote_never_rejects_or_deletes_parent_trade(self):
+    def test_missing_entry_quote_is_immediately_unpriced_and_never_recovered(self):
         with tempfile.TemporaryDirectory() as root:
             parent = PaperOutcomeTracker(root)
             parent.register(signal())
             ba = BidAskRepricingTracker(root)
             current = datetime.now(timezone.utc)
-            ba.register_parent_entry(
-                parent.active[signal()["setup_id"]], now=current
-            )
-            ba.update_quotes({}, current)
-            self.assertIn(signal()["setup_id"], ba.pending_entries)
-            status = json.loads(ba.status_path.read_text())
-            self.assertFalse(status["parity_ok"])
+            setup_id = signal()["setup_id"]
 
-            recovered = BidAskRepricingTracker(root)
-            self.assertIn(signal()["setup_id"], recovered.pending_entries)
+            self.assertTrue(ba.register_parent_entry(
+                parent.active[setup_id], now=current
+            ))
+            self.assertNotIn(setup_id, ba.pending_entries)
+            self.assertNotIn(setup_id, ba.active)
+            self.assertEqual(ba.quarantined_entries, 1)
+
+            # A future quote must never retroactively price the entry.
+            ba.update_quotes(
+                {"ABC": {"bid": 99.9, "ask": 100.1}},
+                current + timedelta(seconds=1),
+            )
+            self.assertNotIn(setup_id, ba.active)
+            self.assertNotIn(setup_id, ba.seen_entries)
+
+            status = json.loads(ba.status_path.read_text())
+            self.assertEqual(status["pending_entries"], 0)
+            self.assertEqual(
+                status["paired_coverage"]["unpriced_entries"], 1
+            )
+            self.assertFalse(status["parity_ok"])
 
     def test_iocl1_name_preserves_existing_simulator(self):
         self.assertIs(IocL1PaperOutcomeTracker, BidAskPaperOutcomeTracker)
@@ -176,60 +199,184 @@ class BidAskRepricingTrackerTest(unittest.TestCase):
             parent = PaperOutcomeTracker(root)
             parent.register(signal())
             tracker = BidAskRepricingTracker(root)
-            tracker.register_parent_entry(parent.active[signal()["setup_id"]], now=NOW)
-            tracker.update_quotes({"ABC": {"ask": 100.1}}, NOW)
-            exited = NOW + timedelta(seconds=30)
-            parent_exit = dict(parent.active[signal()["setup_id"]],
-                               exit_timestamp=exited.isoformat(), exit_price=100.4)
-            result = tracker.register_parent_exits(
-                [parent_exit], {"ABC": {"bid": 100.2, "bid_time_ms": exited.timestamp() * 1000}}, exited
+            setup_id = signal()["setup_id"]
+
+            tracker.register_parent_entry(
+                parent.active[setup_id],
+                quote={"bid": 100.0, "ask": 100.1},
+                now=NOW,
             )
+            self.assertIn(setup_id, tracker.active)
+
+            exit_time = NOW + timedelta(seconds=30)
+            parent_exit = dict(
+                parent.active[setup_id],
+                exit_timestamp=exit_time.isoformat(),
+                exit_price=100.4,
+                exit_reason="STOP",
+            )
+
+            # Exit needs BID only.  ASK may be absent/stale without preventing
+            # exact-cycle SELL@bid pricing.
+            result = tracker.register_parent_exits(
+                [parent_exit],
+                {
+                    "ABC": {
+                        "bid": 100.3,
+                        "bid_time_ms": exit_time.timestamp() * 1000,
+                    }
+                },
+                exit_time,
+            )
+
             self.assertEqual(len(result), 1)
-            self.assertEqual(result[0]["exit_bid_time_ms"], exited.timestamp() * 1000)
-            self.assertEqual(result[0]["exit_resolution_delay_seconds"], 0)
+            self.assertEqual(result[0]["exit_bid"], 100.3)
+            self.assertEqual(result[0]["exit_price"], 100.3)
+            self.assertIsNone(result[0]["exit_ask"])
+            self.assertEqual(
+                result[0]["exit_timestamp"],
+                parent_exit["exit_timestamp"],
+            )
 
     def test_next_session_bid_quarantines_old_exit_without_pricing_it(self):
         with tempfile.TemporaryDirectory() as root:
             parent = PaperOutcomeTracker(root)
             parent.register(signal())
             tracker = BidAskRepricingTracker(root)
-            tracker.register_parent_entry(parent.active[signal()["setup_id"]], now=NOW)
-            tracker.update_quotes({"ABC": {"ask": 100.1}}, NOW)
+            setup_id = signal()["setup_id"]
+
+            tracker.register_parent_entry(
+                parent.active[setup_id],
+                quote={"bid": 100.0, "ask": 100.1},
+                now=NOW,
+            )
+
             exit_time = NOW + timedelta(seconds=30)
-            parent_exit = dict(parent.active[signal()["setup_id"]],
-                               exit_timestamp=exit_time.isoformat(), exit_price=100.4)
-            tracker.register_parent_exits([parent_exit], {}, exit_time)
-            next_day = exit_time + timedelta(days=1)
-            self.assertEqual(tracker.update_quotes({"ABC": {
-                "bid": 120, "bid_time_ms": next_day.timestamp() * 1000,
-            }}, next_day), [])
+            parent_exit = dict(
+                parent.active[setup_id],
+                exit_timestamp=exit_time.isoformat(),
+                exit_price=100.4,
+                exit_reason="STOP",
+            )
+
+            # No BID in the parent exit cycle => immediately unpriced.
+            result = tracker.register_parent_exits(
+                [parent_exit], {}, exit_time
+            )
+            self.assertEqual(result, [])
+            self.assertNotIn(setup_id, tracker.active)
             self.assertFalse(tracker.pending_exits)
             self.assertEqual(tracker.quarantined_exits, 1)
-            self.assertNotIn("BA_REPRICE_EXIT\"", tracker.ledger_path.read_text())
-            audit = json.loads(tracker.quarantine_path.read_text().splitlines()[-1])
-            self.assertEqual(audit["reason"], "exit_bid_unavailable_within_120_seconds")
 
-    def test_restart_preserves_exit_within_grace_and_expires_later(self):
+            # A next-session/future BID cannot resurrect or price that exit.
+            future = exit_time + timedelta(hours=18)
+            tracker.update_quotes(
+                {
+                    "ABC": {
+                        "bid": 101.0,
+                        "bid_time_ms": future.timestamp() * 1000,
+                    }
+                },
+                future,
+            )
+            self.assertNotIn(setup_id, tracker.seen_exits)
+
+            ledger = (
+                tracker.ledger_path.read_text()
+                if tracker.ledger_path.exists()
+                else ""
+            )
+            self.assertNotIn('"event_type":"BA_REPRICE_EXIT"', ledger)
+
+            audit = json.loads(
+                tracker.quarantine_path.read_text().splitlines()[-1]
+            )
+            self.assertEqual(
+                audit["reason"],
+                "exit_bid_unavailable_in_parent_cycle",
+            )
+
+    def test_missing_exit_bid_is_immediately_unpriced_and_never_recovered(self):
         with tempfile.TemporaryDirectory() as root:
-            current = datetime.now(timezone.utc)
+            parent = PaperOutcomeTracker(root)
+            parent.register(signal())
             tracker = BidAskRepricingTracker(root)
-            setup = "C3MG_I5S|ABC|recent"
-            tracker.active[setup] = {
-                "setup_id": setup, "strategy_id": "C3MG_I5S", "symbol": "ABC",
-                "entry_price": 100.1, "notional": 1000,
+            setup_id = signal()["setup_id"]
+
+            tracker.register_parent_entry(
+                parent.active[setup_id],
+                quote={"bid": 100.0, "ask": 100.1},
+                now=NOW,
+            )
+            self.assertIn(setup_id, tracker.active)
+
+            exit_time = NOW + timedelta(seconds=30)
+            parent_exit = dict(
+                parent.active[setup_id],
+                exit_timestamp=exit_time.isoformat(),
+                exit_price=100.4,
+                exit_reason="STOP",
+            )
+
+            self.assertEqual(
+                tracker.register_parent_exits([parent_exit], {}, exit_time),
+                [],
+            )
+            self.assertNotIn(setup_id, tracker.pending_exits)
+            self.assertNotIn(setup_id, tracker.active)
+            self.assertEqual(tracker.quarantined_exits, 1)
+
+            # Even one second later, a perfectly valid bid cannot be used.
+            self.assertEqual(
+                tracker.update_quotes(
+                    {"ABC": {
+                        "bid": 100.3,
+                        "bid_time_ms": (
+                            exit_time + timedelta(seconds=1)
+                        ).timestamp() * 1000,
+                    }},
+                    exit_time + timedelta(seconds=1),
+                ),
+                [],
+            )
+            self.assertNotIn(setup_id, tracker.seen_exits)
+
+            audit = json.loads(
+                tracker.quarantine_path.read_text().splitlines()[-1]
+            )
+            self.assertEqual(
+                audit["reason"],
+                "exit_bid_unavailable_in_parent_cycle",
+            )
+
+    def test_restart_discards_legacy_pending_work_without_future_pricing(self):
+        with tempfile.TemporaryDirectory() as root:
+            tracker = BidAskRepricingTracker(root)
+            setup_id = "C3MG_I5S|ABC|legacy"
+            legacy_entry = {
+                "setup_id": setup_id,
+                "strategy_id": "C3MG_I5S",
+                "symbol": "ABC",
+                "entry_price": 100.0,
+                "entry_timestamp": NOW.isoformat(),
+                "queued_at": NOW.isoformat(),
             }
-            tracker._append({"event_type": "BA_REPRICE_ENTRY", **tracker.active[setup]})
-            exit_at = current - timedelta(seconds=90)
-            tracker.pending_exits[setup] = {
-                **tracker.active[setup], "exit_timestamp": exit_at.isoformat(),
-            }
-            tracker._write_status()
+            tracker._atomic_json(tracker.state_path, {
+                "updated_at": NOW.isoformat(),
+                "pending_entries": [legacy_entry],
+                "pending_exits": [],
+            })
+
             recovered = BidAskRepricingTracker(root)
-            self.assertIn(setup, recovered.pending_exits)
-            recovered.update_quotes({"ABC": {
-                "bid": 100.0, "bid_time_ms": current.timestamp() * 1000,
-            }}, current)
-            self.assertIn(setup, recovered.seen_exits)
+            self.assertFalse(recovered.pending_entries)
+            self.assertEqual(recovered.quarantined_entries, 1)
+
+            recovered.update_quotes(
+                {"ABC": {"bid": 99.9, "ask": 100.1}},
+                NOW + timedelta(seconds=1),
+            )
+            self.assertNotIn(setup_id, recovered.active)
+            self.assertNotIn(setup_id, recovered.seen_entries)
 
     def test_live_quote_filter_stays_strict_while_v3_gets_bid(self):
         # Extract just the provider: importing the runner starts unrelated
