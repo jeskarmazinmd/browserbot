@@ -53,6 +53,9 @@ OPTIONAL_FIELDS = (
     "experimental_child", "discovery_period", "prospective_start_utc",
     "conditional_filter", "time_of_day_label", "entry_minute_et",
     "time_of_day_sweep_version",
+    "execution_model", "entry_bid", "entry_ask", "requested_qty",
+    "filled_qty", "entry_fill_outcome", "entry_quote_age_ms",
+    "displayed_ask_qty", "exit_bid", "exit_ask", "exit_quote_age_ms",
 )
 
 
@@ -82,18 +85,21 @@ class PaperOutcomeTracker:
         entry_start_hour=9, entry_start_minute=30,
         entry_cutoff_hour=15, entry_cutoff_minute=30,
         checkpoint_seconds=300,
+        file_stem="paper_signal",
+        use_observed_exit_prices=False,
     ):
         self.root = Path(data_root)
         self.root.mkdir(parents=True, exist_ok=True)
-        self.ledger_path = self.root / "paper_signal_outcomes.jsonl"
-        self.state_path = self.root / "paper_signal_active.json"
-        self.status_path = self.root / "paper_signal_status.json"
+        self.ledger_path = self.root / f"{file_stem}_outcomes.jsonl"
+        self.state_path = self.root / f"{file_stem}_active.json"
+        self.status_path = self.root / f"{file_stem}_status.json"
         self.notional = float(notional)
         self.eod_hour = int(eod_hour)
         self.eod_minute = int(eod_minute)
         self.entry_start_minute_et = int(entry_start_hour) * 60 + int(entry_start_minute)
         self.entry_cutoff_minute_et = int(entry_cutoff_hour) * 60 + int(entry_cutoff_minute)
         self.checkpoint_seconds = float(checkpoint_seconds)
+        self.use_observed_exit_prices = bool(use_observed_exit_prices)
         self.seen = set()
         self.active = {}
         self.by_symbol = defaultdict(set)
@@ -225,15 +231,15 @@ class PaperOutcomeTracker:
             "strategy_id": strategy_id,
             "symbol": symbol,
             "signal_timestamp": timestamp.isoformat(),
-        "entry_timestamp": (
-            timestamp.isoformat()
-            if signal.get("entered", True) is not False
-            else None
-        ),
+            "entry_timestamp": (
+                signal.get("execution_entry_timestamp") or timestamp.isoformat()
+                if signal.get("entered", True) is not False
+                else None
+            ),
             "entry_price": entry,
             "target_price": target,
             "stop_price": stop,
-            "notional": self.notional,
+            "notional": _number(signal.get("paper_notional")) or self.notional,
         }
         for key in OPTIONAL_FIELDS:
             if key in signal:
@@ -287,7 +293,14 @@ class PaperOutcomeTracker:
                     record["last_observed_price"] = observed
                     record["last_observed_at"] = now.isoformat()
                     self._dirty = True
-                elif at_eod or now_et.date() > _utc(record["signal_timestamp"]).astimezone(NY).date():
+                elif (
+                    not self.use_observed_exit_prices
+                    and (
+                        at_eod
+                        or now_et.date()
+                        > _utc(record["signal_timestamp"]).astimezone(NY).date()
+                    )
+                ):
                     observed = _number(record.get("last_observed_price"))
                 else:
                     continue
@@ -339,6 +352,10 @@ class PaperOutcomeTracker:
                     reason, exit_price = "TARGET", record["target_price"]
                 if reason is None:
                     continue
+                # Executable bid/ask shadows close at the price actually
+                # available now, not at an idealized target/stop threshold.
+                if self.use_observed_exit_prices and record.get("entered", True):
+                    exit_price = observed
                 pnl = record["notional"] * (exit_price / record["entry_price"] - 1.0)
                 row = {
                     "event_type": "PAPER_EXIT",

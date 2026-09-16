@@ -1,0 +1,7 @@
+{
+  "strategy_id": "MANUAL_TEST1",
+  "version": "1.0.0",
+  "cadence": "manual_one_shot",
+  "maximum_quantity": 1,
+  "description": "Explicitly armed one-share limit-order connectivity test"
+}

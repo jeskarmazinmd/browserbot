@@ -47,15 +47,18 @@ class MultiLegPaperTracker:
         group_notional=1000.0,
         eod_hour=15,
         eod_minute=55,
+        file_stem="multi_leg_paper",
+        require_complete_exit=False,
     ):
         self.root = Path(data_root)
         self.root.mkdir(parents=True, exist_ok=True)
-        self.ledger_path = self.root / "multi_leg_paper_outcomes.jsonl"
-        self.state_path = self.root / "multi_leg_paper_active.json"
-        self.status_path = self.root / "multi_leg_paper_status.json"
+        self.ledger_path = self.root / f"{file_stem}_outcomes.jsonl"
+        self.state_path = self.root / f"{file_stem}_active.json"
+        self.status_path = self.root / f"{file_stem}_status.json"
         self.group_notional = float(group_notional)
         self.eod_hour = int(eod_hour)
         self.eod_minute = int(eod_minute)
+        self.require_complete_exit = bool(require_complete_exit)
         self.active = {}
         self.seen = set()
         self.completed = 0
@@ -160,12 +163,19 @@ class MultiLegPaperTracker:
                 return False
             symbols.add(symbol)
             total_weight += weight
-            normalized.append({
+            item = {
                 "symbol": symbol,
                 "side": side,
                 "entry_price": entry,
                 "weight": weight,
-            })
+            }
+            for key in (
+                "entry_bid", "entry_ask", "requested_qty", "filled_qty",
+                "entry_quote_age_ms", "displayed_qty", "execution_model",
+            ):
+                if key in leg:
+                    item[key] = leg[key]
+            normalized.append(item)
         if total_weight <= 0:
             return False
 
@@ -194,6 +204,8 @@ class MultiLegPaperTracker:
             "live_order_placement": False,
             "setup": signal.get("setup"),
             "research": signal.get("research", {}),
+            "execution_model": signal.get("execution_model"),
+            "pricing": signal.get("pricing"),
             "recorded_at": datetime.now(timezone.utc).isoformat(),
         }
         self._append(record)
@@ -255,7 +267,7 @@ class MultiLegPaperTracker:
             # A normal intraday close requires all current marks.  At EOD the
             # last observed mark is allowed so one absent quote cannot strand a
             # coordinated paper group overnight.
-            if not complete and not at_eod:
+            if not complete and (not at_eod or self.require_complete_exit):
                 continue
             exit_row = {
                 **record,

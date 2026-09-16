@@ -8,6 +8,19 @@ import quote_source
 
 
 class QuoteSourcePersistenceTests(unittest.TestCase):
+    def test_torn_csv_row_does_not_poison_quote_cache(self):
+        payload = (
+            b"2026-09-03T21:29:41+00:00,AAPL,229.10\n"
+            b"2026-09-03T21:29:42+00:00,AAP"
+            b"2026-09-03T21:31:11+00:00,A,148.57\n"
+            b"2026-09-03T21:31:11+00:00,MSFT,507.25\n"
+        )
+
+        parsed = quote_source._parse_quote_bytes(payload)
+
+        self.assertEqual(parsed["symbol"].tolist(), ["AAPL", "MSFT"])
+        self.assertEqual(parsed["price"].tolist(), [229.10, 507.25])
+
     def test_compact_minute_cache_survives_restart(self):
         with tempfile.TemporaryDirectory() as root:
             tape_dir = Path(root) / "tapes"

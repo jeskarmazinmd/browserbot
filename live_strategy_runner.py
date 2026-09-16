@@ -52,7 +52,9 @@ from regime_logger import log_regime, latest_regime
 from paper_outcome_tracker import PaperOutcomeTracker, _utc
 from bidask_paper_outcome_tracker import (
     BidAskRepricingTracker,
+    CycleQuoteProvider,
     IocL1PaperOutcomeTracker,
+    register_paired_single_leg_signal,
 )
 from multi_leg_paper_tracker import MultiLegPaperTracker
 from bidask_multi_leg_paper_tracker import BidAskMultiLegPaperTracker
@@ -312,7 +314,7 @@ def _market_data_client():
     return client
 
 
-def _nh015_execution_quotes(symbols):
+def _nh015_execution_quotes(symbols, *, include_repricing=False, priority_symbols=()):
     """Return fresh executable bid/ask quotes for NH015 live execution.
 
     Missing, malformed, crossed, or stale quotes are omitted so execution
@@ -320,25 +322,50 @@ def _nh015_execution_quotes(symbols):
     """
     symbols = [
         str(symbol).upper()
-        for symbol in dict.fromkeys(symbols)
+        for symbol in dict.fromkeys(sorted(symbols))
         if symbol
     ]
+    priority = list(dict.fromkeys(
+        str(symbol).upper() for symbol in priority_symbols if symbol
+    ))
+    if len(symbols) > 400:
+        symbol_set = set(symbols)
+        priority = [symbol for symbol in priority if symbol in symbol_set]
+        priority_set = set(priority)
+        remaining = [symbol for symbol in symbols if symbol not in priority_set]
+        room = max(0, 400 - len(priority))
+        cursor = getattr(_nh015_execution_quotes, "_cursor", 0) % max(1, len(remaining))
+        selected = (remaining[cursor:] + remaining[:cursor])[:room]
+        _nh015_execution_quotes._cursor = (cursor + len(selected)) % max(1, len(remaining))
+        symbols = (priority + selected)[:400]
     if not symbols:
-        return {}
+        return ({}, {}) if include_repricing else {}
 
     try:
-        response = _market_data_client().get_quotes(symbols)
-        if int(getattr(response, "status_code", 0)) != 200:
-            append_bot_event(
-                "NH015_EXECUTION_QUOTE_ERROR",
-                symbols=symbols,
-                status_code=getattr(response, "status_code", None),
-            )
-            return {}
-
-        payload = response.json() or {}
+        client = _market_data_client()
+        payload = {}
+        for start in range(0, len(symbols), 100):
+            batch = symbols[start:start + 100]
+            try:
+                response = client.get_quotes(batch)
+                if int(getattr(response, "status_code", 0)) != 200:
+                    append_bot_event(
+                        "NH015_EXECUTION_QUOTE_ERROR",
+                        symbols=batch,
+                        status_code=getattr(response, "status_code", None),
+                    )
+                    continue
+                payload.update(response.json() or {})
+            except Exception as exc:
+                append_bot_event(
+                    "NH015_EXECUTION_QUOTE_ERROR",
+                    symbols=batch,
+                    error_type=type(exc).__name__,
+                    error=str(exc),
+                )
         now_ms = time.time() * 1000.0
         out = {}
+        repricing = {}
 
         for symbol in symbols:
             root = payload.get(symbol) or payload.get(symbol.upper()) or {}
@@ -350,6 +377,23 @@ def _nh015_execution_quotes(symbols):
                 bid_time_ms = float(quote.get("bidTime") or 0)
                 ask_time_ms = float(quote.get("askTime") or 0)
                 quote_time_ms = float(quote.get("quoteTime") or 0)
+
+                # V3 is a paper benchmark. A sell needs a fresh bid, even
+                # when the ask has not changed for five seconds. Keep the
+                # strict two-sided filter below for live IOC decisions.
+                bid_age_seconds = (now_ms - bid_time_ms) / 1000.0 if bid_time_ms > 0 else float("inf")
+                if (
+                    include_repricing and bid > 0 and bid_time_ms > 0
+                    and 0 <= bid_age_seconds <= NH015_EXECUTION_QUOTE_MAX_AGE_SECONDS
+                    and (ask <= 0 or ask >= bid)
+                    and root.get("realtime") is True
+                ):
+                    repricing[symbol] = {
+                        "bid": bid,
+                        "bid_time_ms": bid_time_ms,
+                        "bid_age_seconds": bid_age_seconds,
+                        "realtime": True,
+                    }
 
                 if (
                     bid <= 0
@@ -394,6 +438,11 @@ def _nh015_execution_quotes(symbols):
             except (TypeError, ValueError):
                 continue
 
+        # The V3 entry still needs the normal strict ASK quote. The extra
+        # bid-only records can resolve V3 exits but cannot open a new trade.
+        if include_repricing:
+            repricing.update(out)
+            return out, repricing
         return out
 
     except Exception as exc:
@@ -403,7 +452,7 @@ def _nh015_execution_quotes(symbols):
             error_type=type(exc).__name__,
             error=str(exc),
         )
-        return {}
+        return ({}, {}) if include_repricing else {}
 
 
 def _minute_candles(symbol, lookback_minutes=45):
@@ -2299,21 +2348,20 @@ def main():
         f"seen={len(iocl1_paper_outcomes.seen)}",
         flush=True,
     )
+    paired_quote_provider = CycleQuoteProvider(_nh015_execution_quotes)
 
     def register_single_leg_paper(signal):
-        """Register LAST first; shadows may only consume accepted trades."""
-        accepted = paper_outcomes.register(signal)
-        if accepted and RUN_MODE == "LIVE":
-            timestamp = _utc(signal.get("timestamp"))
-            setup_id = paper_outcomes._setup_id(signal, timestamp)
-            parent_entry = paper_outcomes.active.get(setup_id)
-            if parent_entry is not None:
-                bidask_repricing_outcomes.register_parent_entry(
-                    parent_entry,
-                    now=timestamp,
-                )
-            iocl1_paper_outcomes.register(signal)
-        return accepted
+        """Register LAST and immediately mirror its accepted event in LIVE."""
+        if RUN_MODE != "LIVE":
+            return paper_outcomes.register(signal)
+        return register_paired_single_leg_signal(
+            signal,
+            parent_tracker=paper_outcomes,
+            repricing_tracker=bidask_repricing_outcomes,
+            ioc_tracker=iocl1_paper_outcomes,
+            quote_provider=paired_quote_provider,
+            now_provider=quote_source.now,
+        )
     nh015_exec_shadow = NH015ExecutableShadow(
         DATA_ROOT,
         eod_hour=EOD_EXIT_HOUR_ET,
@@ -2602,7 +2650,23 @@ def main():
                     | iocl1_paper_outcomes.symbols()
                     | bidask_multi_leg_outcomes.symbols()
                 )
-                execution_quotes = _nh015_execution_quotes(execution_symbols)
+                priority_execution_symbols = set(positions)
+                priority_execution_symbols.update(
+                    str(row.get("symbol") or "").upper()
+                    for row in bidask_repricing_outcomes.pending_exits.values()
+                )
+                priority_execution_symbols.update(
+                    str(row.get("symbol") or "").upper()
+                    for row in bidask_repricing_outcomes.pending_entries.values()
+                )
+                execution_quotes, repricing_quotes = _nh015_execution_quotes(
+                    execution_symbols, include_repricing=True,
+                    priority_symbols=priority_execution_symbols,
+                )
+                paired_quote_provider.reset(
+                    execution_quotes,
+                    attempted_symbols=execution_symbols,
+                )
                 execution_bids = {
                     symbol: quote["bid"]
                     for symbol, quote in execution_quotes.items()
@@ -2643,8 +2707,23 @@ def main():
                 # Pure BA resolves prices only. Parent LAST events remain the
                 # sole authority for whether and when a trade enters/exits.
                 bidask_repricing_outcomes.update_quotes(
-                    execution_quotes, quote_source.now()
+                    repricing_quotes, quote_source.now()
                 )
+                if bidask_repricing_outcomes.pending_exits:
+                    retry_minute = int(time.time() // 60)
+                    if getattr(bidask_repricing_outcomes, "_last_retry_diagnostic_minute", None) != retry_minute:
+                        bidask_repricing_outcomes._last_retry_diagnostic_minute = retry_minute
+                        pending_symbols = {
+                            str(row.get("symbol") or "").upper()
+                            for row in bidask_repricing_outcomes.pending_exits.values()
+                        }
+                        append_bot_event(
+                            "BIDASK_REPRICE_EXIT_RETRY",
+                            pending_exits=len(bidask_repricing_outcomes.pending_exits),
+                            pending_symbols=len(pending_symbols),
+                            usable_bids=len(pending_symbols & repricing_quotes.keys()),
+                            usable_live_quotes=len(pending_symbols & execution_quotes.keys()),
+                        )
 
                 for outcome in iocl1_paper_outcomes.update_quotes(
                     execution_quotes, quote_source.now()
@@ -2681,7 +2760,7 @@ def main():
                 )
             if RUN_MODE == "LIVE":
                 for outcome in bidask_repricing_outcomes.register_parent_exits(
-                    parent_outcomes, execution_quotes, now_utc
+                    parent_outcomes, repricing_quotes, now_utc
                 ):
                     print(
                         "BIDASK_REPRICED_OUTCOME "

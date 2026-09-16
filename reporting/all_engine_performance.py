@@ -394,6 +394,60 @@ def calculate(root="/data", day=None, as_of=None):
         elif event == "PAPER_EXIT":
             exits[setup] = row
 
+    ba_entries, ba_exits = set(), set()
+    for row in read_json_lines(
+        root / "paper_signal_v3_bidask_repricing_outcomes.jsonl"
+    ):
+        setup = str(row.get("setup_id") or "")
+        if not setup or market_day(row) != day:
+            continue
+        event = str(row.get("event_type") or "").upper()
+        event_time = (
+            opened_time(row)
+            if event == "BA_REPRICE_ENTRY"
+            else parse_time(row.get("exit_timestamp"))
+        )
+        if event_time is None or event_time > cutoff:
+            continue
+        if event == "BA_REPRICE_ENTRY":
+            ba_entries.add(setup)
+        elif event == "BA_REPRICE_EXIT":
+            ba_exits.add(setup)
+
+    parent_entry_ids = {
+        setup
+        for setup, row in entries.items()
+        if opened_time(row) is not None and opened_time(row) <= cutoff
+    }
+    parent_exit_ids = {
+        setup
+        for setup, row in exits.items()
+        if parse_time(row.get("exit_timestamp")) is not None
+        and parse_time(row.get("exit_timestamp")) <= cutoff
+    }
+    missing_ba_entries = sorted(parent_entry_ids - ba_entries)
+    missing_ba_exits = sorted(parent_exit_ids - ba_exits)
+    orphan_ba_entries = sorted(ba_entries - parent_entry_ids)
+    orphan_ba_exits = sorted(ba_exits - parent_exit_ids)
+    diagnostics["bidask_paired_coverage"] = {
+        "parent_entries": len(parent_entry_ids),
+        "ba_entries": len(ba_entries),
+        "paired_entries": len(parent_entry_ids & ba_entries),
+        "parent_exits": len(parent_exit_ids),
+        "ba_exits": len(ba_exits),
+        "paired_exits": len(parent_exit_ids & ba_exits),
+        "missing_ba_entry_ids": missing_ba_entries,
+        "missing_ba_exit_ids": missing_ba_exits,
+        "orphan_ba_entry_ids": orphan_ba_entries,
+        "orphan_ba_exit_ids": orphan_ba_exits,
+        "parity_ok": not (
+            missing_ba_entries
+            or missing_ba_exits
+            or orphan_ba_entries
+            or orphan_ba_exits
+        ),
+    }
+
     grouped = defaultdict(list)
     for setup, entry in entries.items():
         entry_time = opened_time(entry)
@@ -671,6 +725,7 @@ def calculate(root="/data", day=None, as_of=None):
         "diagnostics": {
             "main_unmarked": diagnostics["main_unmarked"],
             "unmarked_by_engine": dict(diagnostics["unmarked_by_engine"]),
+            "bidask_paired_coverage": diagnostics["bidask_paired_coverage"],
         },
     }
 

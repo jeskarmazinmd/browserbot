@@ -472,6 +472,11 @@ def update_once(scan_live: bool) -> dict:
             if day not in history["days"]:
                 history["days"][day] = summarize(strategies)
                 changed = True
+            try:
+                from reporting.capital_intraday_report import finalize_day
+                finalize_day(ROOT, day, datetime.now(timezone.utc))
+            except Exception as exc:
+                record_error(exc)
 
         history["processed_archives"][name] = "processed_exact"
         changed = True
@@ -486,9 +491,30 @@ def update_once(scan_live: bool) -> dict:
             can_finalize = day < today or (
                 day == today and after_eod(now_et) and active == 0
             )
+            if can_finalize:
+                # Persist the exact paired LAST/B/A daily snapshot while the
+                # authoritative parent ledger is still available. This is
+                # independent of the terminal report and requires no daily
+                # manual capture.
+                try:
+                    from reporting.capital_intraday_report import finalize_day
+                    finalize_day(ROOT, day, datetime.now(timezone.utc))
+                except Exception as exc:
+                    record_error(exc)
             if can_finalize and day not in history["days"]:
                 history["days"][day] = summarize(strategies)
                 changed = True
+
+        # One-time/backfill path for exact archived days that overlap the V3
+        # ledger. Days without any priced pairs are deliberately not invented.
+        try:
+            from reporting.capital_intraday_report import finalize_day, load_daily_history
+            paired_days = load_daily_history(ROOT)["days"]
+            for day in sorted(history["days"]):
+                if day not in paired_days:
+                    finalize_day(ROOT, day, datetime.now(timezone.utc))
+        except Exception as exc:
+            record_error(exc)
 
     if changed:
         history["updated_at"] = datetime.now(timezone.utc).isoformat()
@@ -533,6 +559,13 @@ def main() -> None:
 
             history = update_once(scan_live=scan_live)
             startup_scan_done = True
+
+            if after_eod(now_et) and status_active() == 0:
+                try:
+                    from reporting.capital_intraday_report import finalize_day
+                    finalize_day(ROOT, today, datetime.now(timezone.utc))
+                except Exception as exc:
+                    record_error(exc)
 
             atomic_json(
                 HEALTH,

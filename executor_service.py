@@ -1,212 +1,217 @@
-"""Minimal fail-closed Schwab execution service.
-
-Phase 1 is intentionally read-only: it validates manually supplied signals,
-deduplicates them, reconciles broker state when credentials are present, and
-records an audit trail.  No order-submission method is reachable in this file.
-"""
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import datetime, timezone
+from decimal import Decimal, InvalidOperation
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-import hashlib
 import json
 import os
 from pathlib import Path
 import threading
 import time
+from zoneinfo import ZoneInfo
+
+from executor_broker import Broker, TOKEN_PATH, active_orders, position_quantity
+from plugin_loader import load_plugin
 
 
 ROOT = Path(os.environ.get("EXECUTOR_DATA_ROOT", "/data"))
-INBOX = ROOT / "executor_inbox.jsonl"
 AUDIT = ROOT / "executor_audit.jsonl"
 HEALTH = ROOT / "executor_health.json"
-SEEN = ROOT / "executor_seen_signal_ids.json"
-TOKEN = ROOT / "schwab_trade_token.json"
+SEEN = ROOT / "executor_seen_intents.json"
 
 
-def _truthy(name: str, default: str = "false") -> bool:
+def truthy(name, default="false"):
     return os.environ.get(name, default).strip().lower() in {"1", "true", "yes"}
 
 
-def _csv_set(name: str) -> frozenset[str]:
-    return frozenset(
-        item.strip().upper()
-        for item in os.environ.get(name, "").split(",")
-        if item.strip()
-    )
+def csv_set(name):
+    return frozenset(x.strip().upper() for x in os.environ.get(name, "").split(",") if x.strip())
 
 
-def _atomic_json(path: Path, value: object) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_name(f".{path.name}.{os.getpid()}.tmp")
-    tmp.write_text(json.dumps(value, sort_keys=True, separators=(",", ":")) + "\n")
-    os.replace(tmp, path)
+def atomic_json(path, value):
+    temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    temporary.write_text(json.dumps(value, sort_keys=True, separators=(",", ":")) + "\n")
+    os.replace(temporary, path)
 
 
-def _audit(event: str, **fields: object) -> None:
-    row = {
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "event": event,
-        **fields,
-    }
-    ROOT.mkdir(parents=True, exist_ok=True)
+def audit(event, **fields):
+    row = {"timestamp": datetime.now(timezone.utc).isoformat(), "event": event, **fields}
     with AUDIT.open("a") as handle:
-        handle.write(json.dumps(row, sort_keys=True, separators=(",", ":")) + "\n")
+        handle.write(json.dumps(row, sort_keys=True, separators=(",", ":"), default=str) + "\n")
         handle.flush()
         os.fsync(handle.fileno())
 
 
 @dataclass(frozen=True)
 class Config:
-    mode: str
     live_enabled: bool
     allowed_symbols: frozenset[str]
-    allowed_strategies: frozenset[str]
-    max_quantity: int
+    allowed_strategy_id: str
+    expected_plugin_hash: str
+    max_notional: Decimal
     max_positions: int
-    max_signal_age_seconds: int
 
     @classmethod
-    def load(cls) -> "Config":
-        mode = os.environ.get("EXECUTOR_MODE", "READ_ONLY").strip().upper()
-        live_enabled = _truthy("LIVE_EXECUTION_ENABLED")
+    def load(cls):
         config = cls(
-            mode=mode,
-            live_enabled=live_enabled,
-            allowed_symbols=_csv_set("EXECUTOR_ALLOWED_SYMBOLS"),
-            allowed_strategies=_csv_set("EXECUTOR_ALLOWED_STRATEGIES"),
-            max_quantity=max(0, int(os.environ.get("EXECUTOR_MAX_QUANTITY", "1"))),
-            max_positions=max(0, int(os.environ.get("EXECUTOR_MAX_POSITIONS", "1"))),
-            max_signal_age_seconds=max(
-                1, int(os.environ.get("EXECUTOR_MAX_SIGNAL_AGE_SECONDS", "30"))
-            ),
+            live_enabled=truthy("EXECUTOR_MANUAL_LIVE_ENABLED"),
+            allowed_symbols=csv_set("EXECUTOR_ALLOWED_SYMBOLS"),
+            allowed_strategy_id=os.environ.get("EXECUTOR_PLUGIN_STRATEGY_ID", "MANUAL_TEST1").strip().upper(),
+            expected_plugin_hash=os.environ.get("EXECUTOR_PLUGIN_SHA256", "").strip().lower(),
+            max_notional=Decimal(os.environ.get("EXECUTOR_MAX_NOTIONAL", "25")),
+            max_positions=max(1, int(os.environ.get("EXECUTOR_MAX_POSITIONS", "1"))),
         )
-        if mode not in {"READ_ONLY", "DRY_RUN"}:
-            raise RuntimeError("Phase-1 executor permits only READ_ONLY or DRY_RUN")
-        if live_enabled:
-            raise RuntimeError("Live execution is not implemented in phase 1")
+        if config.live_enabled and not config.expected_plugin_hash:
+            raise RuntimeError("live mode requires EXECUTOR_PLUGIN_SHA256")
+        if config.live_enabled and not config.allowed_symbols:
+            raise RuntimeError("live mode requires a non-empty symbol allowlist")
         return config
 
 
-def validate_signal(signal: dict, config: Config, now: datetime | None = None) -> list[str]:
+def regular_hours():
+    now = datetime.now(ZoneInfo("America/New_York"))
+    minute = now.hour * 60 + now.minute
+    return now.weekday() < 5 and 570 <= minute < 960
+
+
+def validate_intent(intent, config, now=None):
     now = now or datetime.now(timezone.utc)
-    errors: list[str] = []
-    required = {"signal_id", "strategy_id", "symbol", "side", "quantity", "timestamp"}
-    missing = sorted(required - set(signal))
-    if missing:
-        return ["missing_fields:" + ",".join(missing)]
-
-    strategy = str(signal["strategy_id"]).upper()
-    symbol = str(signal["symbol"]).upper()
-    side = str(signal["side"]).upper()
+    errors = []
+    value = intent.to_dict()
     try:
-        quantity = int(signal["quantity"])
-    except (TypeError, ValueError):
-        quantity = -1
-    try:
-        timestamp = datetime.fromisoformat(str(signal["timestamp"]).replace("Z", "+00:00"))
-        if timestamp.tzinfo is None:
-            raise ValueError("timezone required")
-    except (TypeError, ValueError):
-        timestamp = None
-
-    if not config.allowed_strategies or strategy not in config.allowed_strategies:
+        created = datetime.fromisoformat(value["created_at"])
+        expires = datetime.fromisoformat(value["expires_at"])
+        price = Decimal(value["limit_price"])
+    except (KeyError, TypeError, ValueError, InvalidOperation):
+        return ["invalid_time_or_price"]
+    if intent.strategy_id != config.allowed_strategy_id:
         errors.append("strategy_not_allowlisted")
-    if not config.allowed_symbols or symbol not in config.allowed_symbols:
+    if intent.symbol.upper() not in config.allowed_symbols:
         errors.append("symbol_not_allowlisted")
-    if side not in {"BUY", "SELL"}:
+    if intent.side not in {"BUY", "SELL"}:
         errors.append("invalid_side")
-    if quantity < 1 or quantity > config.max_quantity:
-        errors.append("quantity_out_of_bounds")
-    if timestamp is None:
-        errors.append("invalid_timestamp")
-    elif abs((now - timestamp.astimezone(timezone.utc)).total_seconds()) > config.max_signal_age_seconds:
-        errors.append("stale_signal")
+    if intent.quantity != 1:
+        errors.append("quantity_must_equal_one")
+    if price <= 0 or price > config.max_notional:
+        errors.append("notional_out_of_bounds")
+    timestamps_are_aware = created.tzinfo is not None and expires.tzinfo is not None
+    if not timestamps_are_aware:
+        errors.append("stale_or_invalid_window")
+    elif now < created or now > expires:
+        errors.append("stale_or_invalid_window")
+    if timestamps_are_aware and (expires - created).total_seconds() > 60:
+        errors.append("intent_window_too_long")
     return errors
 
 
-class State:
-    def __init__(self, config: Config):
+class Runtime:
+    def __init__(self, config):
         self.config = config
         self.lock = threading.Lock()
-        self.offset = 0
+        self.plugin, self.manifest, self.plugin_hash = load_plugin(
+            "/app/plugin", config.allowed_strategy_id, config.expected_plugin_hash
+        )
         try:
             self.seen = set(json.loads(SEEN.read_text()))
-        except (OSError, ValueError, TypeError):
+        except Exception:
             self.seen = set()
-        self.health: dict = {}
+        self.broker = None
+        self.last_result = None
+        self.publish(starting=True)
 
-    def publish(self, **fields: object) -> None:
-        self.health = {
+    def broker_client(self):
+        if self.broker is None:
+            self.broker = Broker()
+        return self.broker
+
+    def publish(self, **fields):
+        value = {
             "updated_at": datetime.now(timezone.utc).isoformat(),
             "status": "OK",
-            "phase": 1,
-            "submission_capability": "ABSENT",
-            "mode": self.config.mode,
-            "live_execution_enabled": False,
-            "token_present": TOKEN.exists(),
+            "phase": 2,
+            "mode": "MANUAL_LIVE" if self.config.live_enabled else "DRY_RUN",
+            "live_execution_enabled": self.config.live_enabled,
+            "token_present": TOKEN_PATH.exists(),
+            "strategy_id": self.config.allowed_strategy_id,
+            "plugin_version": self.manifest.get("version"),
+            "plugin_sha256": self.plugin_hash,
             "allowed_symbols": sorted(self.config.allowed_symbols),
-            "allowed_strategies": sorted(self.config.allowed_strategies),
-            "seen_signal_ids": len(self.seen),
+            "max_notional": str(self.config.max_notional),
+            "seen_intents": len(self.seen),
+            "last_result": self.last_result,
             **fields,
         }
-        _atomic_json(HEALTH, self.health)
+        atomic_json(HEALTH, value)
 
-    def handle(self, signal: dict) -> None:
-        signal_id = str(signal.get("signal_id") or "")
-        digest = hashlib.sha256(
-            json.dumps(signal, sort_keys=True, separators=(",", ":")).encode()
-        ).hexdigest()
-        if signal_id in self.seen:
-            _audit("SIGNAL_REJECTED", reason="duplicate_signal_id", signal_id=signal_id, digest=digest)
+    def reconcile(self, broker, intent):
+        positions = broker.positions()
+        orders = broker.recent_orders(minutes=7 * 24 * 60)
+        if not positions.get("ok") or not orders.get("ok"):
+            raise RuntimeError("broker reconciliation failed")
+        working = active_orders(orders.get("orders", []))
+        if working:
+            raise RuntimeError(f"active orders exist: {[x.get('orderId') for x in working]}")
+        quantity = position_quantity(positions.get("positions", []), intent.symbol)
+        if intent.side == "BUY":
+            if quantity != 0:
+                raise RuntimeError(f"existing symbol position quantity={quantity}")
+            nonzero = [p for p in positions.get("positions", []) if float(p.get("longQuantity", 0) or 0) or float(p.get("shortQuantity", 0) or 0)]
+            if len(nonzero) >= self.config.max_positions:
+                raise RuntimeError("maximum positions reached")
+        elif quantity < 1:
+            raise RuntimeError(f"no long share available to sell; quantity={quantity}")
+
+    def handle(self, intent):
+        if intent.intent_id in self.seen:
             return
-        errors = validate_signal(signal, self.config)
-        self.seen.add(signal_id)
-        _atomic_json(SEEN, sorted(self.seen))
+        self.seen.add(intent.intent_id)
+        atomic_json(SEEN, sorted(self.seen))
+        errors = validate_intent(intent, self.config)
         if errors:
-            _audit("SIGNAL_REJECTED", reasons=errors, signal_id=signal_id, digest=digest)
+            self.last_result = {"intent_id": intent.intent_id, "status": "REJECTED", "errors": errors}
+            audit("INTENT_REJECTED", intent=intent.to_dict(), errors=errors)
             return
-        _audit(
-            "SIGNAL_VALIDATED_NO_SUBMISSION",
-            signal_id=signal_id,
-            digest=digest,
-            strategy_id=str(signal["strategy_id"]).upper(),
-            symbol=str(signal["symbol"]).upper(),
-            side=str(signal["side"]).upper(),
-            quantity=int(signal["quantity"]),
-        )
+        if not regular_hours():
+            self.last_result = {"intent_id": intent.intent_id, "status": "REJECTED", "errors": ["outside_regular_hours"]}
+            audit("INTENT_REJECTED", intent=intent.to_dict(), errors=["outside_regular_hours"])
+            return
+        if not self.config.live_enabled:
+            self.last_result = {"intent_id": intent.intent_id, "status": "VALIDATED_DRY_RUN"}
+            audit("INTENT_VALIDATED_DRY_RUN", intent=intent.to_dict())
+            return
+        broker = self.broker_client()
+        self.reconcile(broker, intent)
+        response = broker.place_limit(intent.symbol, intent.side, intent.limit_price)
+        location = response.get("headers", {}).get("location") or response.get("headers", {}).get("Location")
+        order_id = str(location).rstrip("/").rsplit("/", 1)[-1] if location else None
+        self.last_result = {
+            "intent_id": intent.intent_id,
+            "status": "SUBMITTED" if response.get("ok") else "SUBMISSION_FAILED",
+            "status_code": response.get("status_code"),
+            "order_id": order_id,
+        }
+        audit("ORDER_SUBMISSION_RESULT", intent=intent.to_dict(), result=self.last_result)
 
-    def poll(self) -> None:
-        if not INBOX.exists():
-            self.publish(inbox_present=False)
-            return
-        size = INBOX.stat().st_size
-        if size < self.offset:
-            _audit("INBOX_REPLACED", previous_offset=self.offset, new_size=size)
-            self.offset = 0
-        with INBOX.open() as handle:
-            handle.seek(self.offset)
-            for line in handle:
+    def poll(self):
+        with self.lock:
+            for intent in self.plugin.evaluate({"now": datetime.now(timezone.utc).isoformat()}):
                 try:
-                    value = json.loads(line)
-                    if not isinstance(value, dict):
-                        raise ValueError("signal must be an object")
-                    self.handle(value)
+                    self.handle(intent)
                 except Exception as exc:
-                    _audit("INBOX_ROW_REJECTED", error=f"{type(exc).__name__}: {exc}")
-            self.offset = handle.tell()
-        self.publish(inbox_present=True, inbox_offset=self.offset)
+                    self.last_result = {"intent_id": intent.intent_id, "status": "ERROR", "error": f"{type(exc).__name__}: {exc}"}
+                    audit("INTENT_PROCESSING_ERROR", intent=intent.to_dict(), error=self.last_result["error"])
+            self.publish()
 
 
 class Handler(BaseHTTPRequestHandler):
-    state: State
+    runtime = None
 
-    def do_GET(self):  # noqa: N802
+    def do_GET(self):
         if self.path not in {"/", "/health"}:
             self.send_error(404)
             return
-        payload = json.dumps(self.state.health, sort_keys=True).encode()
+        payload = HEALTH.read_bytes()
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(payload)))
@@ -217,20 +222,15 @@ class Handler(BaseHTTPRequestHandler):
         return
 
 
-def main() -> None:
-    config = Config.load()
-    state = State(config)
-    Handler.state = state
-    state.publish(starting=True)
-    _audit("EXECUTOR_STARTED", config={**asdict(config), "allowed_symbols": sorted(config.allowed_symbols), "allowed_strategies": sorted(config.allowed_strategies)})
+def main():
+    ROOT.mkdir(parents=True, exist_ok=True)
+    runtime = Runtime(Config.load())
+    Handler.runtime = runtime
+    audit("EXECUTOR_STARTED", plugin_sha256=runtime.plugin_hash, live_enabled=runtime.config.live_enabled)
     server = ThreadingHTTPServer(("0.0.0.0", int(os.environ.get("PORT", "8080"))), Handler)
     threading.Thread(target=server.serve_forever, daemon=True).start()
     while True:
-        try:
-            state.poll()
-        except Exception as exc:
-            _audit("POLL_ERROR", error=f"{type(exc).__name__}: {exc}")
-            state.publish(status="WARNING", error=f"{type(exc).__name__}: {exc}")
+        runtime.poll()
         time.sleep(1)
 
 

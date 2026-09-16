@@ -5,13 +5,13 @@ primary_region = "lax"
   dockerfile = "Dockerfile.executor"
 
 [env]
-  EXECUTOR_MODE = "READ_ONLY"
-  LIVE_EXECUTION_ENABLED = "false"
-  EXECUTOR_MAX_QUANTITY = "1"
-  EXECUTOR_MAX_POSITIONS = "1"
-  EXECUTOR_MAX_SIGNAL_AGE_SECONDS = "30"
+  EXECUTOR_MANUAL_LIVE_ENABLED = "false"
   EXECUTOR_ALLOWED_SYMBOLS = ""
-  EXECUTOR_ALLOWED_STRATEGIES = ""
+  EXECUTOR_MAX_NOTIONAL = "25"
+  EXECUTOR_MAX_POSITIONS = "1"
+  EXECUTOR_PLUGIN_STRATEGY_ID = "MANUAL_TEST1"
+  EXECUTOR_PLUGIN_SHA256 = ""
+  EXECUTOR_TOKEN_PATH = "/data/schwab_executor_token.json"
 
 [[vm]]
   memory = "512mb"
@@ -25,7 +25,7 @@ primary_region = "lax"
 [[http_service.checks]]
   interval = "15s"
   timeout = "2s"
-  grace_period = "10s"
+  grace_period = "20s"
   method = "GET"
   path = "/health"
 

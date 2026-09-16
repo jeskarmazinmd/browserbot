@@ -1,9 +1,9 @@
 FROM python:3.11-slim
 
 WORKDIR /app
-
-COPY executor_service.py .
-
+COPY requirements.executor.txt .
+RUN pip install --no-cache-dir -r requirements.executor.txt
+COPY executor_service.py executor_broker.py executor_auth.py executor_control.py executor_status.py strategy_api.py plugin_loader.py ./
+COPY plugins/manual_test1 /app/plugin
 RUN mkdir -p /data
-
 CMD ["python", "-u", "executor_service.py"]

@@ -44,17 +44,39 @@ _LAST_MINUTE_CACHE_SAVE = 0.0
 
 def _parse_quote_bytes(payload):
     """Parse complete raw CSV rows from an in-memory byte payload."""
+    import csv
     import io
 
     if not payload:
         return pd.DataFrame(columns=["timestamp", "symbol", "price"])
 
-    df = pd.read_csv(
-        io.BytesIO(payload),
-        names=["timestamp", "symbol", "price"],
-        dtype={"symbol": "string"},
-        low_memory=False,
-    )
+    try:
+        df = pd.read_csv(
+            io.BytesIO(payload),
+            names=["timestamp", "symbol", "price"],
+            dtype={"symbol": "string"},
+            low_memory=False,
+        )
+    except pd.errors.ParserError:
+        # A collector killed during append can leave one torn record joined to
+        # the next one. Rebuild this payload from structurally valid rows so a
+        # single bad record cannot disable the strategy runner.
+        source = io.StringIO(payload.decode("utf-8", errors="replace"))
+        repaired = io.StringIO()
+        writer = csv.writer(repaired, lineterminator="\n")
+        skipped = 0
+        for row in csv.reader(source):
+            if len(row) == 3:
+                writer.writerow(row)
+            else:
+                skipped += 1
+        print(f"TAPE_MALFORMED_ROWS_SKIPPED count={skipped}", flush=True)
+        df = pd.read_csv(
+            io.StringIO(repaired.getvalue()),
+            names=["timestamp", "symbol", "price"],
+            dtype={"symbol": "string"},
+            low_memory=False,
+        )
 
     df = df[df["timestamp"] != "timestamp_utc"]
     df["timestamp"] = pd.to_datetime(

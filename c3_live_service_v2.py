@@ -45,8 +45,8 @@ CONFIG = C3Config(
     activation_fraction=float(strategy.CONFIG["activation_gain_pct"]) / 100.0,
     no_new_high_seconds=float(strategy.CONFIG["no_new_high_seconds"]),
     order_latency_seconds=float(os.getenv("C3_ORDER_LATENCY_MS", "250")) / 1000.0,
-    max_quote_age_seconds=float(os.getenv("C3_MAX_QUOTE_AGE_MS", "2500")) / 1000.0,
-    max_spread_pct=float(os.getenv("C3_MAX_SPREAD_PCT", "0.25")),
+    max_quote_age_seconds=float(os.getenv("C3_MAX_QUOTE_AGE_MS", "15000")) / 1000.0,
+    max_spread_pct=float(os.getenv("C3_MAX_SPREAD_PCT", "1.00")),
     entry_limit_bps=float(os.getenv("C3_ENTRY_LIMIT_BPS", "5")),
     stress_bps=float(os.getenv("C3_STRESS_BPS", "5")),
     starting_cash=float(os.getenv("C3_STARTING_CASH", "5000")),
@@ -187,7 +187,7 @@ def detect(symbol, snapshot, received_at):
     event = detect_latest_flash(symbol, None, measurement=measurement) if measurement else None
     if not event or not strategy.accepts_flash(event, 12.0):
         return
-    setup_id = f"{symbol}|{event['signal_window_end']}"
+    setup_id = f"{strategy.STRATEGY_ID}|{symbol}|{event['signal_window_end']}"
     quote = snapshot_quote(snapshot, received_at)
     events = runtime.register_signal(symbol, setup_id, float(event["target_price"]), quote)
     account_events(events)

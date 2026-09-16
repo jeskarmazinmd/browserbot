@@ -22,3 +22,15 @@ research_lab_state/
 
 # Local research/output artifacts
 artifacts/
+
+# Local/generated artifacts
+.DS_Store
+__pycache__/
+*.pyc
+diagnostics/
+forensics_data/
+research_tools/backups/
+*_sources.tgz
+profile_minute_quote_cache_*.csv.gz
+profile_minute_quote_cache_*.pkl
+strategy_profile_bundle.tgz

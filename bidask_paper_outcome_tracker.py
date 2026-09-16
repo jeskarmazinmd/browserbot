@@ -24,6 +24,8 @@ from paper_outcome_tracker import NY, PaperOutcomeTracker, _utc
 FILE_STEM = "paper_signal_v2_bidask"
 REPRICING_FILE_STEM = "paper_signal_v3_bidask_repricing"
 MAX_PENDING_SECONDS = 20.0
+MAX_REPRICING_RECOVERY_AGE_SECONDS = 60.0
+MAX_REPRICING_EXIT_DELAY_SECONDS = 120.0
 MAX_SYMBOLS_PER_CYCLE = 400
 
 
@@ -56,6 +58,88 @@ def canonical_trade_intent(parent_entry):
             "stop_price": parent_entry.get("stop_price"),
         },
     }
+
+
+class CycleQuoteProvider:
+    """Fetch each symbol at most once per runner cycle.
+
+    A signal family can emit dozens of variants for the same symbol.  Calling
+    the market-data API once per variant serialises the fan-out and makes later
+    twins appear minutes after their parent signal.  This cache shares one
+    executable quote snapshot across every same-cycle twin, including a
+    remembered miss, and is explicitly reset by the runner each cycle.
+    """
+
+    def __init__(self, provider):
+        self.provider = provider
+        self.quotes = {}
+        self.attempted = set()
+
+    def reset(self, quotes=None, attempted_symbols=()):
+        self.quotes = {
+            str(symbol).upper(): quote
+            for symbol, quote in (quotes or {}).items()
+            if symbol and quote
+        }
+        self.attempted = {
+            str(symbol).upper() for symbol in attempted_symbols if symbol
+        }
+        self.attempted.update(self.quotes)
+
+    def __call__(self, symbols):
+        requested = list(dict.fromkeys(
+            str(symbol).upper() for symbol in symbols if symbol
+        ))
+        missing = [symbol for symbol in requested if symbol not in self.attempted]
+        if missing:
+            # Mark before calling so even an exception/missing quote is cached
+            # for this cycle instead of hammering the API for every variant.
+            self.attempted.update(missing)
+            fetched = self.provider(missing) or {}
+            self.quotes.update({
+                str(symbol).upper(): quote
+                for symbol, quote in fetched.items()
+                if symbol and quote
+            })
+        return {
+            symbol: self.quotes[symbol]
+            for symbol in requested
+            if symbol in self.quotes
+        }
+
+
+def register_paired_single_leg_signal(
+    signal, *, parent_tracker, repricing_tracker, ioc_tracker, quote_provider,
+    now_provider=None,
+):
+    """Fan one accepted parent event immediately to both bid/ask twins."""
+    accepted = parent_tracker.register(signal)
+    if not accepted:
+        return False
+
+    signal_timestamp = _utc(signal.get("timestamp"))
+    processing_time = _utc(
+        now_provider() if now_provider is not None else datetime.now(timezone.utc)
+    )
+    setup_id = parent_tracker._setup_id(signal, signal_timestamp)
+    parent_entry = parent_tracker.active.get(setup_id)
+    if parent_entry is None:
+        raise RuntimeError(f"accepted parent entry missing from active state: {setup_id}")
+
+    parent_entry = dict(parent_entry)
+    parent_entry["parent_recorded_at"] = datetime.now(timezone.utc).isoformat()
+    symbol = str(parent_entry.get("symbol") or "").upper()
+    # Register both twins before quote resolution.  A quote/API failure can
+    # leave a price pending, but can never lose or delay the mirrored signal.
+    repricing_tracker.register_parent_entry(parent_entry, now=processing_time)
+    ioc_tracker.register(signal)
+    try:
+        quotes = quote_provider([symbol]) or {}
+    except Exception:
+        quotes = {}
+    repricing_tracker.update_quotes(quotes, processing_time)
+    ioc_tracker.update_quotes(quotes, processing_time)
+    return True
 
 
 class BidAskPaperOutcomeTracker(PaperOutcomeTracker):
@@ -279,12 +363,15 @@ class BidAskRepricingTracker:
         self.ledger_path = self.root / f"{file_stem}_outcomes.jsonl"
         self.status_path = self.root / f"{file_stem}_status.json"
         self.state_path = self.root / f"{file_stem}_pending.json"
+        self.quarantine_path = self.root / f"{file_stem}_quarantine.jsonl"
         self.active = {}
         self.pending_entries = OrderedDict()
         self.pending_exits = OrderedDict()
         self.seen_entries = set()
         self.seen_exits = set()
         self.completed = 0
+        self.quarantined_entries = 0
+        self.quarantined_exits = 0
         self._recover()
         self._write_status()
 
@@ -313,6 +400,22 @@ class BidAskRepricingTracker:
         os.replace(temporary, path)
 
     def _recover(self):
+        if self.quarantine_path.exists():
+            try:
+                with self.quarantine_path.open(errors="replace") as rows:
+                    for line in rows:
+                        try:
+                            event = str(
+                                json.loads(line).get("event_type") or ""
+                            ).upper()
+                        except (TypeError, ValueError):
+                            continue
+                        if event == "BA_REPRICE_ENTRY_UNAVAILABLE":
+                            self.quarantined_entries += 1
+                        elif event == "BA_REPRICE_EXIT_UNAVAILABLE":
+                            self.quarantined_exits += 1
+            except OSError:
+                pass
         if self.ledger_path.exists():
             try:
                 rows = self.ledger_path.open(errors="replace")
@@ -339,18 +442,65 @@ class BidAskRepricingTracker:
         if self.state_path.exists():
             try:
                 state = json.loads(self.state_path.read_text())
+                recovered_at = datetime.now(timezone.utc)
                 for row in state.get("pending_entries", []):
                     setup_id = self._setup_id(row)
-                    if setup_id and setup_id not in self.seen_entries:
+                    queued_at = row.get("queued_at")
+                    stale = True
+                    try:
+                        stale = (
+                            recovered_at - _utc(queued_at)
+                        ).total_seconds() > MAX_REPRICING_RECOVERY_AGE_SECONDS
+                    except (TypeError, ValueError):
+                        pass
+                    if setup_id and setup_id not in self.seen_entries and stale:
+                        self._quarantine(
+                            "BA_REPRICE_ENTRY_UNAVAILABLE", row, recovered_at
+                        )
+                        self.quarantined_entries += 1
+                    elif setup_id and setup_id not in self.seen_entries:
                         self.pending_entries[setup_id] = row
                 for row in state.get("pending_exits", []):
                     setup_id = self._setup_id(row)
-                    if setup_id and setup_id not in self.seen_exits:
+                    exit_at = row.get("exit_timestamp")
+                    stale = True
+                    try:
+                        stale = (
+                            recovered_at - _utc(exit_at)
+                        ).total_seconds() > MAX_REPRICING_EXIT_DELAY_SECONDS
+                    except (TypeError, ValueError):
+                        pass
+                    if setup_id and setup_id not in self.seen_exits and stale:
+                        self._quarantine(
+                            "BA_REPRICE_EXIT_UNAVAILABLE", row, recovered_at
+                        )
+                        self.active.pop(setup_id, None)
+                        self.quarantined_exits += 1
+                    elif setup_id and setup_id not in self.seen_exits:
                         self.pending_exits[setup_id] = row
             except (OSError, TypeError, ValueError):
                 pass
 
+    def _quarantine(self, event_type, row, recovered_at, *, reason="historical_top_of_book_unavailable_after_restart"):
+        audit = {
+            "event_type": event_type,
+            "recorded_at": recovered_at.isoformat(),
+            "setup_id": self._setup_id(row),
+            "strategy_id": row.get("strategy_id"),
+            "symbol": row.get("symbol"),
+            "signal_timestamp": row.get("signal_timestamp"),
+            "parent_entry_timestamp": row.get("parent_entry_timestamp"),
+            "parent_exit_timestamp": row.get("exit_timestamp"),
+            "reason": reason,
+            "paper_only": True,
+            "broker_execution_enabled": False,
+        }
+        with self.quarantine_path.open("a") as handle:
+            handle.write(json.dumps(audit, separators=(",", ":")) + "\n")
+
     def _write_status(self):
+        expected_entries = set(self.seen_entries) | set(self.pending_entries)
+        expected_exits = set(self.seen_exits) | set(self.pending_exits)
         self._atomic_json(self.state_path, {
             "updated_at": datetime.now(timezone.utc).isoformat(),
             "pending_entries": list(self.pending_entries.values()),
@@ -370,9 +520,22 @@ class BidAskRepricingTracker:
             "seen_entries": len(self.seen_entries),
             "seen_exits": len(self.seen_exits),
             "completed": self.completed,
-            "parity_ok": not self.pending_entries and not self.pending_exits,
+            "parity_ok": not self.pending_entries and not self.pending_exits and not self.quarantined_entries and not self.quarantined_exits,
+            "paired_coverage": {
+                "parent_entries_seen": len(expected_entries),
+                "repriced_entries": len(self.seen_entries),
+                "pending_entry_prices": len(self.pending_entries),
+                "parent_exits_seen": len(expected_exits),
+                "repriced_exits": len(self.seen_exits),
+                "pending_exit_prices": len(self.pending_exits),
+            },
+            "historical_unpriced_quarantined": {
+                "entries": self.quarantined_entries,
+                "exits": self.quarantined_exits,
+                "path": str(self.quarantine_path),
+            },
             "broker_execution_enabled": False,
-            "live_promotion_ready": True,
+            "live_promotion_ready": not self.pending_entries and not self.pending_exits and not self.quarantined_entries and not self.quarantined_exits,
         })
 
     def symbols(self):
@@ -408,7 +571,7 @@ class BidAskRepricingTracker:
     def register_parent_exits(self, parent_exits, quotes, now=None):
         for parent_exit in parent_exits:
             setup_id = self._setup_id(parent_exit)
-            if not setup_id or setup_id in self.seen_exits:
+            if not setup_id or setup_id in self.seen_exits or setup_id in self.pending_exits:
                 continue
             self.pending_exits[setup_id] = dict(parent_exit)
         return self.update_quotes(quotes, now)
@@ -418,6 +581,18 @@ class BidAskRepricingTracker:
         completed = []
 
         for setup_id, parent in list(self.pending_entries.items()):
+            try:
+                expired = (now - _utc(parent["queued_at"])).total_seconds() > MAX_REPRICING_RECOVERY_AGE_SECONDS
+            except (KeyError, TypeError, ValueError):
+                expired = True
+            if expired:
+                self._quarantine(
+                    "BA_REPRICE_ENTRY_UNAVAILABLE", parent, now,
+                    reason="entry_quote_unavailable_within_60_seconds",
+                )
+                self.pending_entries.pop(setup_id, None)
+                self.quarantined_entries += 1
+                continue
             symbol = str(parent.get("symbol") or "").upper()
             quote = quotes.get(symbol) or {}
             ask = self._positive(quote.get("ask"))
@@ -435,6 +610,9 @@ class BidAskRepricingTracker:
                 "execution_model": "BIDASK_REPRICE_V1",
                 "parent_strategy_id": parent.get("strategy_id"),
                 "parent_setup_id": setup_id,
+                "parent_recorded_at": parent.get("parent_recorded_at"),
+                "mirror_registered_at": parent.get("queued_at"),
+                "quote_resolved_at": now.isoformat(),
                 "trade_intent": canonical_trade_intent(parent),
                 "paper_only": True,
                 "broker_execution_enabled": False,
@@ -445,6 +623,20 @@ class BidAskRepricingTracker:
             del self.pending_entries[setup_id]
 
         for setup_id, parent_exit in list(self.pending_exits.items()):
+            try:
+                exit_at = _utc(parent_exit["exit_timestamp"])
+                delay = (now - exit_at).total_seconds()
+            except (KeyError, TypeError, ValueError):
+                delay = MAX_REPRICING_EXIT_DELAY_SECONDS + 1
+            if delay > MAX_REPRICING_EXIT_DELAY_SECONDS or delay < -5:
+                self._quarantine(
+                    "BA_REPRICE_EXIT_UNAVAILABLE", parent_exit, now,
+                    reason="exit_bid_unavailable_within_120_seconds",
+                )
+                self.pending_exits.pop(setup_id, None)
+                self.active.pop(setup_id, None)
+                self.quarantined_exits += 1
+                continue
             entry = self.active.get(setup_id)
             if entry is None:
                 continue
@@ -453,6 +645,11 @@ class BidAskRepricingTracker:
             bid = self._positive(quote.get("bid"))
             if bid is None:
                 continue
+            bid_time_ms = self._positive(quote.get("bid_time_ms"))
+            if bid_time_ms is not None:
+                bid_at = datetime.fromtimestamp(bid_time_ms / 1000.0, timezone.utc)
+                if (bid_at - exit_at).total_seconds() > MAX_REPRICING_EXIT_DELAY_SECONDS:
+                    continue
             entry_price = float(entry["entry_price"])
             notional = float(entry.get("notional") or 0.0)
             row = {
@@ -462,6 +659,9 @@ class BidAskRepricingTracker:
                 "exit_timestamp": parent_exit.get("exit_timestamp"),
                 "exit_price": bid,
                 "exit_bid": bid,
+                "exit_bid_time_ms": bid_time_ms,
+                "exit_quote_resolved_at": now.isoformat(),
+                "exit_resolution_delay_seconds": delay,
                 "exit_ask": self._positive(quote.get("ask")),
                 "exit_reason": parent_exit.get("exit_reason"),
                 "parent_exit_price": parent_exit.get("exit_price"),

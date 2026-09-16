@@ -39,6 +39,15 @@ DEFAULT_ERROR_RETRY_SECONDS = 900.0
 MAX_ERROR_RETRY_SECONDS = 3600.0
 
 
+def _atomic_status(root: Path, payload: dict) -> None:
+    """Persist research progress/errors even when stdout logs roll away."""
+    root.mkdir(parents=True, exist_ok=True)
+    path = root / "research_status.json"
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+    temporary.replace(path)
+
+
 def _next_delay_seconds(
     result: dict,
     *,
@@ -142,6 +151,13 @@ def run_once(*, data_root: Path = Path("/data"), max_shadow_modules: int = 100, 
     ledger = RollingDatasetLedger(root / "dataset_ledger.json")
     skipped_archives = []
     for day, source in discover_completed_archives(data_root / "research_market"):
+        if ledger.is_late_unassigned(day):
+            skipped_archives.append({
+                "day": day,
+                "source": str(source),
+                "error": "late historical archive predates immutable ledger tail",
+            })
+            continue
         compact = root / "datasets" / f"quotes_{day.replace('-', '')}.csv.gz"
         compact_result = compact_rich_archive(source, compact)
         if not compact_result.get("usable", True):
@@ -169,6 +185,20 @@ def run_once(*, data_root: Path = Path("/data"), max_shadow_modules: int = 100, 
 
     discovery_report_path = root / "reports" / f"discovery_for_{validation.day}.json"
     try:
+        _atomic_status(root, {
+            "status": "DISCOVERY_RUNNING",
+            "validation_day": validation.day,
+            "updated_at": time.time(),
+        })
+        def discovery_progress(event):
+            _atomic_status(root, {
+                "status": "DISCOVERY_RUNNING",
+                "validation_day": validation.day,
+                "stage": "questions",
+                **event,
+                "updated_at": time.time(),
+            })
+
         report = run_discovery(
             repo_root=Path.cwd(), output_path=discovery_report_path,
             idea_library_path=root / "idea_library.jsonl",
@@ -178,6 +208,7 @@ def run_once(*, data_root: Path = Path("/data"), max_shadow_modules: int = 100, 
             feature_cache_root=root / "feature_cache" / f"discovery_for_{validation.day}",
             feature_cache_max_mb=int(os.getenv("FACTORY_RESEARCH_CACHE_MAX_MB", "512")),
             before_feature_chunk=lambda: _resource_decision(data_root).reasons,
+            progress=discovery_progress,
         )
     except FeaturePreparationDeferred as exc:
         return {
@@ -289,6 +320,11 @@ def main() -> None:
             }
         except Exception as exc:
             result = {"status": "ERROR", "error": type(exc).__name__ + ": " + str(exc)}
+        result = {**result, "updated_at": time.time()}
+        try:
+            _atomic_status(Path(args.data_root) / "module_factory", result)
+        except OSError:
+            pass
         print("FACTORY_RESEARCH " + json.dumps(result, sort_keys=True), flush=True)
         if not args.loop:
             break

@@ -1,0 +1,2 @@
+FROM registry.fly.io/schwab:deployment-01M025E6NXEEERZRFKQMS3EPC3
+COPY supervisor.py /app/supervisor.py

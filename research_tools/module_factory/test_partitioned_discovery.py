@@ -60,3 +60,9 @@ def test_partitioned_scientists_match_in_memory_results(tmp_path: Path):
         checkpoint_root=tmp_path / "questions", progress=reused.append,
     )
     assert reused and all(item["reused"] for item in reused)
+    assert len(reused) == 26
+    assert [item["completed"] for item in reused] == list(range(1, 27))
+    assert all(item["total"] == 26 for item in reused)
+    assert reused[-1]["percent"] == 100.0
+    assert reused[-1]["reused_completed"] == 26
+    assert reused[-1]["computed_completed"] == 0

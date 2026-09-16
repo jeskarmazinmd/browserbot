@@ -305,6 +305,7 @@ def run(
     feature_cache_root: str | Path | None = None,
     feature_cache_max_mb: int = 512,
     before_feature_chunk: Any = None,
+    progress: Any = None,
 ) -> dict[str, Any]:
     if feature_stride < 1:
         raise ValueError("feature_stride must be >= 1")
@@ -359,16 +360,21 @@ def run(
         )
         inventory = feature_inventory(partitions)
         selected_features = inventory["selected_features"]
+        def question_progress(event):
+            print(
+                "FACTORY_RESEARCH_QUESTION " + json.dumps(event, sort_keys=True),
+                flush=True,
+            )
+            if progress is not None:
+                progress(event)
+
         families = run_supported_partitioned_discovery(
             paths=partitions,
             selected_features=selected_features,
             checkpoint_root=Path(feature_cache_root) / "questions",
             horizons=HORIZONS,
             before_question=before_feature_chunk,
-            progress=lambda event: print(
-                "FACTORY_RESEARCH_QUESTION " + json.dumps(event, sort_keys=True),
-                flush=True,
-            ),
+            progress=question_progress,
         )
         elapsed = time.perf_counter() - started
         report = {

@@ -29,6 +29,10 @@ class RollingDataset:
     sealed: bool
 
 
+class LateHistoricalArchiveError(RuntimeError):
+    """Raised when an unassigned archive predates the immutable ledger tail."""
+
+
 class RollingDatasetLedger:
     def __init__(self, path: Path, *, discovery_days_per_validation: int = 4):
         self.path = Path(path)
@@ -58,6 +62,11 @@ class RollingDatasetLedger:
             if existing.source_path != str(source_path) or existing.compact_path != str(compact_path):
                 raise RuntimeError("dataset identity/path cannot mutate")
             return existing
+        if self._items and parsed.isoformat() < max(self._items):
+            raise LateHistoricalArchiveError(
+                f"late historical archive {parsed.isoformat()} predates immutable "
+                f"ledger tail {max(self._items)}"
+            )
         ordinal = len(self._items) + 1
         validation = ordinal % (self.discovery_days_per_validation + 1) == 0
         role = "VALIDATION" if validation else "DISCOVERY"
@@ -69,6 +78,10 @@ class RollingDatasetLedger:
         self._items[day] = item
         self._save()
         return item
+
+    def is_late_unassigned(self, day: str) -> bool:
+        parsed = date.fromisoformat(day).isoformat()
+        return parsed not in self._items and bool(self._items) and parsed < max(self._items)
 
     def datasets(self, role: str | None = None) -> tuple[RollingDataset, ...]:
         values = tuple(self._items[key] for key in sorted(self._items))

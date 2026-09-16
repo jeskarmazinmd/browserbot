@@ -27,6 +27,7 @@ class C3Config:
     minimum_remaining_upside_pct: float = 0.20
     starting_cash: float = 5000.0
     slot_notional: float = 1000.0
+    immediate_shadow_fills: bool = True
 
     def __post_init__(self) -> None:
         positive = (
@@ -240,9 +241,45 @@ class C3Logic:
             target=state.target,
         )
         del self.pending[symbol]
+        decision = self._event("ENTRY_DECISION", symbol, now, setup_id=state.setup_id,
+                               bid=quote.bid, ask=ask, limit=order.limit,
+                               research_reference_price=signal)
+        if self.config.immediate_shadow_fills:
+            # The research module enters on the confirming observation.  In
+            # shadow mode the contemporaneous ask is the closest executable
+            # analogue; adding another artificial polling/latency step creates
+            # divergence without measuring a real broker acknowledgement.
+            return [decision, self._open_position(symbol, state.setup_id, state.target,
+                                                   quote, fill=ask)]
         self.orders[symbol] = order
-        return [self._event("ENTRY_DECISION", symbol, now, setup_id=state.setup_id,
-                            bid=quote.bid, ask=ask, limit=order.limit)]
+        return [decision]
+
+    def _open_position(self, symbol: str, setup_id: str, target: float,
+                       quote: ExecutableQuote, *, fill: float) -> dict[str, Any]:
+        budget = min(self.config.slot_notional, self.cash)
+        shares = int(budget // fill)
+        if shares < 1:
+            return self._event("ENTRY_REJECT", symbol, quote.observed_at,
+                               setup_id=setup_id, reason="insufficient_cash")
+        cost = shares * fill
+        self.cash -= cost
+        bid = float(quote.bid)
+        position = Position(
+            setup_id=setup_id,
+            entry_at=quote.observed_at,
+            entry_fill=fill,
+            stress_entry=fill * (1.0 + self.config.stress_bps / 10000.0),
+            shares=shares,
+            cost=cost,
+            target=target,
+            stop=fill * (1.0 - self.config.stop_fraction),
+            highest_bid=bid,
+            highest_at=quote.observed_at,
+        )
+        self.positions[symbol] = position
+        return self._event("ENTRY_FILL", symbol, quote.observed_at, setup_id=setup_id,
+                           entry_fill=fill, bid=bid, shares=shares, cash=self.cash,
+                           stop=position.stop)
 
     def _advance_order(self, symbol: str, quote: ExecutableQuote) -> list[dict[str, Any]]:
         state = self.orders[symbol]
@@ -257,33 +294,9 @@ class C3Logic:
             del self.orders[symbol]
             return [self._event("ENTRY_REJECT", symbol, now, setup_id=state.setup_id,
                                 reason=reason or "limit_not_filled")]
-        fill = float(ask)
-        budget = min(self.config.slot_notional, self.cash)
-        shares = int(budget // fill)
-        if shares < 1:
-            del self.orders[symbol]
-            return [self._event("ENTRY_REJECT", symbol, now, setup_id=state.setup_id,
-                                reason="insufficient_cash")]
-        cost = shares * fill
-        self.cash -= cost
-        bid = float(quote.bid)
-        position = Position(
-            setup_id=state.setup_id,
-            entry_at=now,
-            entry_fill=fill,
-            stress_entry=fill * (1.0 + self.config.stress_bps / 10000.0),
-            shares=shares,
-            cost=cost,
-            target=state.target,
-            stop=fill * (1.0 - self.config.stop_fraction),
-            highest_bid=bid,
-            highest_at=now,
-        )
         del self.orders[symbol]
-        self.positions[symbol] = position
-        return [self._event("ENTRY_FILL", symbol, now, setup_id=state.setup_id,
-                            entry_fill=fill, bid=bid, shares=shares, cash=self.cash,
-                            stop=position.stop)]
+        return [self._open_position(symbol, state.setup_id, state.target, quote,
+                                    fill=float(ask))]
 
     def _advance_position(
         self,
@@ -332,6 +345,8 @@ class C3Logic:
             events.append(self._event("ACTIVATED", symbol, now, setup_id=state.setup_id,
                                       bid=bid, activation_bid=activation_bid))
         if state.activated and event_time - state.highest_at >= self.config.no_new_high_seconds:
+            if self.config.immediate_shadow_fills:
+                return events + [self._close(symbol, quote, "NO_NEW_HIGH")]
             state.exit_reason = "NO_NEW_HIGH"
             state.exit_due_at = now + self.config.order_latency_seconds
             events.append(self._event("EXIT_DECISION", symbol, now, setup_id=state.setup_id,

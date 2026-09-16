@@ -127,6 +127,9 @@ class AllEnginePerformanceTests(unittest.TestCase):
                     "exit_price": 10.11, "pnl": 1.0,
                 },
             ]
+            (root / "paper_signal_outcomes.jsonl").write_text(
+                "".join(json.dumps(row) + "\n" for row in rows)
+            )
             (root / "paper_signal_v2_bidask_outcomes.jsonl").write_text(
                 "".join(json.dumps(row) + "\n" for row in rows)
             )
@@ -161,6 +164,39 @@ class AllEnginePerformanceTests(unittest.TestCase):
             self.assertAlmostEqual(
                 snapshot["modules"]["C3N25S10IOCL1"]["pnl"],
                 1.0,
+            )
+            coverage = snapshot["diagnostics"]["bidask_paired_coverage"]
+            self.assertTrue(coverage["parity_ok"])
+            self.assertEqual(coverage["paired_entries"], 1)
+            self.assertEqual(coverage["paired_exits"], 1)
+
+    def test_reports_missing_bidask_twins_by_parent_setup_id(self):
+        from datetime import datetime, timezone
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / "tapes").mkdir()
+            (root / "tapes" / "quotes_20260811.csv").write_text(
+                "timestamp_utc,symbol,last_price\n"
+                "2026-08-11T17:20:00+00:00,XYZ,10.20\n"
+            )
+            parent = {
+                "event_type": "PAPER_ENTRY", "setup_id": "missing-twin",
+                "strategy_id": "C4", "symbol": "XYZ",
+                "signal_timestamp": "2026-08-11T14:00:00+00:00",
+                "entry_timestamp": "2026-08-11T14:00:00+00:00",
+                "entry_price": 10.0, "notional": 1000.0,
+            }
+            (root / "paper_signal_outcomes.jsonl").write_text(
+                json.dumps(parent) + "\n"
+            )
+            snapshot = calculate(
+                root, day="2026-08-11",
+                as_of=datetime(2026, 8, 11, 18, 0, tzinfo=timezone.utc),
+            )
+            coverage = snapshot["diagnostics"]["bidask_paired_coverage"]
+            self.assertFalse(coverage["parity_ok"])
+            self.assertEqual(
+                coverage["missing_ba_entry_ids"], ["missing-twin"]
             )
 
     def test_reports_atomic_multi_leg_bidask_shadow_separately(self):

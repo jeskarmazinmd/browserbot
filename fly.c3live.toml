@@ -11,8 +11,8 @@ primary_region = "lax"
   C3_UNIVERSE_SECONDS = "5"
   C3_PRIORITY_SECONDS = "0.5"
   C3_ORDER_LATENCY_MS = "250"
-  C3_MAX_QUOTE_AGE_MS = "2500"
-  C3_MAX_SPREAD_PCT = "0.25"
+  C3_MAX_QUOTE_AGE_MS = "15000"
+  C3_MAX_SPREAD_PCT = "1.00"
   C3_ENTRY_LIMIT_BPS = "5"
   C3_STRESS_BPS = "5"
   C3_STARTING_CASH = "5000"
@@ -24,5 +24,5 @@ primary_region = "lax"
 
 [[vm]]
   cpu_kind = "shared"
-  cpus = 1
-  memory = "1gb"
+  cpus = 8
+  memory = "2gb"

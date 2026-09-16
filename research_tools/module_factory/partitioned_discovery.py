@@ -21,7 +21,7 @@ from research_tools.module_factory.bounded_feature_cache import (
     iter_partition_rows,
 )
 from research_tools.module_factory.distribution_scientist import discover_distribution_states
-from research_tools.module_factory.regime_scientist import discover_regimes
+from research_tools.module_factory.regime_scientist import evaluate_regime
 from research_tools.module_factory.unified_catalog import unified_catalog_by_name
 
 
@@ -136,6 +136,26 @@ def run_supported_partitioned_discovery(
     ) + "|partitioned-scientists-v1"
     scope = hashlib.sha256(scope_payload.encode()).hexdigest()[:16]
     root = Path(checkpoint_root) / scope
+    quantile_pairs = ((0.20, 0.80), (0.25, 0.75), (0.33, 0.67))
+    regime_pairs = sum(1 for feature in features for state in state_features if feature != state)
+    total_questions = len(features) + regime_pairs * len(quantile_pairs) * len(horizons)
+    completed_questions = 0
+    reused_questions = 0
+
+    def emit(event: dict) -> None:
+        nonlocal completed_questions, reused_questions
+        completed_questions += 1
+        if event.get("reused"):
+            reused_questions += 1
+        if progress:
+            progress({
+                **event,
+                "completed": completed_questions,
+                "total": total_questions,
+                "percent": round(100.0 * completed_questions / total_questions, 1) if total_questions else 100.0,
+                "reused_completed": reused_questions,
+                "computed_completed": completed_questions - reused_questions,
+            })
 
     def check():
         reasons = tuple(before_question() if before_question is not None else ())
@@ -155,31 +175,52 @@ def run_supported_partitioned_discovery(
             ),
         )
         distributions.extend(result)
-        if progress:
-            progress({"scientist": "distribution", "feature": feature, "reused": reused})
+        emit({"scientist": "distribution", "feature": feature, "reused": reused})
 
+    # Regime evaluation is deliberately checkpointed at the atomic
+    # feature/state/horizon/quantile level.  The generic discover_regimes()
+    # helper first materialises every projected row and evaluate_regime()
+    # then builds another observations list.  On the full rolling dataset the
+    # two simultaneous copies can exceed the research worker's address limit
+    # before the first regime-pair checkpoint is written.
     regimes = []
     for feature in features:
         for state in state_features:
             if feature == state:
                 continue
-            key = hashlib.sha256((f"regime|{feature}|{state}").encode()).hexdigest()
-            check()
-            result, reused = _checkpoint(
-                root / f"{key}.pickle.gz",
-                lambda feature=feature, state=state: discover_regimes(
-                    _projected_rows(paths, (feature, state), horizons),
-                    feature_names=(feature,), regime_feature_names=(state,),
-                    horizons=horizons, max_features=1, max_regime_features=1,
-                    max_results=50,
-                ),
-            )
-            regimes.extend(result)
-            if progress:
-                progress({
-                    "scientist": "regime", "feature": feature,
-                    "regime_feature": state, "reused": reused,
-                })
+            for low_quantile, high_quantile in quantile_pairs:
+                for horizon in horizons:
+                    key = hashlib.sha256((
+                        f"regime|{feature}|{state}|{horizon}|"
+                        f"{low_quantile:.6f}|{high_quantile:.6f}"
+                    ).encode()).hexdigest()
+                    check()
+                    result, reused = _checkpoint(
+                        root / f"{key}.pickle.gz",
+                        lambda feature=feature, state=state,
+                        horizon=horizon, low_quantile=low_quantile,
+                        high_quantile=high_quantile: evaluate_regime(
+                            _projected_rows(
+                                paths, (feature, state), (horizon,)
+                            ),
+                            feature=feature,
+                            regime_feature=state,
+                            horizon=horizon,
+                            low_quantile=low_quantile,
+                            high_quantile=high_quantile,
+                        ),
+                    )
+                    if result is not None and result.regime_difference >= 0.10:
+                        regimes.append(result)
+                    emit({
+                        "scientist": "regime",
+                        "feature": feature,
+                        "regime_feature": state,
+                        "horizon": horizon,
+                        "low_quantile": low_quantile,
+                        "high_quantile": high_quantile,
+                        "reused": reused,
+                    })
     distributions.sort(key=lambda item: item.score, reverse=True)
     regimes.sort(key=lambda item: item.score, reverse=True)
     return {"distribution": distributions[:20], "regime": regimes[:20]}

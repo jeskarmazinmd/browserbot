@@ -24,7 +24,9 @@ COPY nh015_executable_shadow.py .
 COPY nh015_execution_family.py .
 COPY executable_paper_engine.py .
 COPY paper_outcome_tracker.py .
+COPY bidask_paper_outcome_tracker.py .
 COPY multi_leg_paper_tracker.py .
+COPY bidask_multi_leg_paper_tracker.py .
 COPY strategy_diagnostics.py .
 COPY strategy_diagnostics_report.py .
 COPY quote_source.py .
