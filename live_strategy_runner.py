@@ -378,22 +378,52 @@ def _nh015_execution_quotes(symbols, *, include_repricing=False, priority_symbol
                 ask_time_ms = float(quote.get("askTime") or 0)
                 quote_time_ms = float(quote.get("quoteTime") or 0)
 
-                # V3 is a paper benchmark. A sell needs a fresh bid, even
-                # when the ask has not changed for five seconds. Keep the
-                # strict two-sided filter below for live IOC decisions.
-                bid_age_seconds = (now_ms - bid_time_ms) / 1000.0 if bid_time_ms > 0 else float("inf")
-                if (
-                    include_repricing and bid > 0 and bid_time_ms > 0
-                    and 0 <= bid_age_seconds <= NH015_EXECUTION_QUOTE_MAX_AGE_SECONDS
-                    and (ask <= 0 or ask >= bid)
-                    and root.get("realtime") is True
-                ):
-                    repricing[symbol] = {
-                        "bid": bid,
-                        "bid_time_ms": bid_time_ms,
-                        "bid_age_seconds": bid_age_seconds,
-                        "realtime": True,
-                    }
+                # V3 B/A repricing is an exact parent-event snapshot, not an
+                # IOC fill-admission model. bidTime/askTime describe when each
+                # displayed side last changed; they are diagnostics here, not
+                # a reason to discard the currently returned displayed side.
+                bid_age_seconds = (
+                    (now_ms - bid_time_ms) / 1000.0
+                    if bid_time_ms > 0 else float("inf")
+                )
+                ask_age_seconds = (
+                    (now_ms - ask_time_ms) / 1000.0
+                    if ask_time_ms > 0 else float("inf")
+                )
+
+                if include_repricing and root.get("realtime") is True:
+                    repricing_quote = {"realtime": True}
+
+                    # Long exit: contemporaneously returned displayed bid.
+                    if (
+                        bid > 0
+                        and bid_time_ms > 0
+                        and bid_age_seconds >= 0
+                        and (ask <= 0 or ask >= bid)
+                    ):
+                        repricing_quote.update({
+                            "bid": bid,
+                            "bid_time_ms": bid_time_ms,
+                            "bid_age_seconds": bid_age_seconds,
+                        })
+
+                    # Long entry: contemporaneously returned displayed ask.
+                    if (
+                        ask > 0
+                        and ask_time_ms > 0
+                        and ask_age_seconds >= 0
+                        and (bid <= 0 or ask >= bid)
+                    ):
+                        repricing_quote.update({
+                            "ask": ask,
+                            "ask_time_ms": ask_time_ms,
+                            "ask_age_seconds": ask_age_seconds,
+                        })
+
+                    if "bid" in repricing_quote or "ask" in repricing_quote:
+                        if quote_time_ms > 0:
+                            repricing_quote["quote_time_ms"] = quote_time_ms
+                        repricing[symbol] = repricing_quote
 
                 if (
                     bid <= 0
@@ -438,10 +468,10 @@ def _nh015_execution_quotes(symbols, *, include_repricing=False, priority_symbol
             except (TypeError, ValueError):
                 continue
 
-        # The V3 entry still needs the normal strict ASK quote. The extra
-        # bid-only records can resolve V3 exits but cannot open a new trade.
+        # Keep the two experiments separate:
+        # `out` is the strict IOC/live execution quote set.
+        # `repricing` is the contemporaneous side-aware V3 B/A snapshot.
         if include_repricing:
-            repricing.update(out)
             return out, repricing
         return out
 
@@ -2348,7 +2378,16 @@ def main():
         f"seen={len(iocl1_paper_outcomes.seen)}",
         flush=True,
     )
-    paired_quote_provider = CycleQuoteProvider(_nh015_execution_quotes)
+    def _bidask_repricing_quotes(symbols):
+        """Return contemporaneous displayed B/A snapshots for V3 parent twins."""
+        _, repricing = _nh015_execution_quotes(
+            symbols,
+            include_repricing=True,
+            priority_symbols=symbols,
+        )
+        return repricing
+
+    paired_quote_provider = CycleQuoteProvider(_bidask_repricing_quotes)
 
     def register_single_leg_paper(signal):
         """Register LAST and immediately mirror its accepted event in LIVE."""
@@ -2666,7 +2705,9 @@ def main():
                 # Seed only quotes actually returned by the bulk request.
                 # A requested-but-missing symbol must remain eligible for one
                 # targeted same-cycle fetch if a parent signal accepts it.
-                paired_quote_provider.reset(execution_quotes)
+                # BA parent twins consume the contemporaneous V3 snapshot.
+                # IOC/live execution continues to use execution_quotes.
+                paired_quote_provider.reset(repricing_quotes)
                 execution_bids = {
                     symbol: quote["bid"]
                     for symbol, quote in execution_quotes.items()

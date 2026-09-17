@@ -378,31 +378,160 @@ class BidAskRepricingTrackerTest(unittest.TestCase):
             self.assertNotIn(setup_id, recovered.active)
             self.assertNotIn(setup_id, recovered.seen_entries)
 
-    def test_live_quote_filter_stays_strict_while_v3_gets_bid(self):
-        # Extract just the provider: importing the runner starts unrelated
-        # production integrations and requires credentials.
-        source = (Path(__file__).resolve().parents[1] / "live_strategy_runner.py").read_text()
-        node = next(item for item in ast.parse(source).body
-                    if isinstance(item, ast.FunctionDef) and item.name == "_nh015_execution_quotes")
+    def _runner_quote_provider(self, quote):
+        # Extract only the quote provider so importing the production runner
+        # cannot start unrelated integrations or require credentials.
+        source = (
+            Path(__file__).resolve().parents[1]
+            / "live_strategy_runner.py"
+        ).read_text()
+        node = next(
+            item for item in ast.parse(source).body
+            if isinstance(item, ast.FunctionDef)
+            and item.name == "_nh015_execution_quotes"
+        )
         scope = {
             "time": time,
             "NH015_EXECUTION_QUOTE_MAX_AGE_SECONDS": 5.0,
             "append_bot_event": lambda *args, **kwargs: None,
         }
+        response = types.SimpleNamespace(
+            status_code=200,
+            json=lambda: {
+                "ABC": {
+                    "realtime": True,
+                    "quote": quote,
+                }
+            },
+        )
+        scope["_market_data_client"] = lambda: types.SimpleNamespace(
+            get_quotes=lambda symbols: response
+        )
+        exec(
+            compile(
+                ast.Module(body=[node], type_ignores=[]),
+                "provider",
+                "exec",
+            ),
+            scope,
+        )
+        return scope["_nh015_execution_quotes"]
+
+    def test_v3_accepts_old_displayed_ask_while_ioc_stays_strict(self):
         now_ms = time.time() * 1000
-        response = types.SimpleNamespace(status_code=200, json=lambda: {
-            "ABC": {"realtime": True, "quote": {
-                "bidPrice": 99.9, "askPrice": 100.1,
-                "bidTime": now_ms, "askTime": now_ms - 30000,
-                "quoteTime": now_ms,
-            }}
+        provider = self._runner_quote_provider({
+            "bidPrice": 99.9,
+            "askPrice": 100.1,
+            "bidTime": now_ms,
+            "askTime": now_ms - 30_000,
+            "quoteTime": now_ms,
         })
-        scope["_market_data_client"] = lambda: types.SimpleNamespace(get_quotes=lambda symbols: response)
-        exec(compile(ast.Module(body=[node], type_ignores=[]), "provider", "exec"), scope)
-        live, v3 = scope["_nh015_execution_quotes"](["ABC"], include_repricing=True)
+
+        live, v3 = provider(["ABC"], include_repricing=True)
+
+        # IOC/live still rejects the stale two-sided execution quote.
+        self.assertEqual(live, {})
+
+        # V3 records the contemporaneously returned displayed ask.
+        self.assertEqual(v3["ABC"]["ask"], 100.1)
+        self.assertEqual(v3["ABC"]["bid"], 99.9)
+        self.assertGreater(v3["ABC"]["ask_age_seconds"], 5.0)
+
+    def test_v3_entry_ask_does_not_require_fresh_bid(self):
+        now_ms = time.time() * 1000
+        provider = self._runner_quote_provider({
+            "bidPrice": 99.9,
+            "askPrice": 100.1,
+            "bidTime": now_ms - 30_000,
+            "askTime": now_ms,
+            "quoteTime": now_ms,
+        })
+
+        live, v3 = provider(["ABC"], include_repricing=True)
+
+        self.assertEqual(live, {})
+        self.assertEqual(v3["ABC"]["ask"], 100.1)
+        self.assertGreater(v3["ABC"]["bid_age_seconds"], 5.0)
+
+    def test_v3_exit_bid_does_not_require_fresh_ask(self):
+        now_ms = time.time() * 1000
+        provider = self._runner_quote_provider({
+            "bidPrice": 99.9,
+            "askPrice": 100.1,
+            "bidTime": now_ms,
+            "askTime": now_ms - 30_000,
+            "quoteTime": now_ms,
+        })
+
+        live, v3 = provider(["ABC"], include_repricing=True)
+
         self.assertEqual(live, {})
         self.assertEqual(v3["ABC"]["bid"], 99.9)
-        self.assertNotIn("ask", v3["ABC"])
+        self.assertGreater(v3["ABC"]["ask_age_seconds"], 5.0)
+
+    def test_v3_accepts_old_displayed_bid_for_exit(self):
+        now_ms = time.time() * 1000
+        provider = self._runner_quote_provider({
+            "bidPrice": 99.9,
+            "askPrice": 100.1,
+            "bidTime": now_ms - 30_000,
+            "askTime": now_ms,
+            "quoteTime": now_ms,
+        })
+
+        live, v3 = provider(["ABC"], include_repricing=True)
+
+        self.assertEqual(live, {})
+        self.assertEqual(v3["ABC"]["bid"], 99.9)
+        self.assertGreater(v3["ABC"]["bid_age_seconds"], 5.0)
+
+    def test_v3_tracker_persists_quote_side_ages(self):
+        with tempfile.TemporaryDirectory() as root:
+            parent = PaperOutcomeTracker(root)
+            parent.register(signal())
+
+            tracker = BidAskRepricingTracker(root)
+            setup_id = signal()["setup_id"]
+
+            tracker.register_parent_entry(
+                parent.active[setup_id],
+                quote={
+                    "ask": 100.1,
+                    "ask_time_ms": 123456789.0,
+                    "ask_age_seconds": 30.0,
+                },
+                now=NOW,
+            )
+
+            entry = tracker.active[setup_id]
+            self.assertEqual(entry["entry_ask"], 100.1)
+            self.assertEqual(entry["entry_ask_time_ms"], 123456789.0)
+            self.assertEqual(entry["entry_ask_age_seconds"], 30.0)
+
+            exit_time = NOW + timedelta(seconds=30)
+            parent_exit = dict(
+                parent.active[setup_id],
+                exit_timestamp=exit_time.isoformat(),
+                exit_price=100.4,
+                exit_reason="STOP",
+            )
+
+            rows = tracker.register_parent_exits(
+                [parent_exit],
+                {
+                    "ABC": {
+                        "bid": 100.3,
+                        "bid_time_ms": 123456999.0,
+                        "bid_age_seconds": 45.0,
+                    }
+                },
+                exit_time,
+            )
+
+            self.assertEqual(len(rows), 1)
+            self.assertEqual(rows[0]["exit_bid"], 100.3)
+            self.assertEqual(rows[0]["exit_bid_time_ms"], 123456999.0)
+            self.assertEqual(rows[0]["exit_bid_age_seconds"], 45.0)
 
     def test_quote_batches_preserve_partial_results_and_prioritize_pending_exits(self):
         source = (Path(__file__).resolve().parents[1] / "live_strategy_runner.py").read_text()

@@ -627,6 +627,10 @@ class BidAskRepricingTracker:
             "entry_price": ask,
             "entry_ask": ask,
             "entry_bid": self._positive(quote.get("bid")),
+            "entry_ask_time_ms": self._positive(quote.get("ask_time_ms")),
+            "entry_ask_age_seconds": self._positive(
+                quote.get("ask_age_seconds")
+            ),
             "entry_timestamp": (
                 parent.get("entry_timestamp") or parent.get("signal_timestamp")
             ),
@@ -703,6 +707,9 @@ class BidAskRepricingTracker:
                 "exit_price": bid,
                 "exit_bid": bid,
                 "exit_bid_time_ms": bid_time_ms,
+                "exit_bid_age_seconds": self._positive(
+                    quote.get("bid_age_seconds")
+                ),
                 "exit_quote_resolved_at": now.isoformat(),
                 "exit_resolution_delay_seconds": 0.0,
                 "exit_ask": self._positive(quote.get("ask")),
