@@ -21,6 +21,7 @@ from zoneinfo import ZoneInfo
 
 from reporting.capital_performance import simulate_day
 from strategies.pruning import output_is_pruned
+from strategies.output_switches import output_enabled
 
 
 NY = ZoneInfo("America/New_York")
@@ -647,7 +648,7 @@ def calculate(root="/data", day=None, as_of=None):
     # snapshots and future daily-history rows.
     modules = {
         name: row for name, row in modules.items()
-        if not output_is_pruned(name)
+        if not output_is_pruned(name) and output_enabled(name)
     }
     ranked = sorted(modules.items(), key=lambda item: item[1]["return_pct"], reverse=True)
     return {

@@ -12,6 +12,7 @@ from types import SimpleNamespace
 from engine.events import MarketSnapshot, Quote, SignalEvent
 from strategies.generic_registry import evaluate_all as evaluate_generic_strategies
 from strategies.derived_runtime import DERIVED_STRATEGY_IDS, derive_signals
+from strategies.output_switches import output_enabled
 from strategies.flash_nearest_miss import score as score_flash_window
 from strategies.registry import (
     MINUTE_STRATEGIES,
@@ -2400,6 +2401,8 @@ def main():
         """Admit an executable BA trade directly from the strategy signal."""
         if RUN_MODE != "LIVE":
             return paper_outcomes.register(signal)
+        if not output_enabled(signal.get("strategy_id")):
+            return False
         symbol = str(signal.get("symbol") or "").upper()
         quotes = independent_quote_provider([symbol])
         return independent_ba_outcomes.register_signal(
@@ -3065,8 +3068,10 @@ def main():
                             for leg in multi_payload.get("legs", [])
                         ]
                         quotes = independent_quote_provider(symbols)
-                        admitted = independent_multi_leg_outcomes.register_signal(
-                            multi_payload, quotes, quote_source.now()
+                        admitted = (
+                            independent_multi_leg_outcomes.register_signal(
+                                multi_payload, quotes, quote_source.now()
+                            ) if output_enabled(signal.strategy_id) else False
                         )
                     else:
                         admitted = multi_leg_outcomes.register(multi_payload)
@@ -4043,6 +4048,8 @@ def main():
                 )
 
             for strategy_id, parent_id in derived_parents.items():
+                if strategy_id not in DERIVED_STRATEGY_IDS:
+                    continue
                 diagnostics.parent_state(
                     strategy_id,
                     parent_id,
