@@ -14,10 +14,8 @@ from strategies.generic_registry import evaluate_all as evaluate_generic_strateg
 from strategies.derived_runtime import DERIVED_STRATEGY_IDS, derive_signals
 from strategies.flash_nearest_miss import score as score_flash_window
 from strategies.registry import (
-    DERIVED_RUNTIME_STRATEGY_IDS,
     MINUTE_STRATEGIES,
     MinuteStrategyPool,
-    REPORTING_STRATEGY_MODULES,
     flash_accepts,
     flash_strategy_configs,
     refresh_flash_entry,
@@ -53,11 +51,14 @@ from paper_outcome_tracker import PaperOutcomeTracker, _utc
 from bidask_paper_outcome_tracker import (
     BidAskRepricingTracker,
     CycleQuoteProvider,
+    IndependentBidAskPaperTracker,
     IocL1PaperOutcomeTracker,
-    register_paired_single_leg_signal,
 )
 from multi_leg_paper_tracker import MultiLegPaperTracker
-from bidask_multi_leg_paper_tracker import BidAskMultiLegPaperTracker
+from bidask_multi_leg_paper_tracker import (
+    BidAskMultiLegPaperTracker,
+    IndependentBidAskMultiLegTracker,
+)
 from strategy_diagnostics import diagnostics
 from schwab_token_guard import (
     ManualReauthRequired,
@@ -74,8 +75,8 @@ REPLAY_TAPE_PATH = os.environ.get("REPLAY_TAPE_PATH")
 
 
 def live_order_placement_enabled():
-    """Fail closed unless the master arm names the sole supported strategy."""
-    return configured_for_nh015()
+    """No LAST-derived strategy may place new broker entries during migration."""
+    return False
 
 RUN_ID = os.environ.get("RUN_ID", "live")
 
@@ -2339,7 +2340,7 @@ def main():
     live_book.publish_status()
     print(
         "NH015_LIVE_BOOK_ONLINE "
-        f"armed={configured_for_nh015()} "
+        f"armed={live_order_placement_enabled()} "
         f"equity={live_book.equity:.2f} "
         f"active={len(live_book.state.get('active', {}))}",
         flush=True,
@@ -2350,7 +2351,7 @@ def main():
         eod_minute=EOD_EXIT_MINUTE_ET,
     )
     print(
-        "PAPER_OUTCOME_TRACKER_ONLINE "
+        "LAST_PAPER_DRAIN_ONLY "
         f"active={len(paper_outcomes.active)} seen={len(paper_outcomes.seen)}",
         flush=True,
     )
@@ -2360,7 +2361,7 @@ def main():
         eod_minute=EOD_EXIT_MINUTE_ET,
     )
     print(
-        "BIDASK_REPRICING_TRACKER_ONLINE "
+        "LEGACY_BIDASK_TWIN_DRAIN_ONLY "
         f"active={len(bidask_repricing_outcomes.active)} "
         f"pending_entries={len(bidask_repricing_outcomes.pending_entries)} "
         f"seen={len(bidask_repricing_outcomes.seen_entries)}",
@@ -2371,35 +2372,38 @@ def main():
         eod_hour=EOD_EXIT_HOUR_ET,
         eod_minute=EOD_EXIT_MINUTE_ET,
     )
+    independent_ba_outcomes = IndependentBidAskPaperTracker(
+        DATA_ROOT,
+        eod_hour=EOD_EXIT_HOUR_ET,
+        eod_minute=EOD_EXIT_MINUTE_ET,
+    )
     print(
-        "IOCL1_PAPER_OUTCOME_TRACKER_ONLINE "
+        "INDEPENDENT_BA_TRACKER_ONLINE "
+        f"active={len(independent_ba_outcomes.active)} "
+        f"seen={len(independent_ba_outcomes.seen)}",
+        flush=True,
+    )
+    print(
+        "LEGACY_IOCL1_DRAIN_ONLY "
         f"active={len(iocl1_paper_outcomes.active)} "
         f"pending={len(iocl1_paper_outcomes.pending)} "
         f"seen={len(iocl1_paper_outcomes.seen)}",
         flush=True,
     )
-    def _bidask_repricing_quotes(symbols):
-        """Return contemporaneous displayed B/A snapshots for V3 parent twins."""
-        _, repricing = _nh015_execution_quotes(
-            symbols,
-            include_repricing=True,
-            priority_symbols=symbols,
+    independent_quote_provider = CycleQuoteProvider(
+        lambda symbols: _nh015_execution_quotes(
+            symbols, priority_symbols=symbols
         )
-        return repricing
-
-    paired_quote_provider = CycleQuoteProvider(_bidask_repricing_quotes)
+    )
 
     def register_single_leg_paper(signal):
-        """Register LAST and immediately mirror its accepted event in LIVE."""
+        """Admit an executable BA trade directly from the strategy signal."""
         if RUN_MODE != "LIVE":
             return paper_outcomes.register(signal)
-        return register_paired_single_leg_signal(
-            signal,
-            parent_tracker=paper_outcomes,
-            repricing_tracker=bidask_repricing_outcomes,
-            ioc_tracker=iocl1_paper_outcomes,
-            quote_provider=paired_quote_provider,
-            now_provider=quote_source.now,
+        symbol = str(signal.get("symbol") or "").upper()
+        quotes = independent_quote_provider([symbol])
+        return independent_ba_outcomes.register_signal(
+            signal, quotes.get(symbol), quote_source.now()
         )
     nh015_exec_shadow = NH015ExecutableShadow(
         DATA_ROOT,
@@ -2438,6 +2442,17 @@ def main():
         DATA_ROOT,
         eod_hour=EOD_EXIT_HOUR_ET,
         eod_minute=EOD_EXIT_MINUTE_ET,
+    )
+    independent_multi_leg_outcomes = IndependentBidAskMultiLegTracker(
+        DATA_ROOT,
+        eod_hour=EOD_EXIT_HOUR_ET,
+        eod_minute=EOD_EXIT_MINUTE_ET,
+    )
+    print(
+        "INDEPENDENT_MULTI_LEG_BA_TRACKER_ONLINE "
+        f"active={len(independent_multi_leg_outcomes.active)} "
+        f"seen={len(independent_multi_leg_outcomes.seen)}",
+        flush=True,
     )
     print(
         "BIDASK_MULTI_LEG_TRACKER_ONLINE "
@@ -2507,14 +2522,11 @@ def main():
             runtime_path="derived",
             parent_strategy=parent_id,
         )
-    inactive_ids = set(REPORTING_STRATEGY_MODULES) - set(DERIVED_RUNTIME_STRATEGY_IDS)
-    for strategy_id in inactive_ids:
-        diagnostics.define(
-            strategy_id,
-            "INACTIVE",
-            runtime_path="legacy_reporting_only",
-            reason="not connected to runtime evaluation",
-        )
+    if RUN_MODE == "LIVE":
+        for record in diagnostics.records.values():
+            record["role"] = "signal_source"
+            record["paper_accounting"] = "BIDASK_INDEPENDENT"
+            record["last_paper_entries_enabled"] = False
     parent_signal_counts = {"A": 0, "B": 0, "D": 0}
     derived_signal_counts = {key: 0 for key in derived_parents}
     diagnostics.flush(force=True)
@@ -2681,23 +2693,29 @@ def main():
 
             prices_now = latest_prices(df)
             if RUN_MODE == "LIVE":
+                independent_ba_symbols = independent_ba_outcomes.symbols()
+                independent_multi_leg_symbols = independent_multi_leg_outcomes.symbols()
                 execution_symbols = (
                     set(positions)
                     | nh015_exec_shadow.symbols()
                     | nh015_execution_family.symbols()
                     | bidask_repricing_outcomes.symbols()
                     | iocl1_paper_outcomes.symbols()
+                    | independent_ba_symbols
                     | bidask_multi_leg_outcomes.symbols()
+                    | independent_multi_leg_symbols
                 )
-                priority_execution_symbols = set(positions)
-                priority_execution_symbols.update(
+                priority_execution_symbols = list(positions)
+                priority_execution_symbols.extend(
                     str(row.get("symbol") or "").upper()
                     for row in bidask_repricing_outcomes.pending_exits.values()
                 )
-                priority_execution_symbols.update(
+                priority_execution_symbols.extend(
                     str(row.get("symbol") or "").upper()
                     for row in bidask_repricing_outcomes.pending_entries.values()
                 )
+                priority_execution_symbols.extend(sorted(independent_multi_leg_symbols))
+                priority_execution_symbols.extend(sorted(independent_ba_symbols))
                 execution_quotes, repricing_quotes = _nh015_execution_quotes(
                     execution_symbols, include_repricing=True,
                     priority_symbols=priority_execution_symbols,
@@ -2705,9 +2723,9 @@ def main():
                 # Seed only quotes actually returned by the bulk request.
                 # A requested-but-missing symbol must remain eligible for one
                 # targeted same-cycle fetch if a parent signal accepts it.
-                # BA parent twins consume the contemporaneous V3 snapshot.
-                # IOC/live execution continues to use execution_quotes.
-                paired_quote_provider.reset(repricing_quotes)
+                # New BA signals use fresh executable quotes. Existing V3
+                # positions can still receive their historical parent exits.
+                independent_quote_provider.reset(execution_quotes)
                 execution_bids = {
                     symbol: quote["bid"]
                     for symbol, quote in execution_quotes.items()
@@ -2745,15 +2763,25 @@ def main():
                             flush=True,
                         )
 
-                # Exact-cycle V3 B/A never resolves an old parent event from a
-                # later quote. Parent entry/exit events are the sole authority,
-                # and pricing is performed synchronously at those events.
+                # Existing V3 positions drain; no new parent twins are opened.
 
                 for outcome in iocl1_paper_outcomes.update_quotes(
                     execution_quotes, quote_source.now()
                 ):
                     print(
                         "IOCL1_PAPER_OUTCOME "
+                        f"strategy={outcome['strategy_id']} "
+                        f"symbol={outcome['symbol']} "
+                        f"reason={outcome['exit_reason']} "
+                        f"return={outcome['return_pct']:+.3f}%",
+                        flush=True,
+                    )
+
+                for outcome in independent_ba_outcomes.update_quotes(
+                    execution_quotes, quote_source.now()
+                ):
+                    print(
+                        "INDEPENDENT_BA_PAPER_OUTCOME "
                         f"strategy={outcome['strategy_id']} "
                         f"symbol={outcome['symbol']} "
                         f"reason={outcome['exit_reason']} "
@@ -2769,6 +2797,16 @@ def main():
                         f"strategy={outcome['strategy_id']} "
                         f"group={outcome['group_id']} "
                         f"reason={outcome['exit_reason']} "
+                        f"return={outcome['return_pct']:+.3f}%",
+                        flush=True,
+                    )
+                for outcome in independent_multi_leg_outcomes.update_quotes(
+                    execution_quotes, quote_source.now()
+                ):
+                    print(
+                        "INDEPENDENT_BA_MULTI_LEG_OUTCOME "
+                        f"strategy={outcome['strategy_id']} "
+                        f"group={outcome['group_id']} "
                         f"return={outcome['return_pct']:+.3f}%",
                         flush=True,
                     )
@@ -3021,9 +3059,18 @@ def main():
                         "timestamp": pd.Timestamp(signal.timestamp).isoformat(),
                         **dict(signal.data or {}),
                     }
-                    if multi_leg_outcomes.register(multi_payload):
-                        if RUN_MODE == "LIVE":
-                            bidask_multi_leg_outcomes.register(multi_payload)
+                    if RUN_MODE == "LIVE":
+                        symbols = [
+                            str(leg.get("symbol") or "").upper()
+                            for leg in multi_payload.get("legs", [])
+                        ]
+                        quotes = independent_quote_provider(symbols)
+                        admitted = independent_multi_leg_outcomes.register_signal(
+                            multi_payload, quotes, quote_source.now()
+                        )
+                    else:
+                        admitted = multi_leg_outcomes.register(multi_payload)
+                    if admitted:
                         append_strategy_event(
                             str(signal.strategy_id),
                             "MULTI_LEG_SIGNAL",

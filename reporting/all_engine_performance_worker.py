@@ -15,15 +15,15 @@ from reporting.all_engine_performance import calculate, cutoff_for, render_snaps
 ROOT = Path(os.environ.get("ALL_ENGINE_DATA_ROOT", "/data"))
 LIVE_JSON = ROOT / "all_engine_performance_live.json"
 LIVE_TXT = ROOT / "all_engine_performance_live.txt"
-HISTORY_JSON = ROOT / "all_engine_daily_history.json"
-HISTORY_TXT = ROOT / "all_engine_daily_history.txt"
+HISTORY_JSON = ROOT / "all_engine_bidask_daily_history.json"
+HISTORY_TXT = ROOT / "all_engine_bidask_daily_history.txt"
 HEALTH = ROOT / "all_engine_performance_health.json"
 ERRORS = ROOT / "all_engine_performance_errors.jsonl"
 NY = ZoneInfo("America/New_York")
 POLL_SECONDS = max(60.0, float(os.environ.get("ALL_ENGINE_PERFORMANCE_POLL_SECONDS", "600")))
 FINALIZE_HOUR = int(os.environ.get("ALL_ENGINE_FINALIZE_HOUR_ET", "16"))
 FINALIZE_MINUTE = int(os.environ.get("ALL_ENGINE_FINALIZE_MINUTE_ET", "5"))
-VERSION = 2
+VERSION = 3
 BACKFILL_DAYS = max(1, int(os.environ.get("ALL_ENGINE_BACKFILL_DAYS", "30")))
 
 
@@ -51,12 +51,12 @@ def load_history():
 def render_history(history):
     days = sorted(history["days"])
     if not days:
-        return "ALL-ENGINE DAILY HISTORY\nNo finalized days yet.\n"
+        return "ALL-ENGINE BID/ASK DAILY HISTORY\nNo finalized days yet.\n"
     visible = days[-20:]
     names = sorted({name for day in visible for name in history["days"][day]["modules"]})
     lines = [
-        "ALL-ENGINE DAILY HISTORY",
-        "Cells show fixed-cutoff hypothetical-close return.",
+        "ALL-ENGINE BID/ASK DAILY HISTORY",
+        "Cells show executable-quote hypothetical-close return.",
         "",
         f"{'Module':<20}" + "".join(f"{day[5:]:>12}" for day in visible),
     ]

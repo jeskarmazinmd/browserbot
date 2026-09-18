@@ -70,6 +70,7 @@ def simulate_day(
                 entry,
                 exit_price,
                 stop,
+                row.get("filled_qty"),
             )
         )
 
@@ -103,7 +104,7 @@ def simulate_day(
             record_equity()
 
     for order, item in enumerate(prepared):
-        entry_time, _, _, exit_time, entry, exit_price, stop = item
+        entry_time, _, _, exit_time, entry, exit_price, stop, filled_qty = item
         release_until(entry_time)
 
         equity = cash + deployed
@@ -119,6 +120,10 @@ def simulate_day(
         )
         cash_shares = math.floor(cash / entry)
         shares = min(risk_shares, position_shares, cash_shares)
+        # Executable paper entries may have filled fewer shares than the
+        # portfolio model would otherwise buy from displayed liquidity.
+        if filled_qty is not None:
+            shares = min(shares, max(0, int(filled_qty)))
 
         if shares < 1:
             skipped += 1

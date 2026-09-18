@@ -356,7 +356,7 @@ def build_snapshot(root: Path, day: str | None = None, as_of: datetime | None = 
     if as_of.tzinfo is None:
         as_of = as_of.replace(tzinfo=timezone.utc)
     day = day or as_of.astimezone(ZoneInfo("America/New_York")).date().isoformat()
-    marks = load_market_marks(root, day, as_of)
+    marks = load_market_marks(root, day, as_of, include_last=True)
     parent_rows, parent_unpriced, sequences = load_snapshot_rows(
         root / "paper_signal_outcomes.jsonl", marks, day, as_of
     )

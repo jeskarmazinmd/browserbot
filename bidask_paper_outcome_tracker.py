@@ -22,6 +22,7 @@ from paper_outcome_tracker import NY, PaperOutcomeTracker, _utc
 
 
 FILE_STEM = "paper_signal_v2_bidask"
+INDEPENDENT_FILE_STEM = "paper_signal_v4_bidask_independent"
 REPRICING_FILE_STEM = "paper_signal_v3_bidask_repricing"
 MAX_PENDING_SECONDS = 20.0
 MAX_REPRICING_RECOVERY_AGE_SECONDS = 60.0
@@ -70,10 +71,12 @@ class CycleQuoteProvider:
     remembered miss, and is explicitly reset by the runner each cycle.
     """
 
-    def __init__(self, provider):
+    def __init__(self, provider, max_targeted_symbols=50):
         self.provider = provider
+        self.max_targeted_symbols = int(max_targeted_symbols)
         self.quotes = {}
         self.attempted = set()
+        self.targeted_count = 0
 
     def reset(self, quotes=None, attempted_symbols=()):
         self.quotes = {
@@ -85,6 +88,7 @@ class CycleQuoteProvider:
             str(symbol).upper() for symbol in attempted_symbols if symbol
         }
         self.attempted.update(self.quotes)
+        self.targeted_count = 0
 
     def __call__(self, symbols):
         requested = list(dict.fromkeys(
@@ -95,7 +99,10 @@ class CycleQuoteProvider:
             # Mark before calling so even an exception/missing quote is cached
             # for this cycle instead of hammering the API for every variant.
             self.attempted.update(missing)
-            fetched = self.provider(missing) or {}
+            budget = max(0, self.max_targeted_symbols - self.targeted_count)
+            selected = missing[:budget]
+            self.targeted_count += len(selected)
+            fetched = (self.provider(selected) or {}) if selected else {}
             self.quotes.update({
                 str(symbol).upper(): quote
                 for symbol, quote in fetched.items()
@@ -354,6 +361,42 @@ class BidAskPaperOutcomeTracker(PaperOutcomeTracker):
         closed = super().update(bid_prices, now)
         self._write_status()
         return closed
+
+
+class IndependentBidAskPaperTracker(BidAskPaperOutcomeTracker):
+    """Own BA entries and exits without a LAST paper-trade parent.
+
+    Signals may use the strategy's market features, but an entry is admitted
+    only from an executable same-cycle ASK. Missing or stale quotes are
+    rejected immediately; a later quote cannot fill an earlier signal.
+    """
+
+    def __init__(self, data_root, **kwargs):
+        kwargs.setdefault("file_stem", INDEPENDENT_FILE_STEM)
+        super().__init__(data_root, **kwargs)
+
+    def register_signal(self, signal, quote, now):
+        if not self.register(signal):
+            return False
+        now = _utc(now)
+        symbol = str(signal["symbol"]).upper()
+        setup_id = self._setup_id(signal, _utc(signal["timestamp"]))
+        self.update_quotes({symbol: quote} if quote else {}, now)
+        pending = self.pending.get(setup_id)
+        if pending is not None:
+            # The ordinary IOC/L1 experiment can wait for another quote.
+            # This independent ledger must use the signal-cycle quote only.
+            decision = classify_limit_order(
+                quote,
+                action="BUY",
+                limit_price=float(signal["entry_price"]),
+                requested_qty=max(1, int(self.notional / float(signal["entry_price"]))),
+                now=now,
+                max_quote_age_ms=5000.0,
+            )
+            self._reject_pending(setup_id, pending, decision, now)
+            self._write_status()
+        return setup_id in self.active
 
 
 class BidAskRepricingTracker:

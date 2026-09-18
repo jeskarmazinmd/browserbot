@@ -47,7 +47,6 @@ EXPECTED_WORKERS = {
     "collector": "live_quote_collector.py",
     "strategy": "live_strategy_runner.py",
     "reporter": "leaderboard_writer.py",
-    "performance": "reporting.capital_performance_worker",
     "dashboard": "schwab_bot_dashboard.dashboard.app:app",
     "supervisor": "supervisor.py",
 }
@@ -358,8 +357,8 @@ def build_snapshot() -> dict:
         "memory": memory,
         "storage": storage,
         "performance_reporting": {
-            "status": "DISABLED_DURING_REBUILD",
-            "reason": "legacy outcome simulation was removed from the health heartbeat",
+            "status": "BIDASK_ONLY",
+            "reason": "active returns are published by the isolated all-engine bid/ask worker",
         },
     }
     snapshot["generation_seconds"] = round(time.monotonic() - started, 4)
@@ -436,11 +435,10 @@ def render_summary(snapshot: dict) -> str:
         f"storage={peaks.get('storage_used_pct')}%",
         "",
         "PERFORMANCE REPORTING",
-        "capital_constrained: ISOLATED_WORKER",
-        "history: /data/capital_constrained_history.txt",
-        "all_engine_performance: OPTIONAL_ISOLATED_WORKER",
+        "capital_constrained_LAST: RETIRED",
+        "all_engine_performance: BIDASK_OPTIONAL_WORKER",
         "live: /data/all_engine_performance_live.txt",
-        "all_engine_history: /data/all_engine_daily_history.txt",
+        "all_engine_history: /data/all_engine_bidask_daily_history.txt",
         "legacy_signal_table: DISABLED_DURING_REBUILD",
     ])
 
@@ -452,14 +450,13 @@ def render_summary(snapshot: dict) -> str:
 
 def render_performance_placeholder(snapshot: dict) -> str:
     return "\n".join([
-        "STRATEGY PERFORMANCE — TEMPORARILY UNAVAILABLE",
+        "STRATEGY PERFORMANCE — BID/ASK ONLY",
         f"Last update: {snapshot['timestamp']}",
-        "Status: DISABLED_DURING_REBUILD",
+        "Status: see /data/all_engine_performance_live.txt",
         "",
-        "The legacy all-in-one outcome simulator was removed from the health heartbeat because it stalled.",
-        "Existing event and outcome ledgers remain preserved under /data.",
-        "This file will be restored by the isolated incremental performance worker.",
-        "Do not interpret the pre-rebuild table as current.",
+        "This heartbeat does not calculate strategy returns.",
+        "Independent bid/ask entries and native executable modules appear in the",
+        "separate live report. Archived LAST results are not active modules.",
         "",
     ])
 

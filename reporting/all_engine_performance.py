@@ -1,9 +1,8 @@
-"""Read-only, all-engine paper-performance snapshots.
+"""Read-only, executable bid/ask paper-performance snapshots.
 
-The main signal ledger uses the existing risk-sized simulator.  Newer research
-engines use five reusable $1,000 slots, matching the live-deployment convention
-in :mod:`reporting.engine`.  Open positions are marked without mutating any
-tracker state.
+Independent main BA trades use a $5,000 risk-sized portfolio; native research
+engines use five reusable $1,000 slots. Open positions require bid/ask marks.
+Legacy LAST and parent-twin accounting remains archived but is not ranked.
 """
 
 from __future__ import annotations
@@ -133,7 +132,7 @@ def latest_path(pattern):
     return paths[-1] if paths else None
 
 
-def load_market_marks(root: Path, day: str, cutoff):
+def load_market_marks(root: Path, day: str, cutoff, *, include_last=False):
     compact = day.replace("-", "")
     equity = {}
 
@@ -147,19 +146,21 @@ def load_market_marks(root: Path, day: str, cutoff):
             equity.update(last_gzip_json(path, cutoff).get(field, {}))
 
     main_last = {}
-    main_tape = root / "tapes" / f"quotes_{compact}.csv"
-    try:
-        with main_tape.open(newline="") as handle:
-            for row in csv.DictReader(handle):
-                timestamp = parse_time(row.get("timestamp_utc"))
-                if timestamp is not None and timestamp > cutoff:
-                    continue
-                try:
-                    main_last[row["symbol"]] = float(row["last_price"])
-                except (KeyError, TypeError, ValueError):
-                    pass
-    except OSError:
-        pass
+    if include_last:
+        # Used only by explicit offline LAST comparison tooling.
+        main_tape = root / "tapes" / f"quotes_{compact}.csv"
+        try:
+            with main_tape.open(newline="") as handle:
+                for row in csv.DictReader(handle):
+                    timestamp = parse_time(row.get("timestamp_utc"))
+                    if timestamp is not None and timestamp > cutoff:
+                        continue
+                    try:
+                        main_last[row["symbol"]] = float(row["last_price"])
+                    except (KeyError, TypeError, ValueError):
+                        pass
+        except OSError:
+            pass
 
     options = {}
     path = latest_path(root / "options_tapes" / f"option_chains_{compact}.jsonl.gz")
@@ -208,12 +209,7 @@ def equity_quote(symbol, marks):
                 return {"bid": bid, "ask": ask, "source": "bid_ask"}
         except (KeyError, TypeError, ValueError):
             pass
-    try:
-        value = float(marks["main_last"].get(symbol))
-        if value > 0:
-            return {"bid": value, "ask": value, "source": "main_last_fallback"}
-    except (TypeError, ValueError):
-        pass
+    # A missing book is an unavailable mark, never a last-price fill.
     return {}
 
 
@@ -379,109 +375,12 @@ def calculate(root="/data", day=None, as_of=None):
     modules, sources = {}, {}
     diagnostics = {"main_unmarked": 0, "unmarked_by_engine": defaultdict(int)}
 
-    entries, exits, sequence, names = {}, {}, {}, set()
-    for row in read_json_lines(root / "paper_signal_outcomes.jsonl"):
-        name = strategy_name(row)
-        if name:
-            names.add(name)
-        setup = str(row.get("setup_id") or "")
-        if not setup or market_day(row) != day:
-            continue
-        event = row.get("event_type")
-        if event == "PAPER_ENTRY":
-            sequence.setdefault(setup, len(sequence))
-            entries[setup] = row
-        elif event == "PAPER_EXIT":
-            exits[setup] = row
-
-    ba_entries, ba_exits = set(), set()
-    for row in read_json_lines(
-        root / "paper_signal_v3_bidask_repricing_outcomes.jsonl"
-    ):
-        setup = str(row.get("setup_id") or "")
-        if not setup or market_day(row) != day:
-            continue
-        event = str(row.get("event_type") or "").upper()
-        event_time = (
-            opened_time(row)
-            if event == "BA_REPRICE_ENTRY"
-            else parse_time(row.get("exit_timestamp"))
-        )
-        if event_time is None or event_time > cutoff:
-            continue
-        if event == "BA_REPRICE_ENTRY":
-            ba_entries.add(setup)
-        elif event == "BA_REPRICE_EXIT":
-            ba_exits.add(setup)
-
-    parent_entry_ids = {
-        setup
-        for setup, row in entries.items()
-        if opened_time(row) is not None and opened_time(row) <= cutoff
-    }
-    parent_exit_ids = {
-        setup
-        for setup, row in exits.items()
-        if parse_time(row.get("exit_timestamp")) is not None
-        and parse_time(row.get("exit_timestamp")) <= cutoff
-    }
-    missing_ba_entries = sorted(parent_entry_ids - ba_entries)
-    missing_ba_exits = sorted(parent_exit_ids - ba_exits)
-    orphan_ba_entries = sorted(ba_entries - parent_entry_ids)
-    orphan_ba_exits = sorted(ba_exits - parent_exit_ids)
-    diagnostics["bidask_paired_coverage"] = {
-        "parent_entries": len(parent_entry_ids),
-        "ba_entries": len(ba_entries),
-        "paired_entries": len(parent_entry_ids & ba_entries),
-        "parent_exits": len(parent_exit_ids),
-        "ba_exits": len(ba_exits),
-        "paired_exits": len(parent_exit_ids & ba_exits),
-        "missing_ba_entry_ids": missing_ba_entries,
-        "missing_ba_exit_ids": missing_ba_exits,
-        "orphan_ba_entry_ids": orphan_ba_entries,
-        "orphan_ba_exit_ids": orphan_ba_exits,
-        "parity_ok": not (
-            missing_ba_entries
-            or missing_ba_exits
-            or orphan_ba_entries
-            or orphan_ba_exits
-        ),
-    }
-
-    grouped = defaultdict(list)
-    for setup, entry in entries.items():
-        entry_time = opened_time(entry)
-        if entry_time is None or entry_time > cutoff:
-            continue
-        recorded_exit = exits.get(setup)
-        recorded_exit_time = parse_time((recorded_exit or {}).get("exit_timestamp"))
-        if recorded_exit is not None and recorded_exit_time is not None and recorded_exit_time <= cutoff:
-            exit_row = recorded_exit
-            exit_timestamp, exit_price = exit_row.get("exit_timestamp"), exit_row.get("exit_price")
-        else:
-            exit_timestamp, exit_price = cutoff.isoformat(), marks["main_last"].get(entry.get("symbol"))
-        if exit_price is None:
-            diagnostics["main_unmarked"] += 1
-            continue
-        grouped[strategy_name(entry)].append({
-            "setup_id": setup, "strategy_id": strategy_name(entry),
-            "signal_timestamp": entry.get("signal_timestamp"),
-            "entry_timestamp": entry.get("entry_timestamp"),
-            "entry_price": entry.get("entry_price"), "stop_price": entry.get("stop_price"),
-            "exit_timestamp": exit_timestamp, "exit_price": exit_price,
-            "entry_sequence": sequence[setup],
-        })
-
-    try:
-        names.update(json.loads((root / "strategy_runtime_diagnostics.json").read_text()).get("modules", {}))
-    except (OSError, ValueError, TypeError):
-        pass
-    for name in names:
-        result = simulate_day(grouped.get(name, []))
-        modules[name] = {**result, "engine": "main"}
-        sources[name] = "main"
+    # Historical LAST and V3 parent twins are archived, never ranked. BA
+    # positions are sourced from the independent executable ledger below.
+    diagnostics["bidask_independent"] = {"entries": 0, "exits": 0, "rejected": 0}
 
     trades, modern_names = defaultdict(list), set()
+    independent_capital_rows = defaultdict(list)
 
     def add(name, opened, closed, pnl, engine, identifier, *, is_open=False):
         if not name or opened is None or pnl is None:
@@ -507,6 +406,28 @@ def calculate(root="/data", day=None, as_of=None):
                 entries[setup] = row
             elif event == exit_event:
                 exits[setup] = row
+            elif (
+                event == "PAPER_ENTRY_REJECTED"
+                and suffix == "BA"
+                and market_day(row) == day
+                and parse_time(row.get("recorded_at")) is not None
+                and parse_time(row.get("recorded_at")) <= cutoff
+            ):
+                diagnostics["bidask_independent"]["rejected"] += 1
+
+        if suffix == "BA":
+            diagnostics["bidask_independent"]["entries"] = sum(
+                market_day(row) == day
+                and opened_time(row) is not None
+                and opened_time(row) <= cutoff
+                for row in entries.values()
+            )
+            diagnostics["bidask_independent"]["exits"] = sum(
+                market_day(row) == day
+                and parse_time(row.get("exit_timestamp")) is not None
+                and parse_time(row.get("exit_timestamp")) <= cutoff
+                for row in exits.values()
+            )
 
         for setup, entry in entries.items():
             entry_time = opened_time(entry)
@@ -538,27 +459,34 @@ def calculate(root="/data", day=None, as_of=None):
                 setup,
                 is_open=not recorded,
             )
+            if suffix == "BA":
+                independent_capital_rows[f"{strategy_name(entry)}BA"].append({
+                    "setup_id": setup,
+                    "strategy_id": strategy_name(entry),
+                    "signal_timestamp": entry.get("signal_timestamp"),
+                    "entry_timestamp": entry.get("entry_timestamp"),
+                    "entry_price": entry.get("entry_price"),
+                    "stop_price": entry.get("stop_price"),
+                    "exit_timestamp": (
+                        exit_row.get("exit_timestamp") if recorded else cutoff.isoformat()
+                    ),
+                    "exit_price": (
+                        exit_row.get("exit_price") if recorded else bid
+                    ),
+                    "filled_qty": entry.get("filled_qty"),
+                })
 
-    # BA is a strict parent-event twin. The old v2 ledger remains visible as
-    # IOCL1 because it estimates quote freshness, displayed liquidity and fills.
     add_single_leg_execution_ledger(
-        "paper_signal_v3_bidask_repricing_outcomes.jsonl",
+        "paper_signal_v4_bidask_independent_outcomes.jsonl",
         "BA",
-        "main_bidask_repricing",
-        "BA_REPRICE_ENTRY",
-        "BA_REPRICE_EXIT",
-    )
-    add_single_leg_execution_ledger(
-        "paper_signal_v2_bidask_outcomes.jsonl",
-        "IOCL1",
-        "main_iocl1",
+        "main_bidask_independent",
         "PAPER_ENTRY",
         "PAPER_EXIT",
     )
 
     # Generic coordinated strategies use a distinct atomic bid/ask ledger.
     bidask_groups, bidask_group_exits = {}, {}
-    for row in read_json_lines(root / "multi_leg_paper_v2_bidask_outcomes.jsonl"):
+    for row in read_json_lines(root / "multi_leg_paper_v3_bidask_independent_outcomes.jsonl"):
         identifier = str(row.get("group_id") or "")
         event = str(row.get("event_type") or "").upper()
         if not identifier:
@@ -594,7 +522,7 @@ def calculate(root="/data", day=None, as_of=None):
         )
 
     specs = {
-        "crosssection_paper_outcomes.jsonl": ("crosssection", lambda row: close_equity(row, marks)),
+        "crosssection_paper_v2_bidask_outcomes.jsonl": ("crosssection", lambda row: close_equity(row, marks)),
         "forex_paper_outcomes.jsonl": ("forex", lambda row: close_forex(row, marks["forex"])),
         "futures_curve_paper_outcomes.jsonl": ("futures_curve", lambda row: close_futures(row, marks["curves"])),
         "futures_paper_outcomes.jsonl": ("futures", lambda row: close_futures(row, marks["futures"])),
@@ -639,7 +567,7 @@ def calculate(root="/data", day=None, as_of=None):
                 is_open=not use_recorded_exit,
             )
 
-    for row in read_json_lines(root / "event_paper_outcomes.jsonl"):
+    for row in read_json_lines(root / "event_paper_v2_bidask_outcomes.jsonl"):
         name = strategy_name(row)
         if name:
             modern_names.add(name)
@@ -705,7 +633,15 @@ def calculate(root="/data", day=None, as_of=None):
         add(name, entry_time, cutoff, pnl, "options_rv", str(identifier), is_open=True)
 
     for name in modern_names:
-        modules[name] = {**simulate_slots(trades.get(name, [])), "engine": sources.get(name, "other")}
+        if trades.get(name):
+            modules[name] = {**simulate_slots(trades[name]), "engine": sources.get(name, "other")}
+    for name, rows in independent_capital_rows.items():
+        result = simulate_day(rows)
+        modules[name] = {
+            **result,
+            "pnl": result["end_equity"] - STARTING_CASH,
+            "engine": "main_bidask_independent",
+        }
 
     # Preserve historical ledgers while keeping retired outputs out of active
     # snapshots and future daily-history rows.
@@ -719,20 +655,20 @@ def calculate(root="/data", day=None, as_of=None):
         "day": day,
         "as_of": cutoff.isoformat(),
         "starting_cash": STARTING_CASH,
-        "method": "main=risk_sized; newer=five_reusable_1000_slots",
+        "method": "main_bidask_independent=5k_risk_sized; native=five_reusable_1000_slots",
         "modules": dict(ranked),
         "module_count": len(modules),
         "diagnostics": {
             "main_unmarked": diagnostics["main_unmarked"],
             "unmarked_by_engine": dict(diagnostics["unmarked_by_engine"]),
-            "bidask_paired_coverage": diagnostics["bidask_paired_coverage"],
+            "bidask_independent": diagnostics["bidask_independent"],
         },
     }
 
 
 def render_snapshot(snapshot):
     lines = [
-        f"ALL-ENGINE HYPOTHETICAL CLOSE — {snapshot['day']}",
+        f"ALL-ENGINE BID/ASK HYPOTHETICAL CLOSE — {snapshot['day']}",
         f"As of: {snapshot['as_of']}",
         f"{'Rank':>4}  {'Module':<18} {'Engine':<16} {'Return':>9}",
         "-" * 55,
@@ -742,7 +678,6 @@ def render_snapshot(snapshot):
     lines.extend([
         "-" * 55,
         f"Modules ranked: {snapshot['module_count']}",
-        f"Main-ledger unavailable marks: {snapshot['diagnostics']['main_unmarked']}",
         "Other unavailable marks: " + (
             ", ".join(f"{key}={value}" for key, value in sorted(snapshot['diagnostics']['unmarked_by_engine'].items()))
             or "0"

@@ -10,10 +10,10 @@ def main():
         print(f"diagnostics unavailable: {path} does not exist")
         return 1
     payload = json.loads(path.read_text())
-    print("STRATEGY RUNTIME DIAGNOSTICS")
+    print("STRATEGY SIGNAL-SOURCE DIAGNOSTICS (BA paper accounting)")
     print(f"Updated: {payload.get('updated_at')}")
     print()
-    print(f"{'Module':<9}{'Status':<17}{'Cycles':>9}{'Symbols':>10}{'Signals':>9}{'Errors':>8}  Nearest / explanation")
+    print(f"{'Source':<9}{'Status':<17}{'Cycles':>9}{'Symbols':>10}{'Signals':>9}{'Errors':>8}  Nearest / explanation")
     print("-" * 112)
     for strategy_id, row in payload.get("modules", {}).items():
         nearest = row.get("nearest_miss")

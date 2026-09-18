@@ -26,10 +26,9 @@ class AllEnginePerformanceTests(unittest.TestCase):
 
             self.assertEqual(last_gzip_json(path)["value"], 2)
 
-    def test_equity_quote_uses_main_tape_fallback(self):
+    def test_equity_quote_does_not_use_last_tape_fallback(self):
         marks = {"equity": {}, "main_last": {"EMBC": 5.01}}
-        self.assertEqual(equity_quote("EMBC", marks)["bid"], 5.01)
-        self.assertEqual(equity_quote("EMBC", marks)["source"], "main_last_fallback")
+        self.assertEqual(equity_quote("EMBC", marks), {})
 
     def test_slot_simulation_skips_sixth_concurrent_trade(self):
         from datetime import datetime, timedelta, timezone
@@ -66,7 +65,7 @@ class AllEnginePerformanceTests(unittest.TestCase):
         self.assertEqual(result["closed_taken"], 0)
         self.assertEqual(result["open_taken"] + result["closed_taken"], result["taken"])
 
-    def test_calculate_marks_swing_from_main_tape_fallback(self):
+    def test_calculate_does_not_mark_swing_from_main_tape(self):
         from datetime import datetime, timezone
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -86,9 +85,8 @@ class AllEnginePerformanceTests(unittest.TestCase):
                 day="2026-08-11",
                 as_of=datetime(2026, 8, 11, 18, 0, tzinfo=timezone.utc),
             )
-            self.assertAlmostEqual(snapshot["modules"]["SWMOM2"]["pnl"], -3.96)
-            self.assertAlmostEqual(snapshot["modules"]["SWMOM2"]["return_pct"], -0.0792)
-            self.assertEqual(snapshot["diagnostics"]["unmarked_by_engine"], {})
+            self.assertNotIn("SWMOM2", snapshot["modules"])
+            self.assertEqual(snapshot["diagnostics"]["unmarked_by_engine"], {"swing": 1})
 
     def test_repairs_legacy_options_rv_closing_signs(self):
         row = {
@@ -100,7 +98,7 @@ class AllEnginePerformanceTests(unittest.TestCase):
         # Correct closing cash flow is +957.70 after $1.30 commission.
         self.assertAlmostEqual(options_rv_closed_pnl(row), -35.6)
 
-    def test_reports_core_bidask_shadow_separately(self):
+    def test_reports_independent_bidask_and_delists_legacy_last_and_twins(self):
         from datetime import datetime, timezone
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -115,14 +113,14 @@ class AllEnginePerformanceTests(unittest.TestCase):
                     "strategy_id": "C3N25S10", "symbol": "XYZ",
                     "signal_timestamp": "2026-08-11T14:00:00+00:00",
                     "entry_timestamp": "2026-08-11T14:00:01+00:00",
-                    "entry_price": 10.01, "notional": 100.10,
+                    "entry_price": 10.01, "stop_price": 9.50, "notional": 100.10,
                 },
                 {
                     "event_type": "PAPER_EXIT", "setup_id": "one",
                     "strategy_id": "C3N25S10", "symbol": "XYZ",
                     "signal_timestamp": "2026-08-11T14:00:00+00:00",
                     "entry_timestamp": "2026-08-11T14:00:01+00:00",
-                    "entry_price": 10.01, "notional": 100.10,
+                    "entry_price": 10.01, "stop_price": 9.50, "notional": 100.10,
                     "exit_timestamp": "2026-08-11T14:05:00+00:00",
                     "exit_price": 10.11, "pnl": 1.0,
                 },
@@ -131,6 +129,9 @@ class AllEnginePerformanceTests(unittest.TestCase):
                 "".join(json.dumps(row) + "\n" for row in rows)
             )
             (root / "paper_signal_v2_bidask_outcomes.jsonl").write_text(
+                "".join(json.dumps(row) + "\n" for row in rows)
+            )
+            (root / "paper_signal_v4_bidask_independent_outcomes.jsonl").write_text(
                 "".join(json.dumps(row) + "\n" for row in rows)
             )
             repricing_rows = [
@@ -154,23 +155,41 @@ class AllEnginePerformanceTests(unittest.TestCase):
             )
             self.assertEqual(
                 snapshot["modules"]["C3N25S10BA"]["engine"],
-                "main_bidask_repricing",
+                "main_bidask_independent",
             )
-            self.assertAlmostEqual(snapshot["modules"]["C3N25S10BA"]["pnl"], 1.0)
-            self.assertEqual(
-                snapshot["modules"]["C3N25S10IOCL1"]["engine"],
-                "main_iocl1",
-            )
-            self.assertAlmostEqual(
-                snapshot["modules"]["C3N25S10IOCL1"]["pnl"],
-                1.0,
-            )
-            coverage = snapshot["diagnostics"]["bidask_paired_coverage"]
-            self.assertTrue(coverage["parity_ok"])
-            self.assertEqual(coverage["paired_entries"], 1)
-            self.assertEqual(coverage["paired_exits"], 1)
+            self.assertAlmostEqual(snapshot["modules"]["C3N25S10BA"]["pnl"], 9.8)
+            self.assertNotIn("C3N25S10", snapshot["modules"])
+            self.assertNotIn("C3N25S10IOCL1", snapshot["modules"])
+            self.assertEqual(snapshot["diagnostics"]["bidask_independent"]["entries"], 1)
+            self.assertEqual(snapshot["diagnostics"]["bidask_independent"]["exits"], 1)
 
-    def test_reports_missing_bidask_twins_by_parent_setup_id(self):
+    def test_independent_ba_respects_displayed_partial_fill_in_5k_profile(self):
+        from datetime import datetime, timezone
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            entry = {
+                "event_type": "PAPER_ENTRY", "setup_id": "partial",
+                "strategy_id": "C4", "symbol": "XYZ",
+                "signal_timestamp": "2026-08-11T14:00:00+00:00",
+                "entry_timestamp": "2026-08-11T14:00:00+00:00",
+                "entry_price": 10.0, "stop_price": 9.0, "filled_qty": 3,
+            }
+            exit_row = {
+                **entry, "event_type": "PAPER_EXIT",
+                "exit_timestamp": "2026-08-11T14:05:00+00:00",
+                "exit_price": 11.0,
+            }
+            (root / "paper_signal_v4_bidask_independent_outcomes.jsonl").write_text(
+                json.dumps(entry) + "\n" + json.dumps(exit_row) + "\n"
+            )
+            snapshot = calculate(
+                root, day="2026-08-11",
+                as_of=datetime(2026, 8, 11, 18, 0, tzinfo=timezone.utc),
+            )
+            self.assertAlmostEqual(snapshot["modules"]["C4BA"]["pnl"], 3.0)
+            self.assertAlmostEqual(snapshot["modules"]["C4BA"]["return_pct"], 0.06)
+
+    def test_parent_without_independent_bidask_is_not_listed(self):
         from datetime import datetime, timezone
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -193,11 +212,8 @@ class AllEnginePerformanceTests(unittest.TestCase):
                 root, day="2026-08-11",
                 as_of=datetime(2026, 8, 11, 18, 0, tzinfo=timezone.utc),
             )
-            coverage = snapshot["diagnostics"]["bidask_paired_coverage"]
-            self.assertFalse(coverage["parity_ok"])
-            self.assertEqual(
-                coverage["missing_ba_entry_ids"], ["missing-twin"]
-            )
+            self.assertNotIn("C4", snapshot["modules"])
+            self.assertNotIn("C4BA", snapshot["modules"])
 
     def test_reports_atomic_multi_leg_bidask_shadow_separately(self):
         from datetime import datetime, timezone
@@ -224,7 +240,7 @@ class AllEnginePerformanceTests(unittest.TestCase):
                 "exit_timestamp": "2026-08-11T14:05:00+00:00",
                 "pnl": 12.5,
             }
-            (root / "multi_leg_paper_v2_bidask_outcomes.jsonl").write_text(
+            (root / "multi_leg_paper_v3_bidask_independent_outcomes.jsonl").write_text(
                 json.dumps(entry) + "\n" + json.dumps(exit_row) + "\n"
             )
             snapshot = calculate(
@@ -235,6 +251,31 @@ class AllEnginePerformanceTests(unittest.TestCase):
             row = snapshot["modules"]["PAIRMR1BA"]
             self.assertEqual(row["engine"], "multi_leg_bidask")
             self.assertAlmostEqual(row["pnl"], 12.5)
+
+    def test_native_crosssection_uses_executable_v2_ledger(self):
+        from datetime import datetime, timezone
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            entry = {
+                "event": "OPEN", "setup_id": "xs-one", "strategy_id": "XS1",
+                "symbol": "XYZ", "side": "LONG", "entry_price": 10.01,
+                "opened_at": "2026-08-11T14:00:00+00:00",
+                "shares": 100, "entry_bid": 9.99, "entry_ask": 10.01,
+            }
+            close = {
+                **entry, "event": "CLOSE",
+                "closed_at": "2026-08-11T14:05:00+00:00",
+                "exit_price": 10.11, "pnl": 10.0,
+            }
+            (root / "crosssection_paper_v2_bidask_outcomes.jsonl").write_text(
+                json.dumps(entry) + "\n" + json.dumps(close) + "\n"
+            )
+            snapshot = calculate(
+                root, day="2026-08-11",
+                as_of=datetime(2026, 8, 11, 18, 0, tzinfo=timezone.utc),
+            )
+            self.assertEqual(snapshot["modules"]["XS1"]["engine"], "crosssection")
+            self.assertAlmostEqual(snapshot["modules"]["XS1"]["pnl"], 10.0)
 
     def test_accepts_fixed_options_rv_pnl(self):
         row = {

@@ -15,6 +15,7 @@ from multi_leg_paper_tracker import MultiLegPaperTracker, _utc
 
 
 FILE_STEM = "multi_leg_paper_v2_bidask"
+INDEPENDENT_FILE_STEM = "multi_leg_paper_v3_bidask_independent"
 MAX_PENDING_SECONDS = 20.0
 MAX_SYMBOLS_PER_CYCLE = 50
 MAX_LEG_QUOTE_SKEW_MS = 5000.0
@@ -215,3 +216,23 @@ class BidAskMultiLegPaperTracker(MultiLegPaperTracker):
         closed = super().update(prices, now)
         self._write_status()
         return closed
+
+
+class IndependentBidAskMultiLegTracker(BidAskMultiLegPaperTracker):
+    """Accept raw coordinated signals without a LAST group admission gate."""
+
+    def __init__(self, data_root, **kwargs):
+        kwargs.setdefault("file_stem", INDEPENDENT_FILE_STEM)
+        super().__init__(data_root, **kwargs)
+
+    def register_signal(self, signal, quotes, now):
+        if not self.register(signal):
+            return False
+        group_id = self._group_id(signal, _utc(signal["timestamp"]))
+        now = _utc(now)
+        self.update_quotes(quotes, now)
+        pending = self.pending.get(group_id)
+        if pending is not None:
+            self._reject(group_id, pending, now, "signal_cycle_quote_unavailable")
+            self._write_status()
+        return group_id in self.active
