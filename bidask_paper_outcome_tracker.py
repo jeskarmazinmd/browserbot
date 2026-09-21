@@ -103,6 +103,18 @@ class CycleQuoteProvider:
             selected = missing[:budget]
             self.targeted_count += len(selected)
             fetched = (self.provider(selected) or {}) if selected else {}
+
+            print(
+                "CYCLE_QUOTE_DEBUG "
+                f"requested={requested} "
+                f"missing={missing} "
+                f"budget={budget} "
+                f"selected={selected} "
+                f"fetched={sorted(fetched)} "
+                f"targeted_count={self.targeted_count}",
+                flush=True,
+            )
+
             self.quotes.update({
                 str(symbol).upper(): quote
                 for symbol, quote in fetched.items()
