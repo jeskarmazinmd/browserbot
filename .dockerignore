@@ -112,3 +112,6 @@ requirements.executor.txt
 
 # Large local diagnostic captures
 diagnostics/
+
+# Local forensic datasets not needed in production image
+forensics_data/
