@@ -34,3 +34,5 @@ research_tools/backups/
 profile_minute_quote_cache_*.csv.gz
 profile_minute_quote_cache_*.pkl
 strategy_profile_bundle.tgz
+
+.venv-forensics/

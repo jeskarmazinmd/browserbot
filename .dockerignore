@@ -115,3 +115,5 @@ diagnostics/
 
 # Local forensic datasets not needed in production image
 forensics_data/
+
+.venv-forensics/
