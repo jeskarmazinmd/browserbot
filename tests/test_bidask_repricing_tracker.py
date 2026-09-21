@@ -28,7 +28,6 @@ except ModuleNotFoundError:
 
 from bidask_paper_outcome_tracker import (
     BidAskRepricingTracker,
-    CycleQuoteProvider,
     IocL1PaperOutcomeTracker,
     BidAskPaperOutcomeTracker,
     register_paired_single_leg_signal,
@@ -54,26 +53,7 @@ def signal():
 
 
 class BidAskRepricingTrackerTest(unittest.TestCase):
-    def test_cycle_quote_provider_fetches_each_symbol_only_once(self):
-        calls = []
-
-        def provider(symbols):
-            calls.append(list(symbols))
-            return {
-                symbol: {"bid": 99.9, "ask": 100.1}
-                for symbol in symbols
-                if symbol != "MISS"
-            }
-
-        cached = CycleQuoteProvider(provider)
-        cached.reset()
-        self.assertIn("ABC", cached(["ABC"]))
-        self.assertIn("ABC", cached(["ABC"]))
-        self.assertEqual(cached(["MISS"]), {})
-        self.assertEqual(cached(["MISS"]), {})
-        self.assertEqual(calls, [["ABC"], ["MISS"]])
-
-    def test_pair_uses_processing_time_for_freshness_and_same_cached_quote(self):
+    def test_pair_uses_processing_time_for_freshness(self):
         with tempfile.TemporaryDirectory() as root:
             parent = PaperOutcomeTracker(root)
             ba = BidAskRepricingTracker(root)
@@ -96,14 +76,12 @@ class BidAskRepricingTrackerTest(unittest.TestCase):
                     }
                 }
 
-            cached = CycleQuoteProvider(provider)
-            cached.reset()
             self.assertTrue(register_paired_single_leg_signal(
                 signal(),
                 parent_tracker=parent,
                 repricing_tracker=ba,
                 ioc_tracker=ioc,
-                quote_provider=cached,
+                quote_provider=provider,
                 now_provider=lambda: processing_time,
             ))
             self.assertIn(signal()["setup_id"], ba.active)

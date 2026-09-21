@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from bidask_paper_outcome_tracker import (
-    CycleQuoteProvider, IndependentBidAskPaperTracker,
+    IndependentBidAskPaperTracker,
 )
 
 
@@ -30,22 +30,6 @@ def signal(setup):
 
 
 class IndependentBidAskTrackerTests(unittest.TestCase):
-    def test_new_signal_quote_requests_are_bounded_per_cycle(self):
-        calls = []
-        cache = CycleQuoteProvider(
-            lambda symbols: calls.append(list(symbols)) or {},
-            max_targeted_symbols=2,
-        )
-        cache.reset()
-        cache(["AAA"])
-        cache(["BBB"])
-        cache(["CCC"])
-        cache(["CCC"])
-        self.assertEqual(calls, [["AAA"], ["BBB"]])
-        cache.reset()
-        cache(["CCC"])
-        self.assertEqual(calls[-1], ["CCC"])
-
     def test_owns_entry_and_exit_without_parent_ledger(self):
         with tempfile.TemporaryDirectory() as temp:
             tracker = IndependentBidAskPaperTracker(temp)

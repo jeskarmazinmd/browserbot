@@ -31,6 +31,7 @@ COPY strategy_diagnostics.py .
 COPY strategy_diagnostics_report.py .
 COPY quote_source.py .
 COPY market_quotes.py .
+COPY live_l1_cache.py .
 COPY nh015_execution_observer.py .
 COPY market_evidence.py .
 COPY xs_shadow_worker.py .

@@ -91,27 +91,3 @@ def test_stale_bid_is_not_used_for_exit(tmp_path):
     stale = quote(bid=10.60, ask=10.62)
     assert tracker.update_quotes({"XYZ": stale}, later) == []
     assert "S1" in tracker.active
-
-
-def test_cycle_quote_provider_targeted_fetch_after_bulk_miss():
-    from bidask_paper_outcome_tracker import CycleQuoteProvider
-
-    calls = []
-
-    def provider(symbols):
-        calls.append(list(symbols))
-        return {"XYZ": quote()} if "XYZ" in symbols else {}
-
-    cycle = CycleQuoteProvider(provider)
-
-    # Simulate the runner's bulk cycle snapshot: ABC succeeded, while XYZ
-    # was requested upstream but produced no usable quote. Only successful
-    # quotes should seed the cycle cache.
-    cycle.reset({"ABC": quote(bid=19.99, ask=20.01)})
-
-    first = cycle(["XYZ"])
-    second = cycle(["XYZ"])
-
-    assert first["XYZ"]["ask"] == 10.01
-    assert second["XYZ"]["ask"] == 10.01
-    assert calls == [["XYZ"]]

@@ -9,6 +9,7 @@ import tempfile
 from pathlib import Path
 from datetime import datetime, timezone
 from market_evidence import MinuteMarketArchive
+from live_l1_cache import publish_live_l1_snapshot
 from trendline_scanner_v25_live_schwab import (
     get_schwab_client,
     fetch_schwab_quote_snapshots,
@@ -350,6 +351,17 @@ def main():
 
         fetch_start = time.perf_counter()
         snapshots = fetch_schwab_quote_snapshots(client, symbols)
+        observed_at = datetime.now(timezone.utc)
+        try:
+            publish_live_l1_snapshot(snapshots, observed_at)
+        except (OSError, TypeError, ValueError) as exc:
+            # The shared BA cache fails closed in its reader. A cache-write
+            # problem must not interrupt the legacy LAST tape or archive.
+            print(
+                "live L1 snapshot publish error: "
+                f"{type(exc).__name__}: {exc}",
+                flush=True,
+            )
         prices = {
             symbol: snapshot.legacy_price
             for symbol, snapshot in snapshots.items()
@@ -358,7 +370,7 @@ def main():
         fetch_elapsed = time.perf_counter() - fetch_start
 
         research_archive.update(
-            datetime.now(timezone.utc),
+            observed_at,
             snapshots,
             is_us_regular_market_open(),
         )

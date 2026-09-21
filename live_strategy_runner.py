@@ -51,10 +51,10 @@ from regime_logger import log_regime, latest_regime
 from paper_outcome_tracker import PaperOutcomeTracker, _utc
 from bidask_paper_outcome_tracker import (
     BidAskRepricingTracker,
-    CycleQuoteProvider,
     IndependentBidAskPaperTracker,
     IocL1PaperOutcomeTracker,
 )
+from live_l1_cache import LiveL1SnapshotReader
 from multi_leg_paper_tracker import MultiLegPaperTracker
 from bidask_multi_leg_paper_tracker import (
     BidAskMultiLegPaperTracker,
@@ -2391,11 +2391,7 @@ def main():
         f"seen={len(iocl1_paper_outcomes.seen)}",
         flush=True,
     )
-    independent_quote_provider = CycleQuoteProvider(
-        lambda symbols: _nh015_execution_quotes(
-            symbols, priority_symbols=symbols
-        )
-    )
+    independent_l1 = LiveL1SnapshotReader()
 
     def register_single_leg_paper(signal):
         """Admit an executable BA trade directly from the strategy signal."""
@@ -2404,7 +2400,7 @@ def main():
         if not output_enabled(signal.get("strategy_id")):
             return False
         symbol = str(signal.get("symbol") or "").upper()
-        quotes = independent_quote_provider([symbol])
+        quotes = independent_l1.quotes([symbol])
         return independent_ba_outcomes.register_signal(
             signal, quotes.get(symbol), quote_source.now()
         )
@@ -2704,9 +2700,7 @@ def main():
                     | nh015_execution_family.symbols()
                     | bidask_repricing_outcomes.symbols()
                     | iocl1_paper_outcomes.symbols()
-                    | independent_ba_symbols
                     | bidask_multi_leg_outcomes.symbols()
-                    | independent_multi_leg_symbols
                 )
                 priority_execution_symbols = list(positions)
                 priority_execution_symbols.extend(
@@ -2717,18 +2711,13 @@ def main():
                     str(row.get("symbol") or "").upper()
                     for row in bidask_repricing_outcomes.pending_entries.values()
                 )
-                priority_execution_symbols.extend(sorted(independent_multi_leg_symbols))
-                priority_execution_symbols.extend(sorted(independent_ba_symbols))
                 execution_quotes, repricing_quotes = _nh015_execution_quotes(
                     execution_symbols, include_repricing=True,
                     priority_symbols=priority_execution_symbols,
                 )
-                # Seed only quotes actually returned by the bulk request.
-                # A requested-but-missing symbol must remain eligible for one
-                # targeted same-cycle fetch if a parent signal accepts it.
-                # New BA signals use fresh executable quotes. Existing V3
-                # positions can still receive their historical parent exits.
-                independent_quote_provider.reset(execution_quotes)
+                independent_quotes = independent_l1.quotes(
+                    independent_ba_symbols | independent_multi_leg_symbols
+                )
                 execution_bids = {
                     symbol: quote["bid"]
                     for symbol, quote in execution_quotes.items()
@@ -2781,7 +2770,7 @@ def main():
                     )
 
                 for outcome in independent_ba_outcomes.update_quotes(
-                    execution_quotes, quote_source.now()
+                    independent_quotes, quote_source.now()
                 ):
                     print(
                         "INDEPENDENT_BA_PAPER_OUTCOME "
@@ -2804,7 +2793,7 @@ def main():
                         flush=True,
                     )
                 for outcome in independent_multi_leg_outcomes.update_quotes(
-                    execution_quotes, quote_source.now()
+                    independent_quotes, quote_source.now()
                 ):
                     print(
                         "INDEPENDENT_BA_MULTI_LEG_OUTCOME "
@@ -3067,7 +3056,7 @@ def main():
                             str(leg.get("symbol") or "").upper()
                             for leg in multi_payload.get("legs", [])
                         ]
-                        quotes = independent_quote_provider(symbols)
+                        quotes = independent_l1.quotes(symbols)
                         admitted = (
                             independent_multi_leg_outcomes.register_signal(
                                 multi_payload, quotes, quote_source.now()
