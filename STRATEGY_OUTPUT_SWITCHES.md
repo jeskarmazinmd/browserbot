@@ -5,6 +5,12 @@ switched off. Descendant modules can therefore remain enabled when a source
 module's paper output is disabled. This retains each descendant's existing
 entry rule: C1 still requires the B-shaped flash setup, for example.
 
+The September 23 review pauses 74 BA paper outputs in the source-controlled
+`PAUSED_BIDASK_PAPER_IDS` set in `strategies/output_switches.py`. This pause
+also removes their BA-suffixed names from active performance snapshots. A
+volume switch cannot override a source-controlled pause; remove an ID from
+that set and redeploy to resume it. The live NH015 broker path is separate.
+
 Place a JSON object at `/data/strategy_output_switches.json` on the Fly volume:
 
 ```json
