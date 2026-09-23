@@ -13,6 +13,7 @@ from engine.events import MarketSnapshot, Quote, SignalEvent
 from strategies.generic_registry import evaluate_all as evaluate_generic_strategies
 from strategies.derived_runtime import DERIVED_STRATEGY_IDS, derive_signals
 from strategies.output_switches import output_enabled
+from strategies.independent_flash_filters import IDS as INDEPENDENT_FLASH_FILTER_IDS, Filters as IndependentFlashFilters
 from strategies.flash_nearest_miss import score as score_flash_window
 from strategies.registry import (
     MINUTE_STRATEGIES,
@@ -138,6 +139,7 @@ STRATEGY_D = "D"
 # thresholds live exclusively in strategies/strategy_*.py.
 INDEPENDENT_FORWARD_START_UTC = "2026-07-31T13:30:00+00:00"
 INDEPENDENT_COOLDOWN_MINUTES = 30
+MAX_MINUTE_SIGNAL_LAG_SECONDS = 180.0
 INDEPENDENT_MIN_PRICE = 1.00
 INDEPENDENT_MAX_PRICE = 1000.00
 UNIVERSE_MANIFEST_DIR = DATA_ROOT
@@ -2545,6 +2547,7 @@ def main():
         strategy_id: {}
         for strategy_id in STRATEGY_CONFIGS
     }
+    independent_flash_filters = IndependentFlashFilters()
 
     # Native independent-strategy signals are deduplicated by emitted minute and
     # also receive a per-symbol cooldown to avoid repeatedly entering one trend.
@@ -3004,6 +3007,10 @@ def main():
                         - pd.Timestamp(minute_snapshot.timestamp)
                     ).total_seconds(),
                 )
+                minute_signal_is_current = (
+                    RUN_MODE != "LIVE"
+                    or minute_snapshot_lag_seconds <= MAX_MINUTE_SIGNAL_LAG_SECONDS
+                )
                 print(
                     "MINUTE_STRATEGY_SNAPSHOT "
                     f"timestamp={minute_snapshot.timestamp.isoformat()} "
@@ -3102,6 +3109,18 @@ def main():
                     ):
                         continue
 
+                    # Always evaluate the snapshot to keep strategy history
+                    # current, but never fill a stale historical signal at a
+                    # live ask from a later minute.
+                    if not minute_signal_is_current:
+                        append_strategy_event(
+                            strategy_id, "SIGNAL_SKIPPED_STALE_MINUTE",
+                            symbol=symbol,
+                            lag_seconds=minute_snapshot_lag_seconds,
+                            maximum_lag_seconds=MAX_MINUTE_SIGNAL_LAG_SECONDS,
+                        )
+                        continue
+
                     emitted_ts = pd.Timestamp(
                         independent["timestamp"]
                     )
@@ -3125,9 +3144,6 @@ def main():
                         ):
                             continue
 
-                    independent_last_signal[dedupe_key] = emitted_ts
-                    independent_events.append(independent)
-
                     append_strategy_event(
                         strategy_id,
                         "SIGNAL",
@@ -3145,7 +3161,9 @@ def main():
                             "CADENCE": "minute",
                         },
                     )
-                    register_single_leg_paper(independent)
+                    if register_single_leg_paper(independent):
+                        independent_last_signal[dedupe_key] = emitted_ts
+                        independent_events.append(independent)
 
             if warming_minute_pipeline and minute_snapshots:
                 print(
@@ -3238,6 +3256,17 @@ def main():
                             original_target_price=confirmed_event.get("original_target_price"),
                             remaining_upside_pct=confirmed_event.get("remaining_upside_pct"),
                             recovery_fraction_at_entry=recovery_fraction, signal=confirmed_event)
+                        pending_entries[strategy_id].pop(sym, None)
+                        continue
+
+                    if (strategy_id in INDEPENDENT_FLASH_FILTER_IDS
+                            and not independent_flash_filters.passes(
+                                confirmed_event, df,
+                                spy_5m_return_pct, spy_1m_return_pct)):
+                        append_strategy_event(
+                            strategy_id, "INDEPENDENT_FILTER_REFRAINED",
+                            symbol=sym, signal=confirmed_event,
+                        )
                         pending_entries[strategy_id].pop(sym, None)
                         continue
 
@@ -3537,6 +3566,8 @@ def main():
                         (e.get("symbol"), e.get("timestamp")),
                         [],
                     ):
+                        if admission_signal["strategy_id"] in INDEPENDENT_FLASH_FILTER_IDS:
+                            continue
                         append_strategy_event(
                             admission_signal["strategy_id"],
                             "SIGNAL",
@@ -3561,6 +3592,8 @@ def main():
                         (e.get("symbol"), e.get("timestamp")),
                         [],
                     ):
+                        if market_gate_signal["strategy_id"] in INDEPENDENT_FLASH_FILTER_IDS:
+                            continue
                         append_strategy_event(
                             market_gate_signal["strategy_id"],
                             "SIGNAL",
@@ -3646,6 +3679,8 @@ def main():
                         for decision in evaluate_time_of_day_children(
                             nh015_duplicate
                         ):
+                            if decision["strategy_id"] in INDEPENDENT_FLASH_FILTER_IDS:
+                                continue
                             time_signal = decision.get("signal")
                             if not decision["admitted"]:
                                 append_strategy_event(
@@ -3724,6 +3759,8 @@ def main():
                     if e.get("strategy_id") in parent_signal_counts:
                         parent_signal_counts[e["strategy_id"]] += 1
                     for derived in derive_signals(e):
+                        if derived["strategy_id"] in INDEPENDENT_FLASH_FILTER_IDS:
+                            continue
                         append_strategy_event(
                             derived["strategy_id"],
                             "SIGNAL",

@@ -20,7 +20,7 @@ QUOTE_URL = "https://api.schwabapi.com/marketdata/v1/quotes"
 TOKEN_PATH = Path("/data/schwab_token.json")
 DATA_ROOT = Path("/data")
 POLL_SECONDS = int(os.getenv("FOREX_SHADOW_POLL_SECONDS", "60"))
-MAX_QUOTE_AGE_SECONDS = int(os.getenv("FOREX_MAX_QUOTE_AGE_SECONDS", "180"))
+MAX_QUOTE_AGE_SECONDS = int(os.getenv("FOREX_MAX_QUOTE_AGE_SECONDS", "5"))
 
 
 def _token():

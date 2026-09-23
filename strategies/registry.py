@@ -9,6 +9,7 @@ import os
 import time
 from strategy_diagnostics import diagnostics
 from .pruning import PRUNED_OUTPUT_STRATEGY_IDS
+from . import independent_flash_filters
 
 from . import strategy_a
 from . import strategy_b
@@ -63,13 +64,18 @@ FLASH_STRATEGY_MODULES = {
 
 
 def flash_strategy_configs():
-    return {
+    configs = {
         strategy_id: dict(module.CONFIG)
         for strategy_id, module in FLASH_STRATEGY_MODULES.items()
     }
+    configs.update({sid: independent_flash_filters.config(sid)
+                    for sid in independent_flash_filters.IDS})
+    return configs
 
 
 def flash_accepts(strategy_id, event, global_max_drop_pct):
+    if strategy_id in independent_flash_filters.IDS:
+        return independent_flash_filters.source_module(strategy_id).accepts_flash(event, global_max_drop_pct)
     return FLASH_STRATEGY_MODULES[strategy_id].accepts_flash(
         event,
         global_max_drop_pct,
@@ -77,6 +83,8 @@ def flash_accepts(strategy_id, event, global_max_drop_pct):
 
 
 def refresh_flash_entry(strategy_id, event, current_price):
+    if strategy_id in independent_flash_filters.IDS:
+        return independent_flash_filters.refresh(strategy_id, event, current_price)
     return FLASH_STRATEGY_MODULES[strategy_id].refresh_event_for_entry(
         event,
         current_price,
@@ -88,6 +96,9 @@ def validate_flash_entry(
     event,
     default_min_remaining_upside_pct,
 ):
+    if strategy_id in independent_flash_filters.IDS:
+        return independent_flash_filters.validate(
+            strategy_id, event, default_min_remaining_upside_pct)
     module = FLASH_STRATEGY_MODULES[strategy_id]
 
     try:

@@ -27,7 +27,7 @@ QUOTE_URL = "https://api.schwabapi.com/marketdata/v1/quotes"
 TOKEN_PATH = Path(os.environ.get("MICROSTRUCTURE_MARKET_TOKEN", "/data/schwab_token.json"))
 DATA_ROOT = Path(os.environ.get("MICROSTRUCTURE_DATA_ROOT", "/data"))
 POLL_SECONDS = float(os.environ.get("MICROSTRUCTURE_POLL_SECONDS", "5"))
-MAX_QUOTE_AGE_SECONDS = float(os.environ.get("MICROSTRUCTURE_MAX_QUOTE_AGE_SECONDS", "20"))
+MAX_QUOTE_AGE_SECONDS = float(os.environ.get("MICROSTRUCTURE_MAX_QUOTE_AGE_SECONDS", "5"))
 STATUS_PATH = DATA_ROOT / "microstructure_shadow_status.json"
 
 

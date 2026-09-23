@@ -13,7 +13,9 @@ PAPER_ONLY=True
 LIVE_ORDER_PLACEMENT=False
 FORWARD_START_UTC="2026-08-10T13:30:00+00:00"
 MODE='BREAK'
-PARAMS={'window': 20, 'buffer': 0.1, 'range': 99.0, 'target': 0.7, 'stop': 0.55}
+# September 24 prospective revision: require an actual bounded consolidation.
+# The former 99% cap admitted nearly any 20-observation range.
+PARAMS={'window': 20, 'buffer': 0.1, 'range': 1.5, 'target': 0.7, 'stop': 0.55}
 UNIVERSE=('SPY', 'QQQ', 'IWM', 'DIA', 'XLK', 'XLF', 'XLE', 'XLV', 'XLY', 'XLP', 'XLI', 'XLU', 'SMH', 'IYT', 'GLD', 'SLV', 'USO', 'TLT', 'NVDA', 'AMD', 'AVGO', 'MSFT', 'AAPL', 'GOOGL', 'META', 'AMZN', 'TSLA', 'NFLX', 'ORCL', 'CRM', 'MU', 'INTC')
 MAX_HISTORY=66
 
@@ -27,6 +29,7 @@ def _event(snapshot,symbol,price,metrics):
     return SignalEvent(snapshot.timestamp,STRATEGY_ID,symbol,"SIGNAL",{
         "entry_price":price,"target_price":target,"stop_price":stop,
         "setup":f"explore30_{MODE.lower()}","paper_only":True,
+        "rule_version":"brk20_range_1p5_20260924",
         "live_order_placement":False,"forward_start_utc":FORWARD_START_UTC,
         **metrics,
     })

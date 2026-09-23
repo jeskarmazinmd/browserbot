@@ -11,7 +11,7 @@ NY=ZoneInfo("America/New_York")
 SYMBOLS=("SPY","QQQ","IWM","DIA","XLK","XLF","XLE","XLV","XLY","XLP","XLI","XLU","XLC","SMH","IYT","GLD","SLV","USO","TLT","NVDA","AMD","AVGO","MSFT","AAPL","GOOGL","META","AMZN","TSLA","NFLX","ORCL","CRM","MU","INTC","JPM","BAC","GS","WMT")
 STRATEGIES=active_output_ids(("STBETA1","STPAIR1","STSECTOR1","STBREAK1","STRESMOM1"))
 STRATEGIES2=active_output_ids(("STCINT2","STHEDGE2","STLEAD2"))
-QUOTE_URL="https://api.schwabapi.com/marketdata/v1/quotes";TOKEN_PATH=Path(os.environ.get("STATARB_MARKET_TOKEN","/data/schwab_token.json"));DATA_ROOT=Path(os.environ.get("STATARB_DATA_ROOT","/data"));POLL_SECONDS=float(os.environ.get("STATARB_POLL_SECONDS","60"));MAX_AGE=float(os.environ.get("STATARB_MAX_QUOTE_AGE_SECONDS","180"));STATUS=DATA_ROOT/"statarb_shadow_status.json"
+QUOTE_URL="https://api.schwabapi.com/marketdata/v1/quotes";TOKEN_PATH=Path(os.environ.get("STATARB_MARKET_TOKEN","/data/schwab_token.json"));DATA_ROOT=Path(os.environ.get("STATARB_DATA_ROOT","/data"));POLL_SECONDS=float(os.environ.get("STATARB_POLL_SECONDS","60"));MAX_AGE=float(os.environ.get("STATARB_MAX_QUOTE_AGE_SECONDS","5"));STATUS=DATA_ROOT/"statarb_shadow_status.json"
 def regular_market(now):
  et=now.astimezone(NY);m=et.hour*60+et.minute;return et.weekday()<5 and 570<=m<960
 def entry_window(now):

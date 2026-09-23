@@ -7,6 +7,7 @@ places broker orders and never writes to the legacy last-price ledger.
 from __future__ import annotations
 
 from collections import OrderedDict
+from dataclasses import replace
 from datetime import datetime, timezone
 import json
 import math
@@ -327,6 +328,30 @@ class IndependentBidAskPaperTracker(BidAskPaperOutcomeTracker):
         now = _utc(now)
         symbol = str(signal["symbol"]).upper()
         setup_id = self._setup_id(signal, _utc(signal["timestamp"]))
+        accepted_before = self.entry_full + self.entry_partial
+        ask = _positive((quote or {}).get("ask"))
+        bid = _positive((quote or {}).get("bid"))
+        target = _positive(signal.get("target_price"))
+        stop = _positive(signal.get("stop_price"))
+        if ask is not None and bid is not None and bid <= ask and target is not None:
+            decision = classify_limit_order(
+                quote, action="BUY", limit_price=ask,
+                requested_qty=max(1, int(self.notional / ask)),
+                now=now, max_quote_age_ms=5000.0,
+            )
+            if decision.outcome in {"FULL", "PARTIAL"}:
+                rejection = (
+                    "target_not_above_entry_ask" if target <= ask else
+                    "stop_already_crossed_at_entry_bid"
+                    if stop is not None and bid <= stop else None
+                )
+                if rejection:
+                    self._reject_pending(
+                        setup_id, self.pending[setup_id],
+                        replace(decision, outcome="ZERO", reason=rejection), now,
+                    )
+                    self._write_status()
+                    return False
         self.update_quotes({symbol: quote} if quote else {}, now)
         pending = self.pending.get(setup_id)
         if pending is not None:
@@ -342,7 +367,7 @@ class IndependentBidAskPaperTracker(BidAskPaperOutcomeTracker):
             )
             self._reject_pending(setup_id, pending, decision, now)
             self._write_status()
-        return setup_id in self.active
+        return (self.entry_full + self.entry_partial) > accepted_before
 
 
 class BidAskRepricingTracker:

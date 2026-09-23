@@ -68,6 +68,35 @@ class IndependentBidAskTrackerTests(unittest.TestCase):
             ])
             self.assertEqual({row["setup_id"] for row in rows}, {"missing", "stale"})
 
+    def test_target_below_executable_ask_is_rejected_and_audited(self):
+        with tempfile.TemporaryDirectory() as temp:
+            tracker = IndependentBidAskPaperTracker(temp)
+            candidate = signal("below-ask")
+            candidate["target_price"] = 10.005
+            self.assertFalse(tracker.register_signal(candidate, quote(NOW), NOW))
+            self.assertFalse(tracker.active)
+            self.assertFalse(tracker.pending)
+            rows = [json.loads(line) for line in tracker.ledger_path.read_text().splitlines()]
+            self.assertEqual(len(rows), 1)
+            self.assertEqual(rows[0]["event_type"], "PAPER_ENTRY_REJECTED")
+            self.assertEqual(rows[0]["execution"]["reason"], "target_not_above_entry_ask")
+            self.assertFalse(tracker.register_signal(candidate, quote(NOW), NOW))
+
+    def test_entry_bid_below_stop_is_rejected_before_opening(self):
+        with tempfile.TemporaryDirectory() as temp:
+            tracker = IndependentBidAskPaperTracker(temp)
+            candidate = signal("stop-crossed")
+            candidate["stop_price"] = 10.0
+            self.assertFalse(tracker.register_signal(candidate, quote(NOW), NOW))
+            self.assertFalse(tracker.active)
+            rows = [json.loads(line) for line in tracker.ledger_path.read_text().splitlines()]
+            self.assertEqual(rows[0]["execution"]["reason"], "stop_already_crossed_at_entry_bid")
+            self.assertFalse(tracker.pending)
+            self.assertEqual(len(rows), 1)
+            self.assertEqual(rows[0]["event_type"], "PAPER_ENTRY_REJECTED")
+            self.assertFalse(tracker.register_signal(candidate, quote(NOW), NOW))
+
+
 
 if __name__ == "__main__":
     unittest.main()
