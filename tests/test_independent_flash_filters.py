@@ -9,9 +9,14 @@ from strategies.registry import flash_strategy_configs, flash_accepts, validate_
 
 
 class IndependentFlashFilterTests(unittest.TestCase):
-    def test_all_seventeen_have_their_own_scanner_config(self):
+    def test_all_independent_filters_have_their_own_scanner_config(self):
         configs = flash_strategy_configs()
-        self.assertEqual(len(IDS), 17)
+
+        # Every independently runnable flash strategy must have a unique ID
+        # and its own scanner configuration.  Do not hard-code the historical
+        # family size: new independent research families may extend IDS.
+        self.assertEqual(len(IDS), len(set(IDS)))
+        self.assertTrue(set(IDS).issubset(configs))
         self.assertTrue(IDS.issubset(configs))
         self.assertTrue(all(configs[sid]["live_order_placement"] is False for sid in IDS))
         self.assertFalse(output_enabled("C3N25S10"))

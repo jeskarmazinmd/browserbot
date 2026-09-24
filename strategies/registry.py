@@ -75,7 +75,7 @@ def flash_strategy_configs():
 
 def flash_accepts(strategy_id, event, global_max_drop_pct):
     if strategy_id in independent_flash_filters.IDS:
-        return independent_flash_filters.source_module(strategy_id).accepts_flash(event, global_max_drop_pct)
+        return independent_flash_filters.accepts(strategy_id, event, global_max_drop_pct)
     return FLASH_STRATEGY_MODULES[strategy_id].accepts_flash(
         event,
         global_max_drop_pct,

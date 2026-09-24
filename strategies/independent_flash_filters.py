@@ -7,7 +7,8 @@ not another strategy's signal.
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from . import strategy_a, strategy_b, strategy_c3n25s10
+from . import strategy_a, strategy_b, strategy_c3n25s10, strategy_pt325315
+from . import pt325315_research
 from .c3_admission_family import FILTERS, C3AdmissionFamily
 from .c3_market_gate_family import GATES, C3MarketGateFamily
 
@@ -21,21 +22,33 @@ IDS = frozenset({"R", "S", "C4"}) | frozenset(
 ) | frozenset({
     "C3MG_BRD50", "C3MG_BRD45", "C3MG_BRD40",
     "C3MG_BRD35", "C3MG_B15S", "C3MG_B15L",
-}) | frozenset(TIME_FILTERS)
+}) | frozenset(TIME_FILTERS) | pt325315_research.IDS
 
 
 def source_module(strategy_id):
+    if strategy_id in pt325315_research.IDS:
+        return strategy_pt325315
     return (strategy_a if strategy_id in {"R", "S"} else
             strategy_b if strategy_id == "C4" else strategy_c3n25s10)
 
 
 def config(strategy_id):
+    if strategy_id in pt325315_research.IDS:
+        return pt325315_research.config(strategy_id)
     cfg = dict(source_module(strategy_id).CONFIG)
     cfg["live_order_placement"] = False
     return cfg
 
 
+def accepts(strategy_id, event, global_max_drop_pct):
+    if strategy_id in pt325315_research.IDS:
+        return pt325315_research.accepts(strategy_id, event, global_max_drop_pct)
+    return source_module(strategy_id).accepts_flash(event, global_max_drop_pct)
+
+
 def refresh(strategy_id, event, price):
+    if strategy_id in pt325315_research.IDS:
+        return pt325315_research.refresh(strategy_id, event, price)
     row = source_module(strategy_id).refresh_event_for_entry(event, price)
     row["strategy_id"] = strategy_id
     row["live_order_placement"] = False
@@ -50,6 +63,8 @@ def refresh(strategy_id, event, price):
 
 
 def validate(strategy_id, event, minimum):
+    if strategy_id in pt325315_research.IDS:
+        return pt325315_research.validate(strategy_id, event, minimum)
     return source_module(strategy_id).validate_confirmed_entry(event, minimum)
 
 
@@ -69,6 +84,8 @@ class Filters:
             return (market_5m is not None and market_1m is not None
                     and market_5m >= -.15 and market_1m >= 0)
         if sid == "C4":
+            return True
+        if sid in pt325315_research.IDS:
             return True
         if sid in TIME_FILTERS:
             low, high = TIME_FILTERS[sid]
