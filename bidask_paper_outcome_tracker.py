@@ -340,10 +340,24 @@ class IndependentBidAskPaperTracker(BidAskPaperOutcomeTracker):
                 now=now, max_quote_age_ms=5000.0,
             )
             if decision.outcome in {"FULL", "PARTIAL"}:
+                spread_pct = ((ask / bid) - 1.0) * 100.0 if bid > 0 else float("inf")
+                remaining_upside_pct = ((target / ask) - 1.0) * 100.0
+                max_spread = signal.get("max_entry_spread_pct")
+                min_price = signal.get("min_executable_entry_price")
+                max_price = signal.get("max_executable_entry_price")
+                min_upside = signal.get("min_executable_remaining_upside_pct")
                 rejection = (
                     "target_not_above_entry_ask" if target <= ask else
                     "stop_already_crossed_at_entry_bid"
-                    if stop is not None and bid <= stop else None
+                    if stop is not None and bid <= stop else
+                    "research_entry_spread_too_wide"
+                    if max_spread is not None and spread_pct > float(max_spread) else
+                    "research_executable_price_too_low"
+                    if min_price is not None and ask < float(min_price) else
+                    "research_executable_price_too_high"
+                    if max_price is not None and ask > float(max_price) else
+                    "research_executable_upside_too_low"
+                    if min_upside is not None and remaining_upside_pct < float(min_upside) else None
                 )
                 if rejection:
                     self._reject_pending(

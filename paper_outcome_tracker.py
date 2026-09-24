@@ -52,6 +52,8 @@ OPTIONAL_FIELDS = (
     "c3_market_gate_value", "c3_market_gate_cutoff",
     "c3_market_gate_components",
     "experimental_child", "discovery_period", "prospective_start_utc",
+    "max_entry_spread_pct", "min_executable_entry_price",
+    "max_executable_entry_price", "min_executable_remaining_upside_pct",
     "conditional_filter", "time_of_day_label", "entry_minute_et",
     "time_of_day_sweep_version",
     "execution_model", "entry_bid", "entry_ask", "requested_qty",
