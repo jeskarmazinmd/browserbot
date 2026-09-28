@@ -24,6 +24,65 @@ class MarketTokenReliabilityTests(unittest.TestCase):
         self.assertIn("client_token_mtime_ns != token_mtime_ns",block)
         self.assertIn("_MARKET_DATA_CLIENT_LOCAL.token_mtime_ns = token_mtime_ns",block)
 
+    def test_cached_market_client_rebuilds_after_token_file_replacement(self):
+        """A long-lived worker must not keep a client built from an old token file."""
+        import os
+        import tempfile
+        from unittest.mock import Mock, patch
+
+        # Exercise the same cache-invalidating behavior used by the runner:
+        # unchanged token file -> reuse client;
+        # replaced token file -> construct a new client.
+        local = type("Local", (), {})()
+
+        with tempfile.TemporaryDirectory() as td:
+            token_path = os.path.join(td, "token.json")
+            with open(token_path, "w") as f:
+                f.write('{"token": "first"}')
+
+            built = []
+
+            def fake_client_from_token_file(path, app_key, app_secret):
+                client = Mock(name=f"client_{len(built) + 1}")
+                built.append(client)
+                return client
+
+            def get_client():
+                token_mtime_ns = os.stat(token_path).st_mtime_ns
+                client = getattr(local, "client", None)
+                cached_mtime = getattr(local, "token_mtime_ns", None)
+
+                if client is None or cached_mtime != token_mtime_ns:
+                    client = fake_client_from_token_file(
+                        token_path, "key", "secret"
+                    )
+                    local.client = client
+                    local.token_mtime_ns = token_mtime_ns
+
+                return client
+
+            first = get_client()
+            same = get_client()
+
+            self.assertIs(first, same)
+            self.assertEqual(len(built), 1)
+
+            # os.replace models the atomic token-file replacement performed
+            # by the running authentication code.
+            replacement = os.path.join(td, "replacement.json")
+            with open(replacement, "w") as f:
+                f.write('{"token": "second-and-different-length"}')
+            os.replace(replacement, token_path)
+
+            second = get_client()
+
+            self.assertIsNot(first, second)
+            self.assertEqual(len(built), 2)
+            self.assertEqual(
+                local.token_mtime_ns,
+                os.stat(token_path).st_mtime_ns,
+            )
+
     def test_old_misleading_log_removed(self):
         self.assertNotIn('MARKET_TOKEN_REFRESH status=',self.source);self.assertIn("strategy runner owns explicit refresh",self.scanner)
 if __name__=="__main__":unittest.main()
