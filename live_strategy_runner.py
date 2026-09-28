@@ -298,23 +298,40 @@ _EMA_VOLUME_CONFIRMATION = BoundedVolumeConfirmation(
 
 
 def _market_data_client():
-    """Build the existing Schwab market-data client without touching the quote tape."""
+    """Return a market-data client matching the current persisted token.
+
+    Clients are cached per thread, but the Schwab token file can be replaced
+    while the process remains alive. Rebuild a thread's cached client whenever
+    the token file changes so workers never retain stale refresh credentials.
+    """
     from schwab.auth import client_from_token_file
 
     app_key = os.environ.get("SCHWAB_MARKET_APP_KEY") or os.environ.get("SCHWAB_APP_KEY")
     app_secret = os.environ.get("SCHWAB_MARKET_SECRET") or os.environ.get("SCHWAB_SECRET")
     if not app_key or not app_secret:
         raise RuntimeError("Schwab market-data app key/secret missing")
+
+    token_path = "/data/schwab_token.json"
+    token_mtime_ns = os.stat(token_path).st_mtime_ns
+
     client = getattr(_MARKET_DATA_CLIENT_LOCAL, "client", None)
-    if client is None:
+    client_token_mtime_ns = getattr(
+        _MARKET_DATA_CLIENT_LOCAL,
+        "token_mtime_ns",
+        None,
+    )
+
+    if client is None or client_token_mtime_ns != token_mtime_ns:
         client = client_from_token_file(
-            "/data/schwab_token.json",
+            token_path,
             app_key,
             app_secret,
         )
         if hasattr(client, "set_timeout"):
             client.set_timeout(_EMA_VOLUME_REQUEST_TIMEOUT_SECONDS)
         _MARKET_DATA_CLIENT_LOCAL.client = client
+        _MARKET_DATA_CLIENT_LOCAL.token_mtime_ns = token_mtime_ns
+
     return client
 
 

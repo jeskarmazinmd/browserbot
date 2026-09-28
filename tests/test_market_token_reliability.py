@@ -16,6 +16,14 @@ class MarketTokenReliabilityTests(unittest.TestCase):
     def test_trading_has_same_persistence_and_verification_standard(self):
         block=self.source[self.source.index('trade_token_path = "/data/schwab_trade_token.json"'):self.source.index("df = quote_source.read_data()")]
         self.assertIn('DATA_ROOT / "trading_auth_status.json"',block);self.assertIn("after_min_left < TOKEN_REFRESH_VERIFY_MINUTES",block);self.assertIn("post-refresh trading account lookup failed",block);self.assertIn('account_verification="account_hash_resolved"',block)
+    def test_cached_market_client_tracks_persisted_token_file(self):
+        block=self.source[self.source.index("def _market_data_client():"):self.source.index("def _nh015_execution_quotes")]
+        self.assertIn('token_path = "/data/schwab_token.json"',block)
+        self.assertIn("os.stat(token_path).st_mtime_ns",block)
+        self.assertIn('"token_mtime_ns"',block)
+        self.assertIn("client_token_mtime_ns != token_mtime_ns",block)
+        self.assertIn("_MARKET_DATA_CLIENT_LOCAL.token_mtime_ns = token_mtime_ns",block)
+
     def test_old_misleading_log_removed(self):
         self.assertNotIn('MARKET_TOKEN_REFRESH status=',self.source);self.assertIn("strategy runner owns explicit refresh",self.scanner)
 if __name__=="__main__":unittest.main()
