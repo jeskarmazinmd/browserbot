@@ -22,6 +22,9 @@ from strategies import strategy_o
 NY = ZoneInfo("America/New_York")
 
 OPTIONAL_FIELDS = (
+    "research_generation", "research_metadata", "constituent_votes",
+    "remaining_qty", "realized_proceeds", "pending_exit_reason", "book_consumption",
+    "frozen_trend_vote", "frozen_trend_timestamp", "frozen_trend_metrics",
     "rule_version",
     "exit_model", "source_strategy_id", "source_setup_id",
     "activation_gain_pct", "pullback_from_high_pct",

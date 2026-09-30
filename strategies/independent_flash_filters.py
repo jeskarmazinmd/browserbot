@@ -7,8 +7,18 @@ not another strategy's signal.
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from . import strategy_a, strategy_b, strategy_c3n25s10, strategy_pt325315, strategy_qv425
-from . import pt325315_research, qv425_research, a_research
+from . import strategy_a, strategy_b, strategy_c3n25s10, a_research
+from .optional_source import optional_source
+from types import SimpleNamespace
+
+strategy_pt325315 = optional_source("strategy_pt325315")
+strategy_qv425 = optional_source("strategy_qv425")
+# Older, parent-dependent families cannot run if their source file was removed.
+# Frozen generation-one children remain registered independently.
+pt325315_research = ((optional_source("pt325315_research") if strategy_pt325315 else None)
+                    or SimpleNamespace(IDS=frozenset()))
+qv425_research = ((optional_source("qv425_research") if strategy_qv425 else None)
+                 or SimpleNamespace(IDS=frozenset()))
 from .c3_admission_family import FILTERS, C3AdmissionFamily
 from .c3_market_gate_family import GATES, C3MarketGateFamily
 

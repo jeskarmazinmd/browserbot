@@ -1,0 +1,3474 @@
+{
+  "generation": 1,
+  "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+  "created_utc": "2026-09-30T19:02:10+00:00",
+  "official_prospective_start": "Not activated or deployed; durable timestamps recorded only by LIVE paper tracker activation",
+  "strategy_count": 51,
+  "strategies": [
+    {
+      "strategy_id": "G1BB15",
+      "description": "Breakout buffer 0.15% rather than 0.10%; bounded range unchanged",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "BRK20"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1BB15",
+        "hypothesis": "Breakout buffer 0.15% rather than 0.10%; bounded range unchanged",
+        "rules": [
+          "BREAK"
+        ],
+        "votes": 1,
+        "target": 0.7,
+        "stop": 0.55,
+        "notional": 1000.0,
+        "ret30": 1.2,
+        "ret5": 0.25,
+        "up_fraction": 0.58,
+        "window": 20,
+        "range_pct": 1.5,
+        "buffer": 0.15,
+        "universe": [
+          "SPY",
+          "QQQ",
+          "IWM",
+          "DIA",
+          "XLK",
+          "XLF",
+          "XLE",
+          "XLV",
+          "XLY",
+          "XLP",
+          "XLI",
+          "XLU",
+          "SMH",
+          "IYT",
+          "GLD",
+          "SLV",
+          "USO",
+          "TLT",
+          "NVDA",
+          "AMD",
+          "AVGO",
+          "MSFT",
+          "AAPL",
+          "GOOGL",
+          "META",
+          "AMZN",
+          "TSLA",
+          "NFLX",
+          "ORCL",
+          "CRM",
+          "MU",
+          "INTC"
+        ],
+        "max_history": 66
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1BN1500",
+      "description": "Frozen breakout $1500 orders in a $5k cash portfolio",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "BRK20"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1BN1500",
+        "hypothesis": "Frozen breakout $1500 orders in a $5k cash portfolio",
+        "rules": [
+          "BREAK"
+        ],
+        "votes": 1,
+        "target": 0.7,
+        "stop": 0.55,
+        "notional": 1500,
+        "ret30": 1.2,
+        "ret5": 0.25,
+        "up_fraction": 0.58,
+        "window": 20,
+        "range_pct": 1.5,
+        "buffer": 0.1,
+        "universe": [
+          "SPY",
+          "QQQ",
+          "IWM",
+          "DIA",
+          "XLK",
+          "XLF",
+          "XLE",
+          "XLV",
+          "XLY",
+          "XLP",
+          "XLI",
+          "XLU",
+          "SMH",
+          "IYT",
+          "GLD",
+          "SLV",
+          "USO",
+          "TLT",
+          "NVDA",
+          "AMD",
+          "AVGO",
+          "MSFT",
+          "AAPL",
+          "GOOGL",
+          "META",
+          "AMZN",
+          "TSLA",
+          "NFLX",
+          "ORCL",
+          "CRM",
+          "MU",
+          "INTC"
+        ],
+        "max_history": 66
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1BN500",
+      "description": "Frozen breakout $500 orders in a $5k cash portfolio",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "BRK20"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1BN500",
+        "hypothesis": "Frozen breakout $500 orders in a $5k cash portfolio",
+        "rules": [
+          "BREAK"
+        ],
+        "votes": 1,
+        "target": 0.7,
+        "stop": 0.55,
+        "notional": 500,
+        "ret30": 1.2,
+        "ret5": 0.25,
+        "up_fraction": 0.58,
+        "window": 20,
+        "range_pct": 1.5,
+        "buffer": 0.1,
+        "universe": [
+          "SPY",
+          "QQQ",
+          "IWM",
+          "DIA",
+          "XLK",
+          "XLF",
+          "XLE",
+          "XLV",
+          "XLY",
+          "XLP",
+          "XLI",
+          "XLU",
+          "SMH",
+          "IYT",
+          "GLD",
+          "SLV",
+          "USO",
+          "TLT",
+          "NVDA",
+          "AMD",
+          "AVGO",
+          "MSFT",
+          "AAPL",
+          "GOOGL",
+          "META",
+          "AMZN",
+          "TSLA",
+          "NFLX",
+          "ORCL",
+          "CRM",
+          "MU",
+          "INTC"
+        ],
+        "max_history": 66
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1LQ",
+      "description": "P <=$5 confirmation plus Q >=1.25% executable upside; 5% stop/original target",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315PLOW",
+        "QV4UP125"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1LQ",
+        "hypothesis": "P <=$5 confirmation plus Q >=1.25% executable upside; 5% stop/original target",
+        "rules": [
+          {
+            "source": "PT315PLOW",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": 5.0,
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          },
+          {
+            "source": "QV4UP125",
+            "kind": "Q",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 1.25,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 2,
+        "exit_rule": {
+          "source": "PT315PLOW",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": 5.0,
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": null,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1MQ",
+      "description": "Midday P confirmation plus Q 6-8 volatility band; 5% stop/original target",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PMID",
+        "QV4VB608"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1MQ",
+        "hypothesis": "Midday P confirmation plus Q 6-8 volatility band; 5% stop/original target",
+        "rules": [
+          {
+            "source": "PMID",
+            "kind": "M",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": true,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          },
+          {
+            "source": "QV4VB608",
+            "kind": "Q",
+            "min_units": 6.0,
+            "max_units": 8.0,
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 2,
+        "exit_rule": {
+          "source": "PMID",
+          "kind": "M",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": true,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": null,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PG10",
+      "description": "P gain requirement assessed at 10m rather than 15m",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PG10",
+        "hypothesis": "P gain requirement assessed at 10m rather than 15m",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 600,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": null,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PG20",
+      "description": "P gain requirement assessed at 20m rather than 15m",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PG20",
+        "hypothesis": "P gain requirement assessed at 20m rather than 15m",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 1200,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": null,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PGC10",
+      "description": "P gain plus 3% stop, $5k portfolio, 1% equity stop risk, 10% position cap",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525",
+        "PT315S30"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PGC10",
+        "hypothesis": "P gain plus 3% stop, $5k portfolio, 1% equity stop risk, 10% position cap",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.03,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": 0.01,
+        "max_position_fraction": 0.1,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.03,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PGC15",
+      "description": "P gain plus 3% stop, $5k portfolio, 1% equity stop risk, 15% position cap",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525",
+        "PT315S30"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PGC15",
+        "hypothesis": "P gain plus 3% stop, $5k portfolio, 1% equity stop risk, 15% position cap",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.03,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": 0.01,
+        "max_position_fraction": 0.15,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.03,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PGC25",
+      "description": "P gain plus 3% stop, $5k portfolio, 1% equity stop risk, 25% position cap",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525",
+        "PT315S30"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PGC25",
+        "hypothesis": "P gain plus 3% stop, $5k portfolio, 1% equity stop risk, 25% position cap",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.03,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": 0.01,
+        "max_position_fraction": 0.25,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.03,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PGC33",
+      "description": "P gain plus 3% stop, $5k portfolio, 1% equity stop risk, 33% position cap",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525",
+        "PT315S30"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PGC33",
+        "hypothesis": "P gain plus 3% stop, $5k portfolio, 1% equity stop risk, 33% position cap",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.03,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": 0.01,
+        "max_position_fraction": 0.33,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.03,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PGC5",
+      "description": "P gain plus 3% stop, $5k portfolio, 1% equity stop risk, 5% position cap",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525",
+        "PT315S30"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PGC5",
+        "hypothesis": "P gain plus 3% stop, $5k portfolio, 1% equity stop risk, 5% position cap",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.03,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": 0.01,
+        "max_position_fraction": 0.05,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.03,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PGCCTL",
+      "description": "P gain plus 3% stop: $5k, 1% equity risk, 20% cap; matched cap-sweep control",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525",
+        "PT315S30"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PGCCTL",
+        "hypothesis": "P gain plus 3% stop: $5k, 1% equity risk, 20% cap; matched cap-sweep control",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.03,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": 0.01,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.03,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PGE10000",
+      "description": "P gain portfolio $10000; 1% stop risk and 20% cap unchanged",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PGE10000",
+        "hypothesis": "P gain portfolio $10000; 1% stop risk and 20% cap unchanged",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 10000.0,
+        "risk_fraction": 0.01,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PGE2500",
+      "description": "P gain portfolio $2500; 1% stop risk and 20% cap unchanged",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PGE2500",
+        "hypothesis": "P gain portfolio $2500; 1% stop risk and 20% cap unchanged",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 2500.0,
+        "risk_fraction": 0.01,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PGE25000",
+      "description": "P gain portfolio $25000; 1% stop risk and 20% cap unchanged",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PGE25000",
+        "hypothesis": "P gain portfolio $25000; 1% stop risk and 20% cap unchanged",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 25000.0,
+        "risk_fraction": 0.01,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PGN1000",
+      "description": "PT315G1525 fixed $1000 order; capacity and $5k cash competition",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PGN1000",
+        "hypothesis": "PT315G1525 fixed $1000 order; capacity and $5k cash competition",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": null,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PGN1500",
+      "description": "PT315G1525 fixed $1500 order; capacity and $5k cash competition",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PGN1500",
+        "hypothesis": "PT315G1525 fixed $1500 order; capacity and $5k cash competition",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        },
+        "notional": 1500.0,
+        "equity": 5000.0,
+        "risk_fraction": null,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PGN2500",
+      "description": "PT315G1525 fixed $2500 order; capacity and $5k cash competition",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PGN2500",
+        "hypothesis": "PT315G1525 fixed $2500 order; capacity and $5k cash competition",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        },
+        "notional": 2500.0,
+        "equity": 5000.0,
+        "risk_fraction": null,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PGN500",
+      "description": "PT315G1525 fixed $500 order; capacity and $5k cash competition",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PGN500",
+        "hypothesis": "PT315G1525 fixed $500 order; capacity and $5k cash competition",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        },
+        "notional": 500.0,
+        "equity": 5000.0,
+        "risk_fraction": null,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PGR10",
+      "description": "P gain $5000 portfolio with 0.10% equity stop risk and 20% cap",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PGR10",
+        "hypothesis": "P gain $5000 portfolio with 0.10% equity stop risk and 20% cap",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": 0.001,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PGR20",
+      "description": "P gain $5000 portfolio with 0.20% equity stop risk and 20% cap",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PGR20",
+        "hypothesis": "P gain $5000 portfolio with 0.20% equity stop risk and 20% cap",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": 0.002,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PGR50",
+      "description": "P gain $5000 portfolio with 0.50% equity stop risk and 20% cap",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PGR50",
+        "hypothesis": "P gain $5000 portfolio with 0.50% equity stop risk and 20% cap",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": 0.005,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PGRCTL",
+      "description": "Frozen P gain $5k portfolio, 1% equity stop risk, 20% position cap",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PGRCTL",
+        "hypothesis": "Frozen P gain $5k portfolio, 1% equity stop risk, 20% position cap",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": 0.01,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PGS3",
+      "description": "P gain checkpoint with 3% rather than 5% disaster stop",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525",
+        "PT315S30"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PGS3",
+        "hypothesis": "P gain checkpoint with 3% rather than 5% disaster stop",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.03,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": null,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.03,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PGT75",
+      "description": "P gain checkpoint combined with 75% target distance",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525",
+        "PT315T75"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PGT75",
+        "hypothesis": "P gain checkpoint combined with 75% target distance",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 0.75,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": null,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PQ2",
+      "description": "2-of-3 P gain, Q quality, midday P admission with uniform P gain exit; time stratification",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525",
+        "QV4XU1S50V8",
+        "PMID"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PQ2",
+        "hypothesis": "2-of-3 P gain, Q quality, midday P admission with uniform P gain exit; time stratification",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          },
+          {
+            "source": "QV4XU1S50V8",
+            "kind": "Q",
+            "min_units": 4.25,
+            "max_units": 8.0,
+            "min_upside": 1.0,
+            "max_spread": 0.5,
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          },
+          {
+            "source": "PMID",
+            "kind": "M",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": true,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 2,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": null,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PQ3",
+      "description": "3-of-3 P gain, Q quality, midday P admission with uniform P gain exit; stricter time/quality intersection",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525",
+        "QV4XU1S50V8",
+        "PMID"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PQ3",
+        "hypothesis": "3-of-3 P gain, Q quality, midday P admission with uniform P gain exit; stricter time/quality intersection",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          },
+          {
+            "source": "QV4XU1S50V8",
+            "kind": "Q",
+            "min_units": 4.25,
+            "max_units": 8.0,
+            "min_upside": 1.0,
+            "max_spread": 0.5,
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          },
+          {
+            "source": "PMID",
+            "kind": "M",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": true,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 3,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": null,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PQ34",
+      "description": "3-of-4 P gain, Q quality, Q 6-8 band, midday P; uniform P gain exit",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525",
+        "QV4XU1S50V8",
+        "QV4VB608",
+        "PMID"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PQ34",
+        "hypothesis": "3-of-4 P gain, Q quality, Q 6-8 band, midday P; uniform P gain exit",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          },
+          {
+            "source": "QV4XU1S50V8",
+            "kind": "Q",
+            "min_units": 4.25,
+            "max_units": 8.0,
+            "min_upside": 1.0,
+            "max_spread": 0.5,
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          },
+          {
+            "source": "QV4VB608",
+            "kind": "Q",
+            "min_units": 6.0,
+            "max_units": 8.0,
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          },
+          {
+            "source": "PMID",
+            "kind": "M",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": true,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 3,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": null,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PQG",
+      "description": "P gain-checkpoint entry plus Q upside/spread/volatility quality; P 15m gain exit",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525",
+        "QV4XU1S50V8"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PQG",
+        "hypothesis": "P gain-checkpoint entry plus Q upside/spread/volatility quality; P 15m gain exit",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          },
+          {
+            "source": "QV4XU1S50V8",
+            "kind": "Q",
+            "min_units": 4.25,
+            "max_units": 8.0,
+            "min_upside": 1.0,
+            "max_spread": 0.5,
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 2,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": null,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PQT",
+      "description": "P reduced-target entry plus Q >=1% upside/3% stop admission; P 75% target exit",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315T75",
+        "QV4XU1S3"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PQT",
+        "hypothesis": "P reduced-target entry plus Q >=1% upside/3% stop admission; P 75% target exit",
+        "rules": [
+          {
+            "source": "PT315T75",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 0.75,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          },
+          {
+            "source": "QV4XU1S3",
+            "kind": "Q",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 1.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.03,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 2,
+        "exit_rule": {
+          "source": "PT315T75",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 0.75,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": null,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PQT2",
+      "description": "Flash-triggered 2-of-3 P 75% target, Q >=1% upside/3% stop admission, fresh completed-minute trend; uniform P 75% target exit",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315T75",
+        "QV4XU1S3",
+        "TRENDX2"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PQT2",
+        "hypothesis": "Flash-triggered 2-of-3 P 75% target, Q >=1% upside/3% stop admission, fresh completed-minute trend; uniform P 75% target exit",
+        "rules": [
+          {
+            "source": "PT315T75",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 0.75,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          },
+          {
+            "source": "QV4XU1S3",
+            "kind": "Q",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 1.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.03,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          },
+          {
+            "source": "TRENDX2",
+            "kind": "T",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 2,
+        "exit_rule": {
+          "source": "PT315T75",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 0.75,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": null,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PQT3",
+      "description": "Flash-triggered 3-of-3 P 75% target, Q >=1% upside/3% stop admission, fresh completed-minute trend; uniform P 75% target exit",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315T75",
+        "QV4XU1S3",
+        "TRENDX2"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PQT3",
+        "hypothesis": "Flash-triggered 3-of-3 P 75% target, Q >=1% upside/3% stop admission, fresh completed-minute trend; uniform P 75% target exit",
+        "rules": [
+          {
+            "source": "PT315T75",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 0.75,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          },
+          {
+            "source": "QV4XU1S3",
+            "kind": "Q",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 1.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.03,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          },
+          {
+            "source": "TRENDX2",
+            "kind": "T",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 3,
+        "exit_rule": {
+          "source": "PT315T75",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 0.75,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": null,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PQU",
+      "description": "Deduplicated P gain OR Q quality admission with uniform P gain exit",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525",
+        "QV4XU1S50V8"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PQU",
+        "hypothesis": "Deduplicated P gain OR Q quality admission with uniform P gain exit",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          },
+          {
+            "source": "QV4XU1S50V8",
+            "kind": "Q",
+            "min_units": 4.25,
+            "max_units": 8.0,
+            "min_upside": 1.0,
+            "max_spread": 0.5,
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": null,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PQUW",
+      "description": "P/Q union: $1000 for one vote, $2000 for two votes; one deduplicated order",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525",
+        "QV4XU1S50V8"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PQUW",
+        "hypothesis": "P/Q union: $1000 for one vote, $2000 for two votes; one deduplicated order",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          },
+          {
+            "source": "QV4XU1S50V8",
+            "kind": "Q",
+            "min_units": 4.25,
+            "max_units": 8.0,
+            "min_upside": 1.0,
+            "max_spread": 0.5,
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": null,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": true
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1PQW2",
+      "description": "P/Q agreement: $2000 only on two votes; compare G1PQG fixed $1000",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "PT315G1525",
+        "QV4XU1S50V8"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1PQW2",
+        "hypothesis": "P/Q agreement: $2000 only on two votes; compare G1PQG fixed $1000",
+        "rules": [
+          {
+            "source": "PT315G1525",
+            "kind": "P",
+            "min_units": 4.25,
+            "max_units": "unbounded",
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 900,
+            "required_gain": 0.25
+          },
+          {
+            "source": "QV4XU1S50V8",
+            "kind": "Q",
+            "min_units": 4.25,
+            "max_units": 8.0,
+            "min_upside": 1.0,
+            "max_spread": 0.5,
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 2,
+        "exit_rule": {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": null,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": true
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1QQ2",
+      "description": "Within-Q quality AND 6-8 volatility band; quality exit policy",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "QV4XU1S50V8",
+        "QV4VB608"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1QQ2",
+        "hypothesis": "Within-Q quality AND 6-8 volatility band; quality exit policy",
+        "rules": [
+          {
+            "source": "QV4XU1S50V8",
+            "kind": "Q",
+            "min_units": 4.25,
+            "max_units": 8.0,
+            "min_upside": 1.0,
+            "max_spread": 0.5,
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          },
+          {
+            "source": "QV4VB608",
+            "kind": "Q",
+            "min_units": 6.0,
+            "max_units": 8.0,
+            "min_upside": 0.0,
+            "max_spread": "unbounded",
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 2,
+        "exit_rule": {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": null,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1QVC10",
+      "description": "Q quality $5k portfolio, 1% equity stop risk, 10% cap; cross-family cap check",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "QV4XU1S50V8"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1QVC10",
+        "hypothesis": "Q quality $5k portfolio, 1% equity stop risk, 10% cap; cross-family cap check",
+        "rules": [
+          {
+            "source": "QV4XU1S50V8",
+            "kind": "Q",
+            "min_units": 4.25,
+            "max_units": 8.0,
+            "min_upside": 1.0,
+            "max_spread": 0.5,
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": 0.01,
+        "max_position_fraction": 0.1,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1QVN1000",
+      "description": "QV4XU1S50V8 fixed $1000 order; capacity and $5k cash competition",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "QV4XU1S50V8"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1QVN1000",
+        "hypothesis": "QV4XU1S50V8 fixed $1000 order; capacity and $5k cash competition",
+        "rules": [
+          {
+            "source": "QV4XU1S50V8",
+            "kind": "Q",
+            "min_units": 4.25,
+            "max_units": 8.0,
+            "min_upside": 1.0,
+            "max_spread": 0.5,
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": null,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1QVN1500",
+      "description": "QV4XU1S50V8 fixed $1500 order; capacity and $5k cash competition",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "QV4XU1S50V8"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1QVN1500",
+        "hypothesis": "QV4XU1S50V8 fixed $1500 order; capacity and $5k cash competition",
+        "rules": [
+          {
+            "source": "QV4XU1S50V8",
+            "kind": "Q",
+            "min_units": 4.25,
+            "max_units": 8.0,
+            "min_upside": 1.0,
+            "max_spread": 0.5,
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        },
+        "notional": 1500.0,
+        "equity": 5000.0,
+        "risk_fraction": null,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1QVN2500",
+      "description": "QV4XU1S50V8 fixed $2500 order; capacity and $5k cash competition",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "QV4XU1S50V8"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1QVN2500",
+        "hypothesis": "QV4XU1S50V8 fixed $2500 order; capacity and $5k cash competition",
+        "rules": [
+          {
+            "source": "QV4XU1S50V8",
+            "kind": "Q",
+            "min_units": 4.25,
+            "max_units": 8.0,
+            "min_upside": 1.0,
+            "max_spread": 0.5,
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        },
+        "notional": 2500.0,
+        "equity": 5000.0,
+        "risk_fraction": null,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1QVN500",
+      "description": "QV4XU1S50V8 fixed $500 order; capacity and $5k cash competition",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "QV4XU1S50V8"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1QVN500",
+        "hypothesis": "QV4XU1S50V8 fixed $500 order; capacity and $5k cash competition",
+        "rules": [
+          {
+            "source": "QV4XU1S50V8",
+            "kind": "Q",
+            "min_units": 4.25,
+            "max_units": 8.0,
+            "min_upside": 1.0,
+            "max_spread": 0.5,
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        },
+        "notional": 500.0,
+        "equity": 5000.0,
+        "risk_fraction": null,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1QVR20",
+      "description": "Q quality $5k portfolio, 0.20% equity stop risk, 20% cap; cross-family risk check",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "QV4XU1S50V8"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1QVR20",
+        "hypothesis": "Q quality $5k portfolio, 0.20% equity stop risk, 20% cap; cross-family risk check",
+        "rules": [
+          {
+            "source": "QV4XU1S50V8",
+            "kind": "Q",
+            "min_units": 4.25,
+            "max_units": 8.0,
+            "min_upside": 1.0,
+            "max_spread": 0.5,
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": 0.002,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1QVRCTL",
+      "description": "Frozen Q quality $5k portfolio, 1% equity stop risk, 20% position cap",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "QV4XU1S50V8"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1QVRCTL",
+        "hypothesis": "Frozen Q quality $5k portfolio, 1% equity stop risk, 20% position cap",
+        "rules": [
+          {
+            "source": "QV4XU1S50V8",
+            "kind": "Q",
+            "min_units": 4.25,
+            "max_units": 8.0,
+            "min_upside": 1.0,
+            "max_spread": 0.5,
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": 0.01,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1QVS3",
+      "description": "Q quality entry with 3% rather than 5% stop",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "QV4XU1S50V8",
+        "QV4XU1S3"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1QVS3",
+        "hypothesis": "Q quality entry with 3% rather than 5% stop",
+        "rules": [
+          {
+            "source": "QV4XU1S50V8",
+            "kind": "Q",
+            "min_units": 4.25,
+            "max_units": 8.0,
+            "min_upside": 1.0,
+            "max_spread": 0.5,
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.03,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": null,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.03,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1QVU125",
+      "description": "Q quality entry with 1.25% rather than 1% executable upside",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "QV4XU1S50V8"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1QVU125",
+        "hypothesis": "Q quality entry with 1.25% rather than 1% executable upside",
+        "rules": [
+          {
+            "source": "QV4XU1S50V8",
+            "kind": "Q",
+            "min_units": 4.25,
+            "max_units": 8.0,
+            "min_upside": 1.25,
+            "max_spread": 0.5,
+            "max_price": "unbounded",
+            "midday": false,
+            "stop": 0.05,
+            "target_scale": 1.0,
+            "checkpoint_seconds": 0,
+            "required_gain": 0.25
+          }
+        ],
+        "votes": 1,
+        "exit_rule": {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        },
+        "notional": 1000.0,
+        "equity": 5000.0,
+        "risk_fraction": null,
+        "max_position_fraction": 0.2,
+        "agreement_weighted": false
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "flash_drop_pct": 1.0,
+        "rebound_confirmation_pct": 0.001,
+        "pending_rebound_timeout_seconds": 600,
+        "min_remaining_upside_pct": 0.2,
+        "stop_loss_fraction": 0.05,
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1TB150",
+      "description": "Trend 30m return >=1.5% rather than 1.2%; other parameters frozen",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "TRENDX2"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1TB150",
+        "hypothesis": "Trend 30m return >=1.5% rather than 1.2%; other parameters frozen",
+        "rules": [
+          "TREND"
+        ],
+        "votes": 1,
+        "target": 0.9,
+        "stop": 0.65,
+        "notional": 1000.0,
+        "ret30": 1.5,
+        "ret5": 0.25,
+        "up_fraction": 0.58,
+        "window": 20,
+        "range_pct": 1.5,
+        "buffer": 0.1,
+        "universe": [
+          "SPY",
+          "QQQ",
+          "IWM",
+          "DIA",
+          "XLK",
+          "XLF",
+          "XLE",
+          "XLV",
+          "XLY",
+          "XLP",
+          "XLI",
+          "XLU",
+          "SMH",
+          "IYT",
+          "GLD",
+          "SLV",
+          "USO",
+          "TLT",
+          "NVDA",
+          "AMD",
+          "AVGO",
+          "MSFT",
+          "AAPL",
+          "GOOGL",
+          "META",
+          "AMZN",
+          "TSLA",
+          "NFLX",
+          "ORCL",
+          "CRM",
+          "MU",
+          "INTC"
+        ],
+        "max_history": 66
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1TB2",
+      "description": "Same-symbol trend AND bounded 20m breakout; trend 0.9% target/0.65% stop",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "TRENDX2",
+        "BRK20"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1TB2",
+        "hypothesis": "Same-symbol trend AND bounded 20m breakout; trend 0.9% target/0.65% stop",
+        "rules": [
+          "TREND",
+          "BREAK"
+        ],
+        "votes": 2,
+        "target": 0.9,
+        "stop": 0.65,
+        "notional": 1000.0,
+        "ret30": 1.2,
+        "ret5": 0.25,
+        "up_fraction": 0.58,
+        "window": 20,
+        "range_pct": 1.5,
+        "buffer": 0.1,
+        "universe": [
+          "SPY",
+          "QQQ",
+          "IWM",
+          "DIA",
+          "XLK",
+          "XLF",
+          "XLE",
+          "XLV",
+          "XLY",
+          "XLP",
+          "XLI",
+          "XLU",
+          "SMH",
+          "IYT",
+          "GLD",
+          "SLV",
+          "USO",
+          "TLT",
+          "NVDA",
+          "AMD",
+          "AVGO",
+          "MSFT",
+          "AAPL",
+          "GOOGL",
+          "META",
+          "AMZN",
+          "TSLA",
+          "NFLX",
+          "ORCL",
+          "CRM",
+          "MU",
+          "INTC"
+        ],
+        "max_history": 66
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1TBU",
+      "description": "Deduplicated trend OR bounded breakout; uniform trend exit policy",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "TRENDX2",
+        "BRK20"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1TBU",
+        "hypothesis": "Deduplicated trend OR bounded breakout; uniform trend exit policy",
+        "rules": [
+          "TREND",
+          "BREAK"
+        ],
+        "votes": 1,
+        "target": 0.9,
+        "stop": 0.65,
+        "notional": 1000.0,
+        "ret30": 1.2,
+        "ret5": 0.25,
+        "up_fraction": 0.58,
+        "window": 20,
+        "range_pct": 1.5,
+        "buffer": 0.1,
+        "universe": [
+          "SPY",
+          "QQQ",
+          "IWM",
+          "DIA",
+          "XLK",
+          "XLF",
+          "XLE",
+          "XLV",
+          "XLY",
+          "XLP",
+          "XLI",
+          "XLU",
+          "SMH",
+          "IYT",
+          "GLD",
+          "SLV",
+          "USO",
+          "TLT",
+          "NVDA",
+          "AMD",
+          "AVGO",
+          "MSFT",
+          "AAPL",
+          "GOOGL",
+          "META",
+          "AMZN",
+          "TSLA",
+          "NFLX",
+          "ORCL",
+          "CRM",
+          "MU",
+          "INTC"
+        ],
+        "max_history": 66
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1TN1500",
+      "description": "Frozen trend $1500 orders in a $5k cash portfolio",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "TRENDX2"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1TN1500",
+        "hypothesis": "Frozen trend $1500 orders in a $5k cash portfolio",
+        "rules": [
+          "TREND"
+        ],
+        "votes": 1,
+        "target": 0.9,
+        "stop": 0.65,
+        "notional": 1500,
+        "ret30": 1.2,
+        "ret5": 0.25,
+        "up_fraction": 0.58,
+        "window": 20,
+        "range_pct": 1.5,
+        "buffer": 0.1,
+        "universe": [
+          "SPY",
+          "QQQ",
+          "IWM",
+          "DIA",
+          "XLK",
+          "XLF",
+          "XLE",
+          "XLV",
+          "XLY",
+          "XLP",
+          "XLI",
+          "XLU",
+          "SMH",
+          "IYT",
+          "GLD",
+          "SLV",
+          "USO",
+          "TLT",
+          "NVDA",
+          "AMD",
+          "AVGO",
+          "MSFT",
+          "AAPL",
+          "GOOGL",
+          "META",
+          "AMZN",
+          "TSLA",
+          "NFLX",
+          "ORCL",
+          "CRM",
+          "MU",
+          "INTC"
+        ],
+        "max_history": 66
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "live_order_placement": false
+      }
+    },
+    {
+      "strategy_id": "G1TN500",
+      "description": "Frozen trend $500 orders in a $5k cash portfolio",
+      "family": "GENERATION_ONE",
+      "paper_only": true,
+      "generation": 1,
+      "source_strategy_ids": [
+        "TRENDX2"
+      ],
+      "created_utc": "2026-09-30T19:02:10+00:00",
+      "source_commit": "8698eeeb254fa2df642b367c9cf26ae10feb5c26",
+      "parameters": {
+        "strategy_id": "G1TN500",
+        "hypothesis": "Frozen trend $500 orders in a $5k cash portfolio",
+        "rules": [
+          "TREND"
+        ],
+        "votes": 1,
+        "target": 0.9,
+        "stop": 0.65,
+        "notional": 500,
+        "ret30": 1.2,
+        "ret5": 0.25,
+        "up_fraction": 0.58,
+        "window": 20,
+        "range_pct": 1.5,
+        "buffer": 0.1,
+        "universe": [
+          "SPY",
+          "QQQ",
+          "IWM",
+          "DIA",
+          "XLK",
+          "XLF",
+          "XLE",
+          "XLV",
+          "XLY",
+          "XLP",
+          "XLI",
+          "XLU",
+          "SMH",
+          "IYT",
+          "GLD",
+          "SLV",
+          "USO",
+          "TLT",
+          "NVDA",
+          "AMD",
+          "AVGO",
+          "MSFT",
+          "AAPL",
+          "GOOGL",
+          "META",
+          "AMZN",
+          "TSLA",
+          "NFLX",
+          "ORCL",
+          "CRM",
+          "MU",
+          "INTC"
+        ],
+        "max_history": 66
+      },
+      "prospective_start_policy": "durable first tracker activation; never backfilled",
+      "config": {
+        "live_order_placement": false
+      }
+    }
+  ]
+}

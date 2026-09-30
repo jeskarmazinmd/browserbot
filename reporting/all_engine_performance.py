@@ -23,6 +23,7 @@ from reporting.capital_performance import simulate_day
 from live_l1_cache import LiveL1SnapshotReader
 from strategies.pruning import output_is_pruned
 from strategies.output_switches import output_enabled
+from reporting.generation_one_performance import calculate_generation_one
 
 
 NY = ZoneInfo("America/New_York")
@@ -658,6 +659,10 @@ def calculate(root="/data", day=None, as_of=None):
             "pnl": result["end_equity"] - STARTING_CASH,
             "engine": "main_bidask_independent",
         }
+    research_modules, research_diagnostics = calculate_generation_one(
+        root, day, cutoff, marks, equity_quote
+    )
+    modules.update(research_modules)
 
     # Preserve historical ledgers while keeping retired outputs out of active
     # snapshots and future daily-history rows.
@@ -678,6 +683,7 @@ def calculate(root="/data", day=None, as_of=None):
             "main_unmarked": diagnostics["main_unmarked"],
             "unmarked_by_engine": dict(diagnostics["unmarked_by_engine"]),
             "bidask_independent": diagnostics["bidask_independent"],
+            "generation_one": research_diagnostics,
         },
     }
 

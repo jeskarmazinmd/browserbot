@@ -10,6 +10,7 @@ import time
 from strategy_diagnostics import diagnostics
 from .pruning import PRUNED_OUTPUT_STRATEGY_IDS
 from . import independent_flash_filters
+from . import generation_one, generation_one_minute
 
 from . import strategy_a
 from . import strategy_b
@@ -30,7 +31,12 @@ from . import (
 )
 from . import strategy_d
 from . import strategy_h
-from . import strategy_c2t9, strategy_c2t35, strategy_c1t9, strategy_gt9, strategy_et29, strategy_pt325, strategy_pt325315, strategy_pmid, strategy_ht5, strategy_qmid, strategy_qv425, strategy_lt65
+from . import strategy_c2t9, strategy_c2t35, strategy_c1t9, strategy_gt9, strategy_et29, strategy_pt325, strategy_ht5, strategy_qmid, strategy_lt65
+from .optional_source import optional_source
+
+strategy_pt325315 = optional_source("strategy_pt325315")
+strategy_qv425 = optional_source("strategy_qv425")
+strategy_pmid = optional_source("strategy_pmid")
 
 
 DISABLED_FLASH_STRATEGY_IDS = frozenset({
@@ -59,8 +65,10 @@ FLASH_STRATEGY_MODULES = {
     strategy_c3l25q2, strategy_c3l25q4,
     strategy_c3l25d05, strategy_c3l25d20,
     )
-    if module.STRATEGY_ID not in DISABLED_FLASH_STRATEGY_IDS
+    if module is not None and module.STRATEGY_ID not in DISABLED_FLASH_STRATEGY_IDS
 }
+FLASH_STRATEGY_MODULES.update({sid: module for sid, module in generation_one.MODULES.items()
+                               if sid not in DISABLED_FLASH_STRATEGY_IDS})
 
 
 def flash_strategy_configs():
@@ -198,6 +206,8 @@ STRATEGY_CLASSES = [
     ("strategy_spy_xa1", "SPYXA1Strategy"),
     ("strategy_spy_ens1", "SPYENS1Strategy"),
 ]
+STRATEGY_CLASSES.extend(("generation_one_minute", sid + "Strategy")
+                       for sid in sorted(generation_one_minute.IDS))
 
 
 # A/B/D/H remain on the established pending-rebound engine until their
