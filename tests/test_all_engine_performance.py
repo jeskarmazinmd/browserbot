@@ -110,17 +110,19 @@ class AllEnginePerformanceTests(unittest.TestCase):
             rows = [
                 {
                     "event_type": "PAPER_ENTRY", "setup_id": "one",
-                    "strategy_id": "C3N25S10", "symbol": "XYZ",
+                    "strategy_id": "C4", "symbol": "XYZ",
                     "signal_timestamp": "2026-08-11T14:00:00+00:00",
                     "entry_timestamp": "2026-08-11T14:00:01+00:00",
-                    "entry_price": 10.01, "stop_price": 9.50, "notional": 100.10,
+                    "entry_price": 10.01, "stop_price": 9.50,
+                    "notional": 100.10, "filled_qty": 50,
                 },
                 {
                     "event_type": "PAPER_EXIT", "setup_id": "one",
-                    "strategy_id": "C3N25S10", "symbol": "XYZ",
+                    "strategy_id": "C4", "symbol": "XYZ",
                     "signal_timestamp": "2026-08-11T14:00:00+00:00",
                     "entry_timestamp": "2026-08-11T14:00:01+00:00",
-                    "entry_price": 10.01, "stop_price": 9.50, "notional": 100.10,
+                    "entry_price": 10.01, "stop_price": 9.50,
+                    "notional": 100.10, "filled_qty": 50,
                     "exit_timestamp": "2026-08-11T14:05:00+00:00",
                     "exit_price": 10.11, "pnl": 1.0,
                 },
@@ -154,14 +156,72 @@ class AllEnginePerformanceTests(unittest.TestCase):
                 as_of=datetime(2026, 8, 11, 18, 0, tzinfo=timezone.utc),
             )
             self.assertEqual(
-                snapshot["modules"]["C3N25S10BA"]["engine"],
+                snapshot["modules"]["C4BA"]["engine"],
                 "main_bidask_independent",
             )
-            self.assertAlmostEqual(snapshot["modules"]["C3N25S10BA"]["pnl"], 9.8)
-            self.assertNotIn("C3N25S10", snapshot["modules"])
-            self.assertNotIn("C3N25S10IOCL1", snapshot["modules"])
+            self.assertAlmostEqual(snapshot["modules"]["C4BA"]["pnl"], 5.0)
+            self.assertNotIn("C4", snapshot["modules"])
+            self.assertNotIn("C4IOCL1", snapshot["modules"])
             self.assertEqual(snapshot["diagnostics"]["bidask_independent"]["entries"], 1)
             self.assertEqual(snapshot["diagnostics"]["bidask_independent"]["exits"], 1)
+
+    def test_open_independent_ba_uses_live_l1_bid(self):
+        from datetime import datetime, timezone
+
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+
+            entry = {
+                "event_type": "PAPER_ENTRY",
+                "setup_id": "live-mark",
+                "strategy_id": "C4",
+                "symbol": "XYZ",
+                "signal_timestamp": "2026-08-11T14:00:00+00:00",
+                "entry_timestamp": "2026-08-11T14:00:00+00:00",
+                "entry_price": 10.0,
+                "stop_price": 9.0,
+                "notional": 1000.0,
+                "filled_qty": 100,
+            }
+
+            (root / "paper_signal_v4_bidask_independent_outcomes.jsonl").write_text(
+                json.dumps(entry) + "\n"
+            )
+
+            # No auxiliary equity tape exists. The open main BA position must
+            # therefore be marked from the collector's live L1 snapshot.
+            (root / "live_l1_snapshot.json").write_text(json.dumps({
+                "schema": "LIVE_L1_V1",
+                "collector_observed_at": "2026-08-11T18:00:00+00:00",
+                "published_at": "2026-08-11T18:00:00+00:00",
+                "quote_count": 1,
+                "quotes": {
+                    "XYZ": {
+                        "symbol": "XYZ",
+                        "bid": 10.20,
+                        "ask": 10.22,
+                        "collector_observed_at": "2026-08-11T18:00:00+00:00",
+                    }
+                },
+            }))
+
+            snapshot = calculate(
+                root,
+                day="2026-08-11",
+                as_of=datetime(2026, 8, 11, 18, 0, tzinfo=timezone.utc),
+            )
+
+            self.assertIn("C4BA", snapshot["modules"])
+            self.assertEqual(
+                snapshot["modules"]["C4BA"]["engine"],
+                "main_bidask_independent",
+            )
+            self.assertAlmostEqual(snapshot["modules"]["C4BA"]["pnl"], 10.0)
+            self.assertAlmostEqual(snapshot["modules"]["C4BA"]["return_pct"], 0.2)
+            self.assertEqual(
+                snapshot["diagnostics"]["unmarked_by_engine"],
+                {},
+            )
 
     def test_independent_ba_respects_displayed_partial_fill_in_5k_profile(self):
         from datetime import datetime, timezone

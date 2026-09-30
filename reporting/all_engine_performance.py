@@ -20,6 +20,7 @@ import zlib
 from zoneinfo import ZoneInfo
 
 from reporting.capital_performance import simulate_day
+from live_l1_cache import LiveL1SnapshotReader
 from strategies.pruning import output_is_pruned
 from strategies.output_switches import output_enabled
 
@@ -373,6 +374,11 @@ def calculate(root="/data", day=None, as_of=None):
     day = day or as_of.astimezone(NY).date().isoformat()
     cutoff = min(as_of, cutoff_for(day)) if day == as_of.astimezone(NY).date().isoformat() else cutoff_for(day)
     marks = load_market_marks(root, day, cutoff)
+
+    # Main independent BA strategies use the collector's live L1 universe.
+    # Use the same bid/ask source to mark open main BA positions.
+    live_l1_reader = LiveL1SnapshotReader(root / "live_l1_snapshot.json")
+
     modules, sources = {}, {}
     diagnostics = {"main_unmarked": 0, "unmarked_by_engine": defaultdict(int)}
 
@@ -441,15 +447,24 @@ def calculate(root="/data", day=None, as_of=None):
                 pnl = closed_pnl(exit_row)
                 closed_at = exit_time
             else:
-                quote = equity_quote(entry.get("symbol"), marks)
+                symbol = str(entry.get("symbol") or "").upper()
+
+                if engine == "main_bidask_independent":
+                    quote = live_l1_reader.quotes([symbol]).get(symbol, {})
+                else:
+                    quote = equity_quote(symbol, marks)
+
                 try:
                     entry_price = float(entry["entry_price"])
                     notional = float(entry.get("notional") or 0)
                     bid = float(quote["bid"])
+                    if bid <= 0:
+                        raise ValueError("invalid bid")
                     pnl = notional * (bid / entry_price - 1.0)
                 except (KeyError, TypeError, ValueError, ZeroDivisionError):
                     diagnostics["unmarked_by_engine"][engine] += 1
                     continue
+
                 closed_at = cutoff
             add(
                 f"{strategy_name(entry)}{suffix}",
