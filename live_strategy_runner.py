@@ -15,6 +15,7 @@ from strategies.derived_runtime import DERIVED_STRATEGY_IDS, derive_signals
 from strategies.output_switches import output_enabled
 from strategies.independent_flash_filters import IDS as INDEPENDENT_FLASH_FILTER_IDS, Filters as IndependentFlashFilters
 from generation_one_paper_tracker import GenerationOneBidAskTracker, IDS as GENERATION_ONE_IDS
+from generation_two_paper_tracker import GenerationTwoBidAskTracker, IDS as GENERATION_TWO_IDS
 from strategies.generation_one_market import enrich_confirmation as enrich_generation_one_confirmation
 from strategies.flash_nearest_miss import score as score_flash_window
 from strategies.registry import (
@@ -2417,9 +2418,21 @@ def main():
         DATA_ROOT, now_provider=quote_source.now,
         eod_hour=EOD_EXIT_HOUR_ET, eod_minute=EOD_EXIT_MINUTE_ET,
     ) if RUN_MODE == "LIVE" else None
+    generation_two_outcomes = GenerationTwoBidAskTracker(
+        DATA_ROOT, now_provider=quote_source.now,
+        eod_hour=EOD_EXIT_HOUR_ET, eod_minute=EOD_EXIT_MINUTE_ET,
+    ) if RUN_MODE == "LIVE" else None
 
     def register_single_leg_paper(signal):
         """Admit an executable BA trade directly from the strategy signal."""
+        if signal.get("strategy_id") in GENERATION_TWO_IDS:
+            if RUN_MODE != "LIVE":
+                return False
+            symbol = str(signal.get("symbol") or "").upper()
+            quotes = independent_l1.quotes([symbol])
+            return generation_two_outcomes.register_signal(
+                signal, quotes.get(symbol), quote_source.now()
+            )
         if signal.get("strategy_id") in GENERATION_ONE_IDS:
             # Historical replay never earns prospective research credit.
             if RUN_MODE != "LIVE":
@@ -2729,6 +2742,7 @@ def main():
             if RUN_MODE == "LIVE":
                 independent_ba_symbols = independent_ba_outcomes.symbols()
                 independent_ba_symbols |= generation_one_outcomes.symbols()
+                independent_ba_symbols |= generation_two_outcomes.symbols()
                 independent_multi_leg_symbols = independent_multi_leg_outcomes.symbols()
                 execution_symbols = (
                     set(positions)
@@ -2821,6 +2835,13 @@ def main():
                     independent_quotes, quote_source.now()
                 ):
                     print("GENERATION_ONE_BA_OUTCOME "
+                          f"strategy={outcome['strategy_id']} symbol={outcome['symbol']} "
+                          f"reason={outcome['exit_reason']} pnl={outcome['pnl']:+.2f}", flush=True)
+
+                for outcome in generation_two_outcomes.update_quotes(
+                    independent_quotes, quote_source.now()
+                ):
+                    print("GENERATION_TWO_BA_OUTCOME "
                           f"strategy={outcome['strategy_id']} symbol={outcome['symbol']} "
                           f"reason={outcome['exit_reason']} pnl={outcome['pnl']:+.2f}", flush=True)
 
@@ -3312,7 +3333,9 @@ def main():
                         pending_entries[strategy_id].pop(sym, None)
                         continue
 
-                    if strategy_id != "LT65":
+                    # G2 rules use the already-frozen flash data and L1 book.
+                    # Avoid one redundant candle request per child confirmation.
+                    if strategy_id != "LT65" and strategy_id not in GENERATION_TWO_IDS:
                         confirmed_event.update(fetch_rebound_volume_metrics(
                             sym, pending["created_at"], confirmed_event.get("avg_volume_1m_pre30")
                         ))

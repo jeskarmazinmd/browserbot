@@ -45,8 +45,8 @@ def load_modules() -> dict[str, ModuleType]:
         if strategy_id in modules:
             raise RuntimeError(f"duplicate strategy ID: {strategy_id}")
         modules[strategy_id] = module
-    from . import generation_one, generation_one_minute
-    for sid, module in {**generation_one.MODULES, **generation_one_minute.MODULES}.items():
+    from . import generation_one, generation_one_minute, generation_two
+    for sid, module in {**generation_one.MODULES, **generation_one_minute.MODULES, **generation_two.MODULES}.items():
         if sid in modules:
             raise RuntimeError(f"duplicate strategy ID: {sid}")
         modules[sid] = module

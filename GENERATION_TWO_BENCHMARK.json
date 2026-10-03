@@ -1,0 +1,17 @@
+{
+  "g2_modules": 64,
+  "existing_flash_modules": 80,
+  "synthetic_symbols": 1000,
+  "raw_admission_median_seconds": 0.048263522000070225,
+  "raw_admission_max_seconds": 0.051763138999831426,
+  "durable_fill_batch_attempts": 320,
+  "durable_fill_batch_accepted": 312,
+  "durable_fill_batch_seconds_with_tracemalloc": 0.328633415000013,
+  "durable_fill_batch_seconds_without_tracemalloc": 0.06236276699996779,
+  "tracker_current_bytes": 1757800,
+  "tracker_peak_bytes": 1770936,
+  "active_quote_update_median_seconds": 0.049149287000091135,
+  "sample_ledger_and_checkpoint_bytes": 1709358,
+  "additional_candle_requests_per_g2_confirmation": 0,
+  "limitations": "Local synthetic benchmark; not live Fly utilization, full runner latency, or long-run disk growth."
+}

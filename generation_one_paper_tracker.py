@@ -25,20 +25,42 @@ def spec_for(sid):
 
 
 class GenerationOneBidAskTracker(PaperOutcomeTracker):
+    # Execution mechanics are shared; subclasses own catalogs and durable files.
+    IDS = IDS
+    FILE_STEM = FILE_STEM
+    flash_catalog = flash
+    minute_catalog = minute
+    EXECUTION_MODEL = "GENERATION_ONE_BIDASK_V1"
+    DEFER_ENTRY_CHECKPOINT = False
+
+    def spec_for(self, sid):
+        return (self.flash_catalog.spec_for(sid) if sid in self.flash_catalog.IDS
+                else self.minute_catalog.spec_for(sid))
+
+    def metadata_for(self, sid):
+        return (self.flash_catalog.metadata(sid) if sid in self.flash_catalog.IDS
+                else self.minute_catalog.metadata(sid))
+
+    def entry_gate(self, signal, quote, now):
+        return None
+
+    def quantity_limit(self, sid, signal, ask, cash, requested):
+        return requested
+
     def __init__(self, data_root, *, now_provider=None, **kwargs):
         self._cash = {}
         self._liquidity = {}
         self._clock = now_provider or (lambda: datetime.now(timezone.utc))
-        kwargs.setdefault("file_stem", FILE_STEM)
+        kwargs.setdefault("file_stem", self.FILE_STEM)
         kwargs.setdefault("use_observed_exit_prices", True)
         super().__init__(data_root, **kwargs)
-        self.birth_path = self.root / (FILE_STEM + "_births.json")
-        self.liquidity_path = self.root / (FILE_STEM + "_liquidity.json")
+        self.birth_path = self.root / (self.FILE_STEM + "_births.json")
+        self.liquidity_path = self.root / (self.FILE_STEM + "_liquidity.json")
         # Fail closed on corrupt provenance. Never silently reset birth dates.
         self.births = json.loads(self.birth_path.read_text()) if self.birth_path.exists() else {}
         now = _utc(self._clock())
-        for sid in sorted(IDS):
-            self.births.setdefault(sid, max(now, _utc(flash.CREATED_UTC)).isoformat())
+        for sid in sorted(self.IDS):
+            self.births.setdefault(sid, max(now, _utc(self.flash_catalog.CREATED_UTC)).isoformat())
         self._atomic_json(self.birth_path, self.births)
         # Book consumption is recovered from the authoritative fill ledger.
         # The separate file is a diagnostic checkpoint, never authoritative.
@@ -61,7 +83,7 @@ class GenerationOneBidAskTracker(PaperOutcomeTracker):
             # Daily cash reset cannot create free cash for overnight residuals.
             deployed = sum(row["remaining_qty"] * row["entry_price"]
                            for row in self.active.values() if row["strategy_id"] == sid)
-            self._cash[key] = getattr(spec_for(sid), "equity", 5000.0) - deployed
+            self._cash[key] = getattr(self.spec_for(sid), "equity", 5000.0) - deployed
         return key, self._cash[key]
 
     def _recover(self):
@@ -87,7 +109,7 @@ class GenerationOneBidAskTracker(PaperOutcomeTracker):
             except ValueError:
                 continue
             setup, sid = row.get("setup_id"), row.get("strategy_id")
-            if not setup or sid not in IDS:
+            if not setup or sid not in self.IDS:
                 continue
             self.seen.add(setup)
             event = row.get("event_type")
@@ -154,7 +176,7 @@ class GenerationOneBidAskTracker(PaperOutcomeTracker):
     def register_signal(self, signal, quote, now):
         now = _utc(now)
         sid = signal.get("strategy_id")
-        if sid not in IDS or not output_enabled(sid) or output_is_pruned(sid):
+        if sid not in self.IDS or not output_enabled(sid) or output_is_pruned(sid):
             return False
         ts = flash.timestamp(signal.get("timestamp"))
         if ts is None:
@@ -167,17 +189,20 @@ class GenerationOneBidAskTracker(PaperOutcomeTracker):
         local = now.astimezone(NY)
         if not self.entry_start_minute_et <= local.hour * 60 + local.minute < self.entry_cutoff_minute_et:
             return self._reject(signal, setup, now, "outside_entry_window")
-        spec = spec_for(sid)
+        spec = self.spec_for(sid)
         ask, bid = flash.num((quote or {}).get("ask")), flash.num((quote or {}).get("bid"))
         target, stop = flash.num(signal.get("target_price")), flash.num(signal.get("stop_price"))
         if ask <= 0 or bid <= 0 or target <= ask or not 0 < stop < bid or bid > ask:
             return self._reject(signal, setup, now, "invalid_executable_geometry")
-        if sid in flash.IDS and (target / ask - 1) * 100 < .20:
+        if sid in self.flash_catalog.IDS and (target / ask - 1) * 100 < .20:
             return self._reject(signal, setup, now, "insufficient_executable_remaining_upside")
-        votes = (flash.executable_votes(sid, signal, ask, bid)
-                 if sid in flash.IDS else tuple(signal.get("constituent_votes", ())))
+        votes = (self.flash_catalog.executable_votes(sid, signal, ask, bid)
+                 if sid in self.flash_catalog.IDS else tuple(signal.get("constituent_votes", ())))
         if len(votes) < spec.votes:
             return self._reject(signal, setup, now, "insufficient_executable_votes")
+        reason = self.entry_gate(signal, quote, now)
+        if reason:
+            return self._reject(signal, setup, now, reason)
         key, cash = self._cash_for(sid, now)
         requested = math.floor(min(cash, spec.notional * (len(votes) if getattr(spec, "agreement_weighted", False) else 1)) / ask)
         risk = getattr(spec, "risk_fraction", None)
@@ -187,6 +212,7 @@ class GenerationOneBidAskTracker(PaperOutcomeTracker):
                                 for row in self.active.values() if row["strategy_id"] == sid)
             requested = min(math.floor(cash / ask), math.floor(equity * risk / (ask - stop)),
                             math.floor(equity * spec.max_position_fraction / ask))
+        requested = self.quantity_limit(sid, signal, ask, cash, requested)
         if requested < 1:
             return self._reject(signal, setup, now, "insufficient_cash_or_risk_budget")
         book, book_key, identity, used = self._available_book(sid, signal["symbol"], quote, "BUY")
@@ -200,16 +226,16 @@ class GenerationOneBidAskTracker(PaperOutcomeTracker):
                    paper_notional=ask * quantity, requested_qty=requested, filled_qty=quantity,
                    entry_fill_outcome=decision.outcome, entry_bid=bid, entry_ask=ask,
                    entry_quote_age_ms=decision.quote_age_ms, displayed_ask_qty=decision.displayed_qty,
-                   execution_model="GENERATION_ONE_BIDASK_V1", prospective_start_utc=self.births[sid],
+                   execution_model=self.EXECUTION_MODEL, prospective_start_utc=self.births[sid],
                    constituent_votes=list(votes), remaining_qty=quantity, realized_proceeds=0.0,
                    book_consumption={"key": book_key, "identity": identity, "used": used + quantity},
-                   research_metadata=(flash.metadata(sid) if sid in flash.IDS else minute.metadata(sid)))
+                   research_metadata=self.metadata_for(sid))
         if not super().register(row):
             return False
         self._cash[key] -= ask * quantity
         self._consume(book_key, identity, used, quantity)
         self._dirty = True
-        self.checkpoint(force=True)
+        self.checkpoint(force=not self.DEFER_ENTRY_CHECKPOINT)
         return True
 
     def update_quotes(self, quotes, now):

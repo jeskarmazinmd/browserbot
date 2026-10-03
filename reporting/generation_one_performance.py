@@ -9,15 +9,19 @@ from strategies.output_switches import output_enabled
 from strategies.pruning import output_is_pruned
 
 
-def calculate_generation_one(root, day, cutoff, marks, quote_for):
-    births_path = root / (FILE_STEM + "_births.json")
+def calculate_generation_one(root, day, cutoff, marks, quote_for, *,
+                             file_stem=FILE_STEM, ids=IDS, flash_catalog=flash,
+                             minute_catalog=minute, engine_name="generation_one_bidask_independent"):
+    def catalog_for(sid):
+        return flash_catalog if sid in flash_catalog.IDS else minute_catalog
+    births_path = root / (file_stem + "_births.json")
     if not births_path.exists():
         return {}, {"entries": 0, "exits": 0, "partial_exits": 0, "rejected": 0, "unmarked": 0}
     births = json.loads(births_path.read_text())
     entries, residuals = {}, {}
     rejects = defaultdict(int)
     diagnostics = {"entries": 0, "exits": 0, "partial_exits": 0, "rejected": 0, "unmarked": 0}
-    path = root / (FILE_STEM + "_outcomes.jsonl")
+    path = root / (file_stem + "_outcomes.jsonl")
     if path.exists():
         with path.open() as handle:
             for line in handle:
@@ -27,7 +31,7 @@ def calculate_generation_one(root, day, cutoff, marks, quote_for):
                     signal_time = _utc(row["signal_timestamp"])
                     event = row["event_type"]
                     event_time = _utc(row.get("exit_timestamp") or row.get("entry_timestamp") or row["recorded_at"])
-                    valid = (sid in IDS and sid in births and signal_time >= _utc(births[sid])
+                    valid = (sid in ids and sid in births and signal_time >= _utc(births[sid])
                              and signal_time.astimezone(NY).date().isoformat() == day
                              and event_time <= cutoff)
                 except (KeyError, TypeError, ValueError):
@@ -49,7 +53,7 @@ def calculate_generation_one(root, day, cutoff, marks, quote_for):
     for setup, entry in entries.items():
         grouped[entry["strategy_id"]].append((entry, residuals[setup]))
     modules = {}
-    for sid in sorted(IDS):
+    for sid in sorted(ids):
         if (sid not in births or _utc(births[sid]) > cutoff or
                 _utc(births[sid]).astimezone(NY).date().isoformat() > day or
                 output_is_pruned(sid) or not output_enabled(sid) or not output_enabled(sid + "BA")):
@@ -60,7 +64,7 @@ def calculate_generation_one(root, day, cutoff, marks, quote_for):
             realized = residual.get("realized_proceeds", 0.0)
             if remaining:
                 quote = quote_for(entry["symbol"], marks)
-                bid = flash.num(quote.get("bid"))
+                bid = flash_catalog.num(quote.get("bid"))
                 if bid <= 0:
                     unmarked += 1
                     continue
@@ -73,10 +77,10 @@ def calculate_generation_one(root, day, cutoff, marks, quote_for):
         if unmarked:
             # Never present a partial known subset as a complete portfolio return.
             continue
-        equity = getattr(spec_for(sid), "equity", 5000.0)
-        metadata = flash.metadata(sid) if sid in flash.IDS else minute.metadata(sid)
+        equity = getattr(catalog_for(sid).spec_for(sid), "equity", 5000.0)
+        metadata = catalog_for(sid).metadata(sid)
         modules[sid + "BA"] = {
-            "engine": "generation_one_bidask_independent", "starting_cash": equity,
+            "engine": engine_name, "starting_cash": equity,
             "end_equity": equity + pnl, "pnl": pnl, "return_pct": pnl / equity * 100,
             "signals": len(grouped[sid]) + rejects[sid], "taken": len(grouped[sid]),
             "skipped": rejects[sid], "open_taken": open_count, "closed_taken": closed_count,

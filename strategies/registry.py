@@ -10,7 +10,7 @@ import time
 from strategy_diagnostics import diagnostics
 from .pruning import PRUNED_OUTPUT_STRATEGY_IDS
 from . import independent_flash_filters
-from . import generation_one, generation_one_minute
+from . import generation_one, generation_one_minute, generation_two
 
 from . import strategy_a
 from . import strategy_b
@@ -68,6 +68,8 @@ FLASH_STRATEGY_MODULES = {
     if module is not None and module.STRATEGY_ID not in DISABLED_FLASH_STRATEGY_IDS
 }
 FLASH_STRATEGY_MODULES.update({sid: module for sid, module in generation_one.MODULES.items()
+                               if sid not in DISABLED_FLASH_STRATEGY_IDS})
+FLASH_STRATEGY_MODULES.update({sid: module for sid, module in generation_two.MODULES.items()
                                if sid not in DISABLED_FLASH_STRATEGY_IDS})
 
 

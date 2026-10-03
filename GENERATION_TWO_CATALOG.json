@@ -1,0 +1,4290 @@
+[
+  {
+    "strategy_id": "G2PGB1",
+    "description": "Total open nominal stop risk <= 1% of cost equity; 0.5% per order",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGR50",
+    "parameters": {
+      "strategy_id": "G2PGB1",
+      "hypothesis": "Total open nominal stop risk <= 1% of cost equity; 0.5% per order",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": 0.005,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": 0.01,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGR50"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGB2",
+    "description": "Total open nominal stop risk <= 2% of cost equity; 0.5% per order",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGR50",
+    "parameters": {
+      "strategy_id": "G2PGB2",
+      "hypothesis": "Total open nominal stop risk <= 2% of cost equity; 0.5% per order",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": 0.005,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": 0.02,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGR50"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGC10",
+    "description": "Fixed order capped at 10% of initial $5000 cash",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGC10",
+      "hypothesis": "Fixed order capped at 10% of initial $5000 cash",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 500.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGC15",
+    "description": "Fixed order capped at 15% of initial $5000 cash",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGC15",
+      "hypothesis": "Fixed order capped at 15% of initial $5000 cash",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 750.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGC5",
+    "description": "Fixed order capped at 5% of initial $5000 cash",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGC5",
+      "hypothesis": "Fixed order capped at 5% of initial $5000 cash",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 250.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGCTL",
+    "description": "Frozen PT315G1525; $1000 orders, $5000 prospective control",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGCTL",
+      "hypothesis": "Frozen PT315G1525; $1000 orders, $5000 prospective control",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGD2",
+    "description": "2% disaster stop; same admission and target/checkpoint",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGD2",
+      "hypothesis": "2% disaster stop; same admission and target/checkpoint",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.02,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.02,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGD3",
+    "description": "3% disaster stop; same admission and target/checkpoint",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGD3",
+      "hypothesis": "3% disaster stop; same admission and target/checkpoint",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.03,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.03,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGD4",
+    "description": "4% disaster stop; same admission and target/checkpoint",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGD4",
+      "hypothesis": "4% disaster stop; same admission and target/checkpoint",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.04,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.04,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGE2",
+    "description": "Executable target distance >= 2 times bid/ask spread; opportunity filter",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGE2",
+      "hypothesis": "Executable target distance >= 2 times bid/ask spread; opportunity filter",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 2.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGE3",
+    "description": "Executable target distance >= 3 times bid/ask spread; opportunity filter",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGE3",
+      "hypothesis": "Executable target distance >= 3 times bid/ask spread; opportunity filter",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 3.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGE5",
+    "description": "Executable target distance >= 5 times bid/ask spread; opportunity filter",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGE5",
+      "hypothesis": "Executable target distance >= 5 times bid/ask spread; opportunity filter",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 5.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGE8",
+    "description": "Executable target distance >= 8 times bid/ask spread; opportunity filter",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGE8",
+      "hypothesis": "Executable target distance >= 8 times bid/ask spread; opportunity filter",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 8.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGK10",
+    "description": "Require 0.25% observed BID gain by 10m; same stop/target",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGK10",
+      "hypothesis": "Require 0.25% observed BID gain by 10m; same stop/target",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 600,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGK20",
+    "description": "Require 0.25% observed BID gain by 20m; same stop/target",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGK20",
+      "hypothesis": "Require 0.25% observed BID gain by 20m; same stop/target",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 1200,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGK30",
+    "description": "Require 0.25% observed BID gain by 30m; same stop/target",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGK30",
+      "hypothesis": "Require 0.25% observed BID gain by 30m; same stop/target",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 1800,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGK5",
+    "description": "Require 0.25% observed BID gain by 5m; same stop/target",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGK5",
+      "hypothesis": "Require 0.25% observed BID gain by 5m; same stop/target",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 300,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGONE",
+    "description": "One active position per symbol, including residual partial exits; otherwise control sizing",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGONE",
+      "hypothesis": "One active position per symbol, including residual partial exits; otherwise control sizing",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": true,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGR10",
+    "description": "Per-order nominal stop risk 0.1% of cost equity; 20% position cap",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGR10",
+      "hypothesis": "Per-order nominal stop risk 0.1% of cost equity; 20% position cap",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": 0.001,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGR20",
+    "description": "Per-order nominal stop risk 0.2% of cost equity; 20% position cap",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGR20",
+      "hypothesis": "Per-order nominal stop risk 0.2% of cost equity; 20% position cap",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": 0.002,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGR50",
+    "description": "Per-order nominal stop risk 0.5% of cost equity; 20% position cap",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGR50",
+      "hypothesis": "Per-order nominal stop risk 0.5% of cost equity; 20% position cap",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": 0.005,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGS10",
+    "description": "Executable spread <= 0.1%; same admission and exit",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGS10",
+      "hypothesis": "Executable spread <= 0.1%; same admission and exit",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": 0.1,
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGS20",
+    "description": "Executable spread <= 0.2%; same admission and exit",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGS20",
+      "hypothesis": "Executable spread <= 0.2%; same admission and exit",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": 0.2,
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGS30",
+    "description": "Executable spread <= 0.3%; same admission and exit",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGS30",
+      "hypothesis": "Executable spread <= 0.3%; same admission and exit",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": 0.3,
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGS5",
+    "description": "Executable spread <= 0.05%; same admission and exit",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGS5",
+      "hypothesis": "Executable spread <= 0.05%; same admission and exit",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": 0.05,
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGT50",
+    "description": "Target at 50% of original recovery distance; same checkpoint/stop",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGT50",
+      "hypothesis": "Target at 50% of original recovery distance; same checkpoint/stop",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 0.5,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGT65",
+    "description": "Target at 65% of original recovery distance; same checkpoint/stop",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGT65",
+      "hypothesis": "Target at 65% of original recovery distance; same checkpoint/stop",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 0.65,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGT75",
+    "description": "Target at 75% of original recovery distance; same checkpoint/stop",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGT75",
+      "hypothesis": "Target at 75% of original recovery distance; same checkpoint/stop",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 0.75,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGU100",
+    "description": "Executable target upside >= 1%; same exit",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGU100",
+      "hypothesis": "Executable target upside >= 1%; same exit",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 1.0,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGU150",
+    "description": "Executable target upside >= 1.5%; same exit",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGU150",
+      "hypothesis": "Executable target upside >= 1.5%; same exit",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 1.5,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGU200",
+    "description": "Executable target upside >= 2%; same exit",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGU200",
+      "hypothesis": "Executable target upside >= 2%; same exit",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 2.0,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2PGU50",
+    "description": "Executable target upside >= 0.5%; same exit",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "PT315G1525"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2PGCTL",
+    "parameters": {
+      "strategy_id": "G2PGU50",
+      "hypothesis": "Executable target upside >= 0.5%; same exit",
+      "rules": [
+        {
+          "source": "PT315G1525",
+          "kind": "P",
+          "min_units": 4.25,
+          "max_units": "unbounded",
+          "min_upside": 0.0,
+          "max_spread": "unbounded",
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 900,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "PT315G1525",
+        "kind": "P",
+        "min_units": 4.25,
+        "max_units": "unbounded",
+        "min_upside": 0.0,
+        "max_spread": "unbounded",
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 900,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.5,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2PGCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVB1",
+    "description": "Total open nominal stop risk <= 1% of cost equity; 0.5% per order",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVR50",
+    "parameters": {
+      "strategy_id": "G2QVB1",
+      "hypothesis": "Total open nominal stop risk <= 1% of cost equity; 0.5% per order",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": 0.005,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": 0.01,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVR50"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVB2",
+    "description": "Total open nominal stop risk <= 2% of cost equity; 0.5% per order",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVR50",
+    "parameters": {
+      "strategy_id": "G2QVB2",
+      "hypothesis": "Total open nominal stop risk <= 2% of cost equity; 0.5% per order",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": 0.005,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": 0.02,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVR50"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVC10",
+    "description": "Fixed order capped at 10% of initial $5000 cash",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVC10",
+      "hypothesis": "Fixed order capped at 10% of initial $5000 cash",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 500.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVC15",
+    "description": "Fixed order capped at 15% of initial $5000 cash",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVC15",
+      "hypothesis": "Fixed order capped at 15% of initial $5000 cash",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 750.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVC5",
+    "description": "Fixed order capped at 5% of initial $5000 cash",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVC5",
+      "hypothesis": "Fixed order capped at 5% of initial $5000 cash",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 250.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVCTL",
+    "description": "Frozen QV4XU1S50V8; $1000 orders, $5000 prospective control",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVCTL",
+      "hypothesis": "Frozen QV4XU1S50V8; $1000 orders, $5000 prospective control",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVD2",
+    "description": "2% disaster stop; same admission and target/checkpoint",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVD2",
+      "hypothesis": "2% disaster stop; same admission and target/checkpoint",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.02,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.02,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVD3",
+    "description": "3% disaster stop; same admission and target/checkpoint",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVD3",
+      "hypothesis": "3% disaster stop; same admission and target/checkpoint",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.03,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.03,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVD4",
+    "description": "4% disaster stop; same admission and target/checkpoint",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVD4",
+      "hypothesis": "4% disaster stop; same admission and target/checkpoint",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.04,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.04,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVE2",
+    "description": "Executable target distance >= 2 times bid/ask spread; opportunity filter",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVE2",
+      "hypothesis": "Executable target distance >= 2 times bid/ask spread; opportunity filter",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 2.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVE3",
+    "description": "Executable target distance >= 3 times bid/ask spread; opportunity filter",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVE3",
+      "hypothesis": "Executable target distance >= 3 times bid/ask spread; opportunity filter",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 3.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVE5",
+    "description": "Executable target distance >= 5 times bid/ask spread; opportunity filter",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVE5",
+      "hypothesis": "Executable target distance >= 5 times bid/ask spread; opportunity filter",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 5.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVE8",
+    "description": "Executable target distance >= 8 times bid/ask spread; opportunity filter",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVE8",
+      "hypothesis": "Executable target distance >= 8 times bid/ask spread; opportunity filter",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 8.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVK10",
+    "description": "Require 0.25% observed BID gain by 10m; same stop/target",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVK10",
+      "hypothesis": "Require 0.25% observed BID gain by 10m; same stop/target",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 600,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVK20",
+    "description": "Require 0.25% observed BID gain by 20m; same stop/target",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVK20",
+      "hypothesis": "Require 0.25% observed BID gain by 20m; same stop/target",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 1200,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVK30",
+    "description": "Require 0.25% observed BID gain by 30m; same stop/target",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVK30",
+      "hypothesis": "Require 0.25% observed BID gain by 30m; same stop/target",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 1800,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVK5",
+    "description": "Require 0.25% observed BID gain by 5m; same stop/target",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVK5",
+      "hypothesis": "Require 0.25% observed BID gain by 5m; same stop/target",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 300,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVONE",
+    "description": "One active position per symbol, including residual partial exits; otherwise control sizing",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVONE",
+      "hypothesis": "One active position per symbol, including residual partial exits; otherwise control sizing",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": true,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVR10",
+    "description": "Per-order nominal stop risk 0.1% of cost equity; 20% position cap",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVR10",
+      "hypothesis": "Per-order nominal stop risk 0.1% of cost equity; 20% position cap",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": 0.001,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVR20",
+    "description": "Per-order nominal stop risk 0.2% of cost equity; 20% position cap",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVR20",
+      "hypothesis": "Per-order nominal stop risk 0.2% of cost equity; 20% position cap",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": 0.002,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVR50",
+    "description": "Per-order nominal stop risk 0.5% of cost equity; 20% position cap",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVR50",
+      "hypothesis": "Per-order nominal stop risk 0.5% of cost equity; 20% position cap",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": 0.005,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVS10",
+    "description": "Executable spread <= 0.1%; same admission and exit",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVS10",
+      "hypothesis": "Executable spread <= 0.1%; same admission and exit",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": 0.1,
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVS20",
+    "description": "Executable spread <= 0.2%; same admission and exit",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVS20",
+      "hypothesis": "Executable spread <= 0.2%; same admission and exit",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": 0.2,
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVS30",
+    "description": "Executable spread <= 0.3%; same admission and exit",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVS30",
+      "hypothesis": "Executable spread <= 0.3%; same admission and exit",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": 0.3,
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVS5",
+    "description": "Executable spread <= 0.05%; same admission and exit",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVS5",
+      "hypothesis": "Executable spread <= 0.05%; same admission and exit",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": 0.05,
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVT50",
+    "description": "Target at 50% of original recovery distance; same checkpoint/stop",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVT50",
+      "hypothesis": "Target at 50% of original recovery distance; same checkpoint/stop",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 0.5,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVT65",
+    "description": "Target at 65% of original recovery distance; same checkpoint/stop",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVT65",
+      "hypothesis": "Target at 65% of original recovery distance; same checkpoint/stop",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 0.65,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVT75",
+    "description": "Target at 75% of original recovery distance; same checkpoint/stop",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVT75",
+      "hypothesis": "Target at 75% of original recovery distance; same checkpoint/stop",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 0.75,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 0.2,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVU125",
+    "description": "Executable target upside >= 1.25%; same exit",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVU125",
+      "hypothesis": "Executable target upside >= 1.25%; same exit",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 1.25,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVU150",
+    "description": "Executable target upside >= 1.5%; same exit",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVU150",
+      "hypothesis": "Executable target upside >= 1.5%; same exit",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 1.5,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVU200",
+    "description": "Executable target upside >= 2%; same exit",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVU200",
+      "hypothesis": "Executable target upside >= 2%; same exit",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 2.0,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  },
+  {
+    "strategy_id": "G2QVU300",
+    "description": "Executable target upside >= 3%; same exit",
+    "family": "GENERATION_TWO",
+    "paper_only": true,
+    "generation": 2,
+    "source_strategy_ids": [
+      "QV4XU1S50V8"
+    ],
+    "created_utc": "2026-10-03T13:36:00+00:00",
+    "source_commit": "e69344d8cb2705002e718699ab6c4f3ae877f274",
+    "comparison_id": "G2QVCTL",
+    "parameters": {
+      "strategy_id": "G2QVU300",
+      "hypothesis": "Executable target upside >= 3%; same exit",
+      "rules": [
+        {
+          "source": "QV4XU1S50V8",
+          "kind": "Q",
+          "min_units": 4.25,
+          "max_units": 8.0,
+          "min_upside": 1.0,
+          "max_spread": 0.5,
+          "max_price": "unbounded",
+          "midday": false,
+          "stop": 0.05,
+          "target_scale": 1.0,
+          "checkpoint_seconds": 0,
+          "required_gain": 0.25
+        }
+      ],
+      "votes": 1,
+      "exit_rule": {
+        "source": "QV4XU1S50V8",
+        "kind": "Q",
+        "min_units": 4.25,
+        "max_units": 8.0,
+        "min_upside": 1.0,
+        "max_spread": 0.5,
+        "max_price": "unbounded",
+        "midday": false,
+        "stop": 0.05,
+        "target_scale": 1.0,
+        "checkpoint_seconds": 0,
+        "required_gain": 0.25
+      },
+      "notional": 1000.0,
+      "equity": 5000.0,
+      "risk_fraction": null,
+      "max_position_fraction": 0.2,
+      "max_entry_spread_pct": "unbounded",
+      "min_target_spread_multiple": 0.0,
+      "min_executable_upside_pct": 3.0,
+      "portfolio_risk_fraction": null,
+      "one_position_per_symbol": false,
+      "comparison_id": "G2QVCTL"
+    },
+    "prospective_start_policy": "durable first tracker activation; never backfilled",
+    "config": {
+      "flash_drop_pct": 1.0,
+      "rebound_confirmation_pct": 0.001,
+      "pending_rebound_timeout_seconds": 600,
+      "min_remaining_upside_pct": 0.2,
+      "stop_loss_fraction": 0.05,
+      "live_order_placement": false
+    }
+  }
+]
