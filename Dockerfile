@@ -26,6 +26,7 @@ COPY executable_paper_engine.py .
 COPY paper_outcome_tracker.py .
 COPY bidask_paper_outcome_tracker.py .
 COPY generation_one_paper_tracker.py .
+COPY generation_two_paper_tracker.py .
 COPY multi_leg_paper_tracker.py .
 COPY bidask_multi_leg_paper_tracker.py .
 COPY strategy_diagnostics.py .
@@ -89,5 +90,7 @@ COPY reporting /app/reporting
 COPY research_lab /app/research_lab
 COPY research_tools /app/research_tools
 COPY schwab_bot_dashboard /app/schwab_bot_dashboard
+
+RUN python -c "import generation_two_paper_tracker; import reporting.all_engine_performance"
 
 CMD ["python", "-u", "supervisor.py"]
