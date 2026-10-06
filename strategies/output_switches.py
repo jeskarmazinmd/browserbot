@@ -7,6 +7,7 @@ different enabled strategy that derives its signal from the same market setup.
 import json
 import os
 from pathlib import Path
+from .research_retirement import output_retired
 
 # Paused after the September 21-23 independent bid/ask paper review.
 # Keep source signals and historical ledgers; suppress only new paper entries
@@ -31,6 +32,8 @@ C3N25S10NH090 J2 J6
 
 def output_enabled(strategy_id, path=None):
     strategy_id = str(strategy_id or "").upper()
+    if output_retired(strategy_id):
+        return False
     # The runner passes base IDs; performance reporting passes base ID + BA.
     # Do not suppress broker execution: that path does not use this function.
     if strategy_id in PAUSED_BIDASK_PAPER_IDS or (

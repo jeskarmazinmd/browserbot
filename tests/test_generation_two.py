@@ -111,7 +111,9 @@ class G2RoutingTests(unittest.TestCase):
         code = compile(ast.Expression(body=condition), str(source), "eval")
         for sid in g2.IDS:
             self.assertFalse(eval(code, {"strategy_id": sid, "GENERATION_TWO_IDS": g2.IDS}))
-        self.assertTrue(eval(code, {"strategy_id": "G1PQG", "GENERATION_TWO_IDS": g2.IDS}))
+        from strategies import generation_three
+        self.assertTrue(eval(code, {"strategy_id": "G1PQG", "GENERATION_TWO_IDS": g2.IDS,
+                                   "GENERATION_THREE_IDS": generation_three.ALL_IDS}))
 
 
 class G2TrackerTests(unittest.TestCase):

@@ -16,6 +16,8 @@ from strategies.output_switches import output_enabled
 from strategies.independent_flash_filters import IDS as INDEPENDENT_FLASH_FILTER_IDS, Filters as IndependentFlashFilters
 from generation_one_paper_tracker import GenerationOneBidAskTracker, IDS as GENERATION_ONE_IDS
 from generation_two_paper_tracker import GenerationTwoBidAskTracker, IDS as GENERATION_TWO_IDS
+from generation_three_paper_tracker import GenerationThreeBidAskTracker, IDS as GENERATION_THREE_IDS
+from strategies.registry import G3_ENABLED
 from strategies.generation_one_market import enrich_confirmation as enrich_generation_one_confirmation
 from strategies.flash_nearest_miss import score as score_flash_window
 from strategies.registry import (
@@ -2422,6 +2424,10 @@ def main():
         DATA_ROOT, now_provider=quote_source.now,
         eod_hour=EOD_EXIT_HOUR_ET, eod_minute=EOD_EXIT_MINUTE_ET,
     ) if RUN_MODE == "LIVE" else None
+    generation_three_outcomes = GenerationThreeBidAskTracker(
+        DATA_ROOT, now_provider=quote_source.now,
+        eod_hour=EOD_EXIT_HOUR_ET, eod_minute=EOD_EXIT_MINUTE_ET,
+    ) if RUN_MODE == 'LIVE' and (G3_ENABLED or (Path(DATA_ROOT) / 'paper_generation_three_bidask_independent_births.json').exists()) else None
 
     def register_single_leg_paper(signal):
         """Admit an executable BA trade directly from the strategy signal."""
@@ -2433,6 +2439,13 @@ def main():
             return generation_two_outcomes.register_signal(
                 signal, quotes.get(symbol), quote_source.now()
             )
+        if signal.get('strategy_id') in GENERATION_THREE_IDS:
+            if RUN_MODE != 'LIVE' or not G3_ENABLED or generation_three_outcomes is None:
+                return False
+            symbol = str(signal.get('symbol') or '').upper()
+            quotes = independent_l1.quotes([symbol])
+            return generation_three_outcomes.register_signal(
+                signal, quotes.get(symbol), quote_source.now())
         if signal.get("strategy_id") in GENERATION_ONE_IDS:
             # Historical replay never earns prospective research credit.
             if RUN_MODE != "LIVE":
@@ -2743,6 +2756,8 @@ def main():
                 independent_ba_symbols = independent_ba_outcomes.symbols()
                 independent_ba_symbols |= generation_one_outcomes.symbols()
                 independent_ba_symbols |= generation_two_outcomes.symbols()
+                if generation_three_outcomes is not None:
+                    independent_ba_symbols |= generation_three_outcomes.symbols()
                 independent_multi_leg_symbols = independent_multi_leg_outcomes.symbols()
                 execution_symbols = (
                     set(positions)
@@ -2844,6 +2859,12 @@ def main():
                     print("GENERATION_TWO_BA_OUTCOME "
                           f"strategy={outcome['strategy_id']} symbol={outcome['symbol']} "
                           f"reason={outcome['exit_reason']} pnl={outcome['pnl']:+.2f}", flush=True)
+
+                if generation_three_outcomes is not None:
+                    for outcome in generation_three_outcomes.update_quotes(independent_quotes, quote_source.now()):
+                        print('GENERATION_THREE_BA_OUTCOME '
+                              f"strategy={outcome['strategy_id']} symbol={outcome['symbol']} "
+                              f"reason={outcome['exit_reason']} pnl={outcome['pnl']:+.2f}", flush=True)
 
                 for outcome in bidask_multi_leg_outcomes.update_quotes(
                     execution_quotes, quote_source.now()
@@ -3335,7 +3356,7 @@ def main():
 
                     # G2 rules use the already-frozen flash data and L1 book.
                     # Avoid one redundant candle request per child confirmation.
-                    if strategy_id != "LT65" and strategy_id not in GENERATION_TWO_IDS:
+                    if strategy_id != "LT65" and strategy_id not in GENERATION_TWO_IDS and strategy_id not in GENERATION_THREE_IDS:
                         confirmed_event.update(fetch_rebound_volume_metrics(
                             sym, pending["created_at"], confirmed_event.get("avg_volume_1m_pre30")
                         ))

@@ -11,6 +11,10 @@ from strategy_diagnostics import diagnostics
 from .pruning import PRUNED_OUTPUT_STRATEGY_IDS
 from . import independent_flash_filters
 from . import generation_one, generation_one_minute, generation_two
+from . import generation_three
+from .research_retirement import retired_ids
+
+G3_ENABLED = os.environ.get('ENABLE_G3_PAPER', '0') == '1'
 
 from . import strategy_a
 from . import strategy_b
@@ -43,7 +47,7 @@ DISABLED_FLASH_STRATEGY_IDS = frozenset({
     # Mature standalone leaf with persistently negative forward results.
     # Keep its module and historical outcomes; stop prospective evaluation.
     "C3L25Q2",
-}) | PRUNED_OUTPUT_STRATEGY_IDS
+}) | PRUNED_OUTPUT_STRATEGY_IDS | retired_ids()
 
 
 FLASH_STRATEGY_MODULES = {
@@ -71,6 +75,8 @@ FLASH_STRATEGY_MODULES.update({sid: module for sid, module in generation_one.MOD
                                if sid not in DISABLED_FLASH_STRATEGY_IDS})
 FLASH_STRATEGY_MODULES.update({sid: module for sid, module in generation_two.MODULES.items()
                                if sid not in DISABLED_FLASH_STRATEGY_IDS})
+if G3_ENABLED:
+    FLASH_STRATEGY_MODULES.update(generation_three.MODULES)
 
 
 def flash_strategy_configs():
@@ -79,7 +85,7 @@ def flash_strategy_configs():
         for strategy_id, module in FLASH_STRATEGY_MODULES.items()
     }
     configs.update({sid: independent_flash_filters.config(sid)
-                    for sid in independent_flash_filters.IDS})
+                    for sid in independent_flash_filters.IDS if sid not in retired_ids()})
     return configs
 
 
@@ -210,6 +216,9 @@ STRATEGY_CLASSES = [
 ]
 STRATEGY_CLASSES.extend(("generation_one_minute", sid + "Strategy")
                        for sid in sorted(generation_one_minute.IDS))
+if G3_ENABLED:
+    STRATEGY_CLASSES.extend(('generation_three', sid + 'Strategy')
+                           for sid in sorted(generation_three.MINUTE_IDS))
 
 
 # A/B/D/H remain on the established pending-rebound engine until their
@@ -298,7 +307,7 @@ DISABLED_RESEARCH_STRATEGY_IDS = frozenset({
     # Mature negative leaves through 2026-09-02.  These are output modules,
     # not shared signal producers; source and history remain available.
     "GE1", "EMA3", "CV1", "TD1", "GM1", "GR1", "EMA1T50", "GTMX",
-}) | PRUNED_OUTPUT_STRATEGY_IDS
+}) | PRUNED_OUTPUT_STRATEGY_IDS | retired_ids()
 
 ENABLED_STRATEGIES = [
     strategy

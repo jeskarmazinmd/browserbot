@@ -27,6 +27,8 @@ COPY paper_outcome_tracker.py .
 COPY bidask_paper_outcome_tracker.py .
 COPY generation_one_paper_tracker.py .
 COPY generation_two_paper_tracker.py .
+COPY generation_three_paper_tracker.py .
+COPY GENERATION_THREE_RETIREMENT_PROPOSAL.json .
 COPY multi_leg_paper_tracker.py .
 COPY bidask_multi_leg_paper_tracker.py .
 COPY strategy_diagnostics.py .
@@ -92,5 +94,6 @@ COPY research_tools /app/research_tools
 COPY schwab_bot_dashboard /app/schwab_bot_dashboard
 
 RUN python -c "import generation_two_paper_tracker; import reporting.all_engine_performance"
+RUN ENABLE_G3_PAPER=1 G3_RETIREMENT_PLAN_PATH=/app/GENERATION_THREE_RETIREMENT_PROPOSAL.json python -c "from strategies import registry, generation_three as g; import generation_three_paper_tracker; assert not registry.FAILED_STRATEGIES; assert len(g.IDS & registry.flash_strategy_configs().keys()) == 66; assert sum(s.name in g.MINUTE_IDS for s in registry.MINUTE_STRATEGIES) == 84"
 
 CMD ["python", "-u", "supervisor.py"]
