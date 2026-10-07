@@ -26,6 +26,7 @@ from strategies.output_switches import output_enabled
 from reporting.generation_one_performance import calculate_generation_one
 from reporting.generation_two_performance import calculate_generation_two
 from reporting.generation_three_performance import calculate_generation_three
+from reporting.generation_four_performance import calculate_generation_four
 
 
 NY = ZoneInfo("America/New_York")
@@ -669,6 +670,8 @@ def calculate(root="/data", day=None, as_of=None):
     modules.update(g2_modules)
     g3_modules, g3_diagnostics = calculate_generation_three(root, day, cutoff, marks, equity_quote)
     modules.update(g3_modules)
+    g4_modules, g4_diagnostics = calculate_generation_four(root, day, cutoff, marks, equity_quote)
+    modules.update(g4_modules)
 
     # Preserve historical ledgers while keeping retired outputs out of active
     # snapshots and future daily-history rows.
@@ -692,6 +695,7 @@ def calculate(root="/data", day=None, as_of=None):
             "generation_one": research_diagnostics,
             "generation_two": g2_diagnostics,
             "generation_three": g3_diagnostics,
+            "generation_four": g4_diagnostics,
         },
     }
 

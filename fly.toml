@@ -8,6 +8,7 @@ primary_region = "lax"
 
 [env]
   ENABLE_G3_PAPER = "1"
+  ENABLE_G4_PAPER = "1"
   G3_RETIREMENT_PLAN_PATH = "/app/GENERATION_THREE_RETIREMENT_PROPOSAL.json"
   # A 2 GB Fly volume exposes roughly 1.9 GB as usable filesystem capacity.
   # supervisor.py refuses startup on a silently replaced undersized volume.
