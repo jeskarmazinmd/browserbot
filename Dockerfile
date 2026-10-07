@@ -29,6 +29,7 @@ COPY generation_one_paper_tracker.py .
 COPY generation_two_paper_tracker.py .
 COPY generation_three_paper_tracker.py .
 COPY generation_four_paper_tracker.py .
+COPY generation_five_paper_tracker.py .
 COPY GENERATION_THREE_RETIREMENT_PROPOSAL.json .
 COPY multi_leg_paper_tracker.py .
 COPY bidask_multi_leg_paper_tracker.py .
@@ -100,3 +101,5 @@ RUN ENABLE_G3_PAPER=1 G3_RETIREMENT_PLAN_PATH=/app/GENERATION_THREE_RETIREMENT_P
 CMD ["python", "-u", "supervisor.py"]
 
 RUN ENABLE_G4_PAPER=1 python -c "from strategies import registry, generation_four as g; import generation_four_paper_tracker; assert not registry.FAILED_STRATEGIES; assert sum(s.name in g.MINUTE_IDS for s in registry.MINUTE_STRATEGIES) == 36"
+
+RUN ENABLE_G5_PAPER=1 python -c "from strategies import registry, generation_five as g; import generation_five_paper_tracker; assert not registry.FAILED_STRATEGIES; assert sum(s.name in g.MINUTE_IDS for s in registry.MINUTE_STRATEGIES) == 96"
