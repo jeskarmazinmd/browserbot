@@ -38,4 +38,5 @@ def output_is_pruned(strategy_id):
 
 def active_output_ids(strategy_ids):
     """Preserve order while removing only retired output IDs."""
-    return tuple(sid for sid in strategy_ids if not output_is_pruned(sid))
+    from .generation_six_retirement import entry_retired
+    return tuple(sid for sid in strategy_ids if not output_is_pruned(sid) and not entry_retired(sid))

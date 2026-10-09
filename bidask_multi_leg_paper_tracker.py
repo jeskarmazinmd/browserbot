@@ -1,6 +1,7 @@
 """Atomic executable bid/ask shadow for generic coordinated trades."""
 
 from __future__ import annotations
+from strategies.generation_six_retirement import entry_retired
 
 from collections import OrderedDict
 from datetime import datetime, timezone
@@ -64,6 +65,7 @@ class BidAskMultiLegPaperTracker(MultiLegPaperTracker):
         )
 
     def register(self, signal):
+        if entry_retired(signal.get("strategy_id")):return False
         try:
             timestamp = _utc(signal.get("timestamp"))
         except (TypeError, ValueError):

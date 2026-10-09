@@ -6,6 +6,7 @@ proportional to active paper trades rather than tape size.
 """
 
 from __future__ import annotations
+from strategies.generation_six_retirement import entry_retired
 
 import json
 import math
@@ -212,6 +213,7 @@ class PaperOutcomeTracker:
 
     def register(self, signal):
         """Durably register one signal; return False for invalid/duplicate input."""
+        if entry_retired(signal.get("strategy_id")):return False
         try:
             timestamp = _utc(signal.get("timestamp"))
         except (TypeError, ValueError):

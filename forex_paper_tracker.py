@@ -1,5 +1,6 @@
 """Conservative prospective spot-FX paper accounting."""
 from __future__ import annotations
+from strategies.generation_six_retirement import entry_retired
 
 import json
 from datetime import datetime, timezone
@@ -74,6 +75,7 @@ class ForexPaperTracker:
 
     def open_decisions(self, decisions):
         for decision in decisions:
+            if entry_retired(decision.get("strategy_id")):continue
             timestamp = _dt(decision["timestamp"])
             legs = []
             invalid = False

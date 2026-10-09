@@ -19,7 +19,8 @@ from generation_two_paper_tracker import GenerationTwoBidAskTracker, IDS as GENE
 from generation_three_paper_tracker import GenerationThreeBidAskTracker, IDS as GENERATION_THREE_IDS
 from generation_four_paper_tracker import GenerationFourBidAskTracker, IDS as GENERATION_FOUR_IDS
 from generation_five_paper_tracker import GenerationFiveBidAskTracker, IDS as GENERATION_FIVE_IDS
-from strategies.registry import G3_ENABLED, G4_ENABLED, G5_ENABLED
+from generation_six_paper_tracker import GenerationSixBidAskTracker, IDS as GENERATION_SIX_IDS
+from strategies.registry import G3_ENABLED, G4_ENABLED, G5_ENABLED, G6_ENABLED
 from strategies.generation_one_market import enrich_confirmation as enrich_generation_one_confirmation
 from strategies.flash_nearest_miss import score as score_flash_window
 from strategies.registry import (
@@ -2440,6 +2441,11 @@ def main():
         DATA_ROOT, eod_hour=EOD_EXIT_HOUR_ET, eod_minute=EOD_EXIT_MINUTE_ET,
     ) if RUN_MODE == 'LIVE' and (G5_ENABLED or (Path(DATA_ROOT) / 'paper_generation_five_bidask_independent_births.json').exists()) else None
 
+    generation_six_outcomes = GenerationSixBidAskTracker(
+        DATA_ROOT, now_provider=quote_source.now,
+        eod_hour=EOD_EXIT_HOUR_ET, eod_minute=EOD_EXIT_MINUTE_ET,
+    ) if RUN_MODE == 'LIVE' and (G6_ENABLED or (Path(DATA_ROOT) / 'paper_generation_six_bidask_independent_births.json').exists()) else None
+
     def register_single_leg_paper(signal):
         """Admit an executable BA trade directly from the strategy signal."""
         if signal.get("strategy_id") in GENERATION_TWO_IDS:
@@ -2471,6 +2477,12 @@ def main():
             quotes = independent_l1.quotes([symbol])
             return generation_five_outcomes.register_signal(
                 signal, quotes.get(symbol), quote_source.now())
+        if str(signal.get('strategy_id') or '').startswith('G6'):
+            if signal.get('strategy_id') not in GENERATION_SIX_IDS or RUN_MODE != 'LIVE' or not G6_ENABLED or generation_six_outcomes is None:
+                return False
+            symbol = str(signal.get('symbol') or '').upper()
+            quotes = independent_l1.quotes([symbol])
+            return generation_six_outcomes.register_signal(signal, quotes.get(symbol), quote_source.now())
         if signal.get("strategy_id") in GENERATION_ONE_IDS:
             # Historical replay never earns prospective research credit.
             if RUN_MODE != "LIVE":
@@ -2787,6 +2799,8 @@ def main():
                     independent_ba_symbols |= generation_four_outcomes.symbols()
                 if generation_five_outcomes is not None:
                     independent_ba_symbols |= generation_five_outcomes.symbols()
+                if generation_six_outcomes is not None:
+                    independent_ba_symbols |= generation_six_outcomes.symbols()
                 independent_multi_leg_symbols = independent_multi_leg_outcomes.symbols()
                 execution_symbols = (
                     set(positions)
@@ -2900,6 +2914,9 @@ def main():
                 if generation_five_outcomes is not None:
                     for outcome in generation_five_outcomes.update_quotes(independent_quotes, quote_source.now()):
                         print('GENERATION_FIVE_BA_OUTCOME ' + json.dumps(outcome, default=str), flush=True)
+                if generation_six_outcomes is not None:
+                    for outcome in generation_six_outcomes.update_quotes(independent_quotes, quote_source.now()):
+                        print('GENERATION_SIX_BA_OUTCOME ' + json.dumps(outcome, default=str), flush=True)
 
                 for outcome in bidask_multi_leg_outcomes.update_quotes(
                     execution_quotes, quote_source.now()
@@ -3150,6 +3167,11 @@ def main():
                     generation_five_outcomes.observe_snapshot(
                         minute_snapshot, current=minute_signal_is_current and not warming_minute_pipeline,
                         errors=minute_errors)
+                if G6_ENABLED and generation_six_outcomes is not None:
+                    generation_six_outcomes.observe_snapshot(
+                        minute_snapshot, current=minute_signal_is_current and not warming_minute_pipeline,
+                        errors=minute_errors,
+                    )
 
                 for strategy_id, exc in minute_errors:
                     scan_stats["calculation_errors"] += 1

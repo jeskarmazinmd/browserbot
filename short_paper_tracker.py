@@ -1,5 +1,6 @@
 """Independent conservative paper accounting for short-only equity research."""
 from __future__ import annotations
+from strategies.generation_six_retirement import entry_retired
 
 import json
 from datetime import datetime, timezone
@@ -66,6 +67,7 @@ class ShortPaperTracker:
 
     def open_decisions(self, decisions):
         for decision in decisions:
+            if entry_retired(decision.get("strategy_id")):continue
             if str(decision.get("side", "")).upper() != "SHORT": continue
             timestamp = _dt(decision["timestamp"])
             symbol = str(decision.get("symbol", "")).upper().strip()

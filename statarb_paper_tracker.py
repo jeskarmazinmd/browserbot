@@ -1,5 +1,6 @@
 """Conservative grouped paper accounting for dynamic statistical-arbitrage research."""
 from __future__ import annotations
+from strategies.generation_six_retirement import entry_retired
 import json
 from datetime import datetime,timezone
 from pathlib import Path
@@ -35,6 +36,7 @@ class StatArbPaperTracker:
     def open_decisions(self,decisions):
         opened=0
         for d in decisions:
+            if entry_retired(d.get("strategy_id")):continue
             now=_dt(d["timestamp"]);raw=list(d.get("legs") or [])
             if len(raw)<2:continue
             weights=[max(0.0,float(x.get("weight",1))) for x in raw];total=sum(weights)

@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 from .pruning import DEPENDENCY_PROTECTED_STRATEGY_IDS
+from .generation_six_retirement import entry_retired, evaluation_retired_ids
 
 @lru_cache(maxsize=4)
 def _read_plan(path):
@@ -21,8 +22,8 @@ def retired_ids():
     ids=_read_plan(os.environ.get('G3_RETIREMENT_PLAN_PATH',''))
     live=os.environ.get('LIVE_STRATEGY_ID','').upper()
     if live and live in ids:raise ValueError('Retirement proposal includes configured live strategy')
-    return ids
+    return ids | evaluation_retired_ids()
 
 def output_retired(sid):
     sid=str(sid or '').upper();ids=retired_ids()
-    return sid in ids or (sid.endswith('BA') and sid[:-2] in ids)
+    return entry_retired(sid) or sid in ids or (sid.endswith('BA') and sid[:-2] in ids)

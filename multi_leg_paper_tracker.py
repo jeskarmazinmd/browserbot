@@ -6,6 +6,7 @@ It is research-only: there is no broker-order path in this module.
 """
 
 from __future__ import annotations
+from strategies.generation_six_retirement import entry_retired
 
 import json
 import math
@@ -140,6 +141,7 @@ class MultiLegPaperTracker:
 
     def register(self, signal):
         """Register a complete coordinated group atomically or reject it."""
+        if entry_retired(signal.get("strategy_id")):return False
         try:
             timestamp = _utc(signal.get("timestamp"))
         except (TypeError, ValueError):

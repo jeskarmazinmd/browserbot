@@ -1,0 +1,21 @@
+{
+  "generation_six_paper_tracker.py": "e227fd7fba9142a968df364623a2b1087bc7e852c64298fbfd741952a367ee15",
+  "reporting/generation_six_performance.py": "667eed1bcbca2fe6541ddab0e24c5ea10123eaef4e78d1ac8faa734e0c36f1ad",
+  "strategies/generation_six.py": "632d1514e8e587427aa1f9ef70cb910bbf6d4f7600fd48c0d35d17ac6e6ac603",
+  "strategies/generation_six_retirement.py": "51fcdc96ee9c5de5921b6a15492727bfa0d15692fb516f1e498c093ff37a0e25",
+  "GENERATION_SIX_RETIREMENT.json": "78ecb678d2d5c404e1a3c6d5d67a647f772b04a3fc86d6e7502cc48945e66234",
+  "live_strategy_runner.py": "c7f85f3173a140e0af15eeb17ad38f39ffbd1171fe33798c160ef3419011800d",
+  "strategies/registry.py": "efe9014aa0c26ec5c7a52e40ac06331d8500973c7edc6e32aaa4929a4ee0f4f7",
+  "strategies/pruning.py": "3a01e0377c25dbfb52f406fbba0ede846b753ddc0d061082b9718e7b09411c19",
+  "strategies/research_retirement.py": "39518765e1cfc4aae23ae7a8b833b1555af894ddd81fb8ee7f22452f8f4b1a56",
+  "reporting/all_engine_performance.py": "bfb84fe93b6fd775ccf7d72bc3ba8b15b0b9555f03e764dd70e906931dd4abae",
+  "paper_outcome_tracker.py": "371e5d8979b9556feb0884928744d51310ff3b9f5bb70a5c71cc0398fa29361f",
+  "bidask_paper_outcome_tracker.py": "3b2b49f3b09ec7c77c4f3deedf85e1d0e1b5aedfacab0c7c81f3d3f3d82e281f",
+  "multi_leg_paper_tracker.py": "d966b0612991b321cf159a31e97f06db33fc1e73ade5dfa22002ca9237b31665",
+  "bidask_multi_leg_paper_tracker.py": "008ca572dda7bd9d35fc93a1bd3d2dfbd78fbe7b1f1f485ea6b03803711adcc2",
+  "forex_paper_tracker.py": "aee57dad5387a229c4fbb4c176c4710a16cf40333fa73c333e1ba0e0a03562f7",
+  "short_paper_tracker.py": "02c20691d3c71a495a07cd5f6955f3bdeeecc074661ad2c72317c790da01f5ff",
+  "microstructure_paper_tracker.py": "ba7a4ccfde8133ee6edc9e5f331cad3f63fb3cba0aefdb0071e284b38da7dd7e",
+  "statarb_paper_tracker.py": "7a05fc4bfebd60c708a0b678f50d20b00b06909854ab4c0847662bd3853c7c1e",
+  "research_tools/g6/verify_production.py": "340f4970ba3b8e367ba3840de7cb50bbbacd7365c336ad2db87d2edb8d01d7d9"
+}

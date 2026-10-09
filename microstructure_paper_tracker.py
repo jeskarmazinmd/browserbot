@@ -1,5 +1,6 @@
 """Conservative paper accounting for isolated microstructure experiments."""
 from __future__ import annotations
+from strategies.generation_six_retirement import entry_retired
 
 import json
 from datetime import datetime, timezone
@@ -78,6 +79,7 @@ class MicrostructurePaperTracker:
     def open_decisions(self, decisions):
         opened = 0
         for d in decisions:
+            if entry_retired(d.get("strategy_id")):continue
             side = str(d.get("side", "")).upper()
             if side not in {"LONG", "SHORT"}:
                 continue

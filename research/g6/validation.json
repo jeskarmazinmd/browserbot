@@ -1,0 +1,7 @@
+{
+  "focused_tests": 197,
+  "result": "PASS",
+  "known_baseline_failure": "tests.test_microstructure10.test_exactly_ten_independent_paper_only_strategies: expects ten active definitions after prior pruning left one; reproduced unchanged on cf7b7f77",
+  "deployment_verified": false,
+  "benchmark": "benchmark.json"
+}

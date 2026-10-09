@@ -5,6 +5,7 @@ places broker orders and never writes to the legacy last-price ledger.
 """
 
 from __future__ import annotations
+from strategies.generation_six_retirement import entry_retired
 
 from collections import OrderedDict
 from dataclasses import replace
@@ -323,6 +324,7 @@ class IndependentBidAskPaperTracker(BidAskPaperOutcomeTracker):
         super().__init__(data_root, **kwargs)
 
     def register_signal(self, signal, quote, now):
+        if entry_retired(signal.get("strategy_id")):return False
         if not self.register(signal):
             return False
         now = _utc(now)

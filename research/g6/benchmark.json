@@ -1,0 +1,19 @@
+{
+  "evaluation": {
+    "population": 400,
+    "flash_modules": 240,
+    "minute_modules": 160,
+    "snapshots": 90,
+    "synthetic_signals": 4072,
+    "mean_evaluation_seconds": 0.03939064292222712,
+    "max_evaluation_seconds": 0.14162987400004567,
+    "peak_traced_memory_bytes": 289302,
+    "scope": "single-process strategy evaluation; excludes disk fsync, network and worker IPC"
+  },
+  "tracking": {
+    "accepted": 400,
+    "elapsed_seconds": 0.13074224399997547,
+    "mean_ms": 0.3268556099999387,
+    "scope": "400 independent synthetic admissions including durable fsync; temporary portfolios"
+  }
+}
