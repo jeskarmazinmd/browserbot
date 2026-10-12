@@ -11,13 +11,14 @@ from strategy_diagnostics import diagnostics
 from .pruning import PRUNED_OUTPUT_STRATEGY_IDS
 from . import independent_flash_filters
 from . import generation_one, generation_one_minute, generation_two
-from . import generation_three, generation_four, generation_five, generation_six
+from . import generation_three, generation_four, generation_five, generation_six, generation_seven
 from .research_retirement import retired_ids
 
 G3_ENABLED = os.environ.get('ENABLE_G3_PAPER', '0') == '1'
 G4_ENABLED = os.environ.get('ENABLE_G4_PAPER', '0') == '1'
 G5_ENABLED = os.environ.get('ENABLE_G5_PAPER', '0') == '1'
 G6_ENABLED = os.environ.get('ENABLE_G6_PAPER', '0') == '1'
+G7_ENABLED = os.environ.get('ENABLE_G7_PAPER', '0') == '1'
 
 from . import strategy_a
 from . import strategy_b
@@ -236,6 +237,9 @@ if G5_ENABLED:
 
 if G6_ENABLED:
     STRATEGY_CLASSES.extend(('generation_six', sid + 'Strategy') for sid in sorted(generation_six.MINUTE_IDS))
+
+if G7_ENABLED:
+    STRATEGY_CLASSES.extend(('generation_seven', sid + 'Strategy') for sid in sorted(generation_seven.MINUTE_IDS))
 
 # A/B/D/H remain on the established pending-rebound engine until their
 # snapshot replacements reproduce the full legacy event schema.

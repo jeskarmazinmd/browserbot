@@ -1,0 +1,30 @@
+{
+  "minute_market_quotes_20261002.csv.gz": {
+    "sha256": "2a23f962ed1e2d26836e2502a0e229f43532c4f101bee15d93e1a767b1e14a8d",
+    "rows": 5850
+  },
+  "minute_market_quotes_20261005.csv.gz": {
+    "sha256": "f46518905ad9036229ecdd18926a52a846134a650812bc6ab535cada555e6411",
+    "rows": 5857
+  },
+  "minute_market_quotes_20261006.csv.gz": {
+    "sha256": "70238f73dac9da767668d0effc8ccf7e2fcdf0c8e45a910952afea875f74a679",
+    "rows": 5836
+  },
+  "minute_market_quotes_20261007.csv.gz": {
+    "sha256": "5dc4e5b6842dd79f4436815751afa345b2143cbe0c664b0077f2a67efa1b4ee3",
+    "rows": 5841
+  },
+  "minute_market_quotes_20261008.csv.gz": {
+    "sha256": "28abaa7a213d2dd4eb8d1721d83591052cad031502647cb26de2e0915e8c6fde",
+    "rows": 5834
+  },
+  "minute_market_quotes_20261009.csv.gz": {
+    "sha256": "278ebb93ed5694c4acc4d1d9696e5d29beebbc5997a9b9aeb5aec941edaf1426",
+    "rows": 5850
+  },
+  "minute_market_quotes_20261012.csv.gz": {
+    "sha256": "b47b0eeaca935659479897ffa6f917ebd6b2e1ec629b5634eb3331dffb315d5f",
+    "rows": 2850
+  }
+}

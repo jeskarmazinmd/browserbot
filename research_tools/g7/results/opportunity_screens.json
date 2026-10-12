@@ -1,0 +1,1837 @@
+{
+  "schema": "G7_RECORDED_OPPORTUNITY_SCREEN_V1",
+  "candidates": [
+    {
+      "proposed_id": "G7P01COST",
+      "parent": "CMDROT1BA",
+      "track": "both",
+      "hypothesis": "Reject contemporaneous entry spread above 0.15%",
+      "periods": {
+        "development": {
+          "parent": {
+            "trades": 60,
+            "nominal_pnl": 119.58999999999982,
+            "return_on_5000_pct": 2.3917999999999964,
+            "realized_drawdown_usd": 28.7499999999997,
+            "worst_trade_usd": -16.499999999999975,
+            "worst_day_usd": -14.760000000000264,
+            "profit_factor": 1.7580021550358111,
+            "expectancy": 1.9931666666666636,
+            "gross_profit": 277.35999999999973,
+            "stress10bps_each_side": 6.04743999999981
+          },
+          "screen": {
+            "trades": 60,
+            "nominal_pnl": 119.58999999999982,
+            "return_on_5000_pct": 2.3917999999999964,
+            "realized_drawdown_usd": 28.7499999999997,
+            "worst_trade_usd": -16.499999999999975,
+            "worst_day_usd": -14.760000000000264,
+            "profit_factor": 1.7580021550358111,
+            "expectancy": 1.9931666666666636,
+            "gross_profit": 277.35999999999973,
+            "stress10bps_each_side": 6.04743999999981
+          },
+          "trade_retention": 1.0,
+          "gross_profit_preserved": 1.0
+        },
+        "retrospective_validation": {
+          "parent": {
+            "trades": 15,
+            "nominal_pnl": -28.439999999999937,
+            "return_on_5000_pct": -0.5687999999999988,
+            "realized_drawdown_usd": 43.95999999999964,
+            "worst_trade_usd": -16.859999999999964,
+            "worst_day_usd": -27.990000000000048,
+            "profit_factor": 0.5761549925484354,
+            "expectancy": -1.895999999999996,
+            "gross_profit": 38.65999999999992,
+            "stress10bps_each_side": -56.74821999999993
+          },
+          "screen": {
+            "trades": 15,
+            "nominal_pnl": -28.439999999999937,
+            "return_on_5000_pct": -0.5687999999999988,
+            "realized_drawdown_usd": 43.95999999999964,
+            "worst_trade_usd": -16.859999999999964,
+            "worst_day_usd": -27.990000000000048,
+            "profit_factor": 0.5761549925484354,
+            "expectancy": -1.895999999999996,
+            "gross_profit": 38.65999999999992,
+            "stress10bps_each_side": -56.74821999999993
+          },
+          "trade_retention": 1.0,
+          "gross_profit_preserved": 1.0
+        },
+        "oct12_diagnostic": {
+          "parent": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "screen": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "trade_retention": null,
+          "gross_profit_preserved": null
+        },
+        "all": {
+          "parent": {
+            "trades": 75,
+            "nominal_pnl": 91.14999999999989,
+            "return_on_5000_pct": 1.8229999999999977,
+            "realized_drawdown_usd": 43.95999999999965,
+            "worst_trade_usd": -16.859999999999964,
+            "worst_day_usd": -27.990000000000048,
+            "profit_factor": 1.405345310623916,
+            "expectancy": 1.2153333333333318,
+            "gross_profit": 316.0199999999996,
+            "stress10bps_each_side": -50.70078000000012
+          },
+          "screen": {
+            "trades": 75,
+            "nominal_pnl": 91.14999999999989,
+            "return_on_5000_pct": 1.8229999999999977,
+            "realized_drawdown_usd": 43.95999999999965,
+            "worst_trade_usd": -16.859999999999964,
+            "worst_day_usd": -27.990000000000048,
+            "profit_factor": 1.405345310623916,
+            "expectancy": 1.2153333333333318,
+            "gross_profit": 316.0199999999996,
+            "stress10bps_each_side": -50.70078000000012
+          },
+          "trade_retention": 1.0,
+          "gross_profit_preserved": 1.0
+        }
+      },
+      "accepted_for_activation": false,
+      "reason": "Full causal replay and independent prospective evidence missing"
+    },
+    {
+      "proposed_id": "G7P01SYMBOL",
+      "parent": "CMDROT1BA",
+      "track": "A",
+      "hypothesis": "One open position per symbol within the independent account",
+      "periods": {
+        "development": {
+          "parent": {
+            "trades": 60,
+            "nominal_pnl": 119.58999999999982,
+            "return_on_5000_pct": 2.3917999999999964,
+            "realized_drawdown_usd": 28.7499999999997,
+            "worst_trade_usd": -16.499999999999975,
+            "worst_day_usd": -14.760000000000264,
+            "profit_factor": 1.7580021550358111,
+            "expectancy": 1.9931666666666636,
+            "gross_profit": 277.35999999999973,
+            "stress10bps_each_side": 6.04743999999981
+          },
+          "screen": {
+            "trades": 53,
+            "nominal_pnl": 107.78999999999975,
+            "return_on_5000_pct": 2.155799999999995,
+            "realized_drawdown_usd": 31.389999999999887,
+            "worst_trade_usd": -16.499999999999975,
+            "worst_day_usd": -14.760000000000264,
+            "profit_factor": 1.7565803327016192,
+            "expectancy": 2.0337735849056555,
+            "gross_profit": 250.2599999999998,
+            "stress10bps_each_side": 7.1396599999997505
+          },
+          "trade_retention": 0.8833333333333333,
+          "gross_profit_preserved": 0.9022930487453131
+        },
+        "retrospective_validation": {
+          "parent": {
+            "trades": 15,
+            "nominal_pnl": -28.439999999999937,
+            "return_on_5000_pct": -0.5687999999999988,
+            "realized_drawdown_usd": 43.95999999999964,
+            "worst_trade_usd": -16.859999999999964,
+            "worst_day_usd": -27.990000000000048,
+            "profit_factor": 0.5761549925484354,
+            "expectancy": -1.895999999999996,
+            "gross_profit": 38.65999999999992,
+            "stress10bps_each_side": -56.74821999999993
+          },
+          "screen": {
+            "trades": 15,
+            "nominal_pnl": -28.439999999999937,
+            "return_on_5000_pct": -0.5687999999999988,
+            "realized_drawdown_usd": 43.95999999999964,
+            "worst_trade_usd": -16.859999999999964,
+            "worst_day_usd": -27.990000000000048,
+            "profit_factor": 0.5761549925484354,
+            "expectancy": -1.895999999999996,
+            "gross_profit": 38.65999999999992,
+            "stress10bps_each_side": -56.74821999999993
+          },
+          "trade_retention": 1.0,
+          "gross_profit_preserved": 1.0
+        },
+        "oct12_diagnostic": {
+          "parent": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "screen": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "trade_retention": null,
+          "gross_profit_preserved": null
+        },
+        "all": {
+          "parent": {
+            "trades": 75,
+            "nominal_pnl": 91.14999999999989,
+            "return_on_5000_pct": 1.8229999999999977,
+            "realized_drawdown_usd": 43.95999999999965,
+            "worst_trade_usd": -16.859999999999964,
+            "worst_day_usd": -27.990000000000048,
+            "profit_factor": 1.405345310623916,
+            "expectancy": 1.2153333333333318,
+            "gross_profit": 316.0199999999996,
+            "stress10bps_each_side": -50.70078000000012
+          },
+          "screen": {
+            "trades": 68,
+            "nominal_pnl": 79.34999999999982,
+            "return_on_5000_pct": 1.5869999999999964,
+            "realized_drawdown_usd": 43.95999999999964,
+            "worst_trade_usd": -16.859999999999964,
+            "worst_day_usd": -27.990000000000048,
+            "profit_factor": 1.378632437848928,
+            "expectancy": 1.1669117647058798,
+            "gross_profit": 288.9199999999997,
+            "stress10bps_each_side": -49.60856000000018
+          },
+          "trade_retention": 0.9066666666666666,
+          "gross_profit_preserved": 0.9142459338016583
+        }
+      },
+      "accepted_for_activation": false,
+      "reason": "Full causal replay and independent prospective evidence missing"
+    },
+    {
+      "proposed_id": "G7P01STOPDAY",
+      "parent": "CMDROT1BA",
+      "track": "both",
+      "hypothesis": "After a realized STOP loss, block that symbol until next session",
+      "periods": {
+        "development": {
+          "parent": {
+            "trades": 60,
+            "nominal_pnl": 119.58999999999982,
+            "return_on_5000_pct": 2.3917999999999964,
+            "realized_drawdown_usd": 28.7499999999997,
+            "worst_trade_usd": -16.499999999999975,
+            "worst_day_usd": -14.760000000000264,
+            "profit_factor": 1.7580021550358111,
+            "expectancy": 1.9931666666666636,
+            "gross_profit": 277.35999999999973,
+            "stress10bps_each_side": 6.04743999999981
+          },
+          "screen": {
+            "trades": 51,
+            "nominal_pnl": 96.26999999999971,
+            "return_on_5000_pct": 1.9253999999999942,
+            "realized_drawdown_usd": 51.59999999999968,
+            "worst_trade_usd": -16.499999999999975,
+            "worst_day_usd": -14.760000000000264,
+            "profit_factor": 1.6528992878941997,
+            "expectancy": 1.8876470588235237,
+            "gross_profit": 243.7199999999996,
+            "stress10bps_each_side": -0.5345200000002848
+          },
+          "trade_retention": 0.85,
+          "gross_profit_preserved": 0.8787135852321887
+        },
+        "retrospective_validation": {
+          "parent": {
+            "trades": 15,
+            "nominal_pnl": -28.439999999999937,
+            "return_on_5000_pct": -0.5687999999999988,
+            "realized_drawdown_usd": 43.95999999999964,
+            "worst_trade_usd": -16.859999999999964,
+            "worst_day_usd": -27.990000000000048,
+            "profit_factor": 0.5761549925484354,
+            "expectancy": -1.895999999999996,
+            "gross_profit": 38.65999999999992,
+            "stress10bps_each_side": -56.74821999999993
+          },
+          "screen": {
+            "trades": 13,
+            "nominal_pnl": -23.87999999999987,
+            "return_on_5000_pct": -0.4775999999999974,
+            "realized_drawdown_usd": 39.71999999999988,
+            "worst_trade_usd": -16.859999999999964,
+            "worst_day_usd": -23.96999999999997,
+            "profit_factor": 0.6181643748001288,
+            "expectancy": -1.836923076923067,
+            "gross_profit": 38.65999999999992,
+            "stress10bps_each_side": -48.67845999999987
+          },
+          "trade_retention": 0.8666666666666667,
+          "gross_profit_preserved": 1.0
+        },
+        "oct12_diagnostic": {
+          "parent": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "screen": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "trade_retention": null,
+          "gross_profit_preserved": null
+        },
+        "all": {
+          "parent": {
+            "trades": 75,
+            "nominal_pnl": 91.14999999999989,
+            "return_on_5000_pct": 1.8229999999999977,
+            "realized_drawdown_usd": 43.95999999999965,
+            "worst_trade_usd": -16.859999999999964,
+            "worst_day_usd": -27.990000000000048,
+            "profit_factor": 1.405345310623916,
+            "expectancy": 1.2153333333333318,
+            "gross_profit": 316.0199999999996,
+            "stress10bps_each_side": -50.70078000000012
+          },
+          "screen": {
+            "trades": 64,
+            "nominal_pnl": 72.38999999999986,
+            "return_on_5000_pct": 1.447799999999997,
+            "realized_drawdown_usd": 51.59999999999968,
+            "worst_trade_usd": -16.859999999999964,
+            "worst_day_usd": -23.96999999999997,
+            "profit_factor": 1.3447307014619738,
+            "expectancy": 1.1310937499999978,
+            "gross_profit": 282.3799999999994,
+            "stress10bps_each_side": -49.212980000000144
+          },
+          "trade_retention": 0.8533333333333334,
+          "gross_profit_preserved": 0.8935510410733492
+        }
+      },
+      "accepted_for_activation": false,
+      "reason": "Full causal replay and independent prospective evidence missing"
+    },
+    {
+      "proposed_id": "G7P02COST",
+      "parent": "CMDGAS1BA",
+      "track": "both",
+      "hypothesis": "Reject contemporaneous entry spread above 0.15%",
+      "periods": {
+        "development": {
+          "parent": {
+            "trades": 9,
+            "nominal_pnl": 62.8600000000003,
+            "return_on_5000_pct": 1.2572000000000059,
+            "realized_drawdown_usd": 10.559999999999924,
+            "worst_trade_usd": -10.559999999999924,
+            "worst_day_usd": -10.559999999999924,
+            "profit_factor": 6.952651515151586,
+            "expectancy": 6.9844444444444775,
+            "gross_profit": 73.42000000000021,
+            "stress10bps_each_side": 44.9556800000003
+          },
+          "screen": {
+            "trades": 9,
+            "nominal_pnl": 62.8600000000003,
+            "return_on_5000_pct": 1.2572000000000059,
+            "realized_drawdown_usd": 10.559999999999924,
+            "worst_trade_usd": -10.559999999999924,
+            "worst_day_usd": -10.559999999999924,
+            "profit_factor": 6.952651515151586,
+            "expectancy": 6.9844444444444775,
+            "gross_profit": 73.42000000000021,
+            "stress10bps_each_side": 44.9556800000003
+          },
+          "trade_retention": 1.0,
+          "gross_profit_preserved": 1.0
+        },
+        "retrospective_validation": {
+          "parent": {
+            "trades": 4,
+            "nominal_pnl": -14.13999999999989,
+            "return_on_5000_pct": -0.28279999999999783,
+            "realized_drawdown_usd": 14.13999999999989,
+            "worst_trade_usd": -11.569999999999927,
+            "worst_day_usd": -8.900000000000155,
+            "profit_factor": 0.4144927536231937,
+            "expectancy": -3.5349999999999726,
+            "gross_profit": 10.010000000000142,
+            "stress10bps_each_side": -22.08795999999989
+          },
+          "screen": {
+            "trades": 4,
+            "nominal_pnl": -14.13999999999989,
+            "return_on_5000_pct": -0.28279999999999783,
+            "realized_drawdown_usd": 14.13999999999989,
+            "worst_trade_usd": -11.569999999999927,
+            "worst_day_usd": -8.900000000000155,
+            "profit_factor": 0.4144927536231937,
+            "expectancy": -3.5349999999999726,
+            "gross_profit": 10.010000000000142,
+            "stress10bps_each_side": -22.08795999999989
+          },
+          "trade_retention": 1.0,
+          "gross_profit_preserved": 1.0
+        },
+        "oct12_diagnostic": {
+          "parent": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "screen": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "trade_retention": null,
+          "gross_profit_preserved": null
+        },
+        "all": {
+          "parent": {
+            "trades": 13,
+            "nominal_pnl": 48.720000000000404,
+            "return_on_5000_pct": 0.974400000000008,
+            "realized_drawdown_usd": 14.139999999999894,
+            "worst_trade_usd": -11.569999999999927,
+            "worst_day_usd": -10.559999999999924,
+            "profit_factor": 2.4036300777873945,
+            "expectancy": 3.747692307692339,
+            "gross_profit": 83.43000000000036,
+            "stress10bps_each_side": 22.867720000000404
+          },
+          "screen": {
+            "trades": 13,
+            "nominal_pnl": 48.720000000000404,
+            "return_on_5000_pct": 0.974400000000008,
+            "realized_drawdown_usd": 14.139999999999894,
+            "worst_trade_usd": -11.569999999999927,
+            "worst_day_usd": -10.559999999999924,
+            "profit_factor": 2.4036300777873945,
+            "expectancy": 3.747692307692339,
+            "gross_profit": 83.43000000000036,
+            "stress10bps_each_side": 22.867720000000404
+          },
+          "trade_retention": 1.0,
+          "gross_profit_preserved": 1.0
+        }
+      },
+      "accepted_for_activation": false,
+      "reason": "Full causal replay and independent prospective evidence missing"
+    },
+    {
+      "proposed_id": "G7P02SYMBOL",
+      "parent": "CMDGAS1BA",
+      "track": "A",
+      "hypothesis": "One open position per symbol within the independent account",
+      "periods": {
+        "development": {
+          "parent": {
+            "trades": 9,
+            "nominal_pnl": 62.8600000000003,
+            "return_on_5000_pct": 1.2572000000000059,
+            "realized_drawdown_usd": 10.559999999999924,
+            "worst_trade_usd": -10.559999999999924,
+            "worst_day_usd": -10.559999999999924,
+            "profit_factor": 6.952651515151586,
+            "expectancy": 6.9844444444444775,
+            "gross_profit": 73.42000000000021,
+            "stress10bps_each_side": 44.9556800000003
+          },
+          "screen": {
+            "trades": 8,
+            "nominal_pnl": 53.36000000000031,
+            "return_on_5000_pct": 1.0672000000000061,
+            "realized_drawdown_usd": 10.559999999999924,
+            "worst_trade_usd": -10.559999999999924,
+            "worst_day_usd": -10.559999999999924,
+            "profit_factor": 6.0530303030303685,
+            "expectancy": 6.670000000000039,
+            "gross_profit": 63.920000000000236,
+            "stress10bps_each_side": 37.45258000000031
+          },
+          "trade_retention": 0.8888888888888888,
+          "gross_profit_preserved": 0.8706074639062932
+        },
+        "retrospective_validation": {
+          "parent": {
+            "trades": 4,
+            "nominal_pnl": -14.13999999999989,
+            "return_on_5000_pct": -0.28279999999999783,
+            "realized_drawdown_usd": 14.13999999999989,
+            "worst_trade_usd": -11.569999999999927,
+            "worst_day_usd": -8.900000000000155,
+            "profit_factor": 0.4144927536231937,
+            "expectancy": -3.5349999999999726,
+            "gross_profit": 10.010000000000142,
+            "stress10bps_each_side": -22.08795999999989
+          },
+          "screen": {
+            "trades": 4,
+            "nominal_pnl": -14.13999999999989,
+            "return_on_5000_pct": -0.28279999999999783,
+            "realized_drawdown_usd": 14.13999999999989,
+            "worst_trade_usd": -11.569999999999927,
+            "worst_day_usd": -8.900000000000155,
+            "profit_factor": 0.4144927536231937,
+            "expectancy": -3.5349999999999726,
+            "gross_profit": 10.010000000000142,
+            "stress10bps_each_side": -22.08795999999989
+          },
+          "trade_retention": 1.0,
+          "gross_profit_preserved": 1.0
+        },
+        "oct12_diagnostic": {
+          "parent": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "screen": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "trade_retention": null,
+          "gross_profit_preserved": null
+        },
+        "all": {
+          "parent": {
+            "trades": 13,
+            "nominal_pnl": 48.720000000000404,
+            "return_on_5000_pct": 0.974400000000008,
+            "realized_drawdown_usd": 14.139999999999894,
+            "worst_trade_usd": -11.569999999999927,
+            "worst_day_usd": -10.559999999999924,
+            "profit_factor": 2.4036300777873945,
+            "expectancy": 3.747692307692339,
+            "gross_profit": 83.43000000000036,
+            "stress10bps_each_side": 22.867720000000404
+          },
+          "screen": {
+            "trades": 12,
+            "nominal_pnl": 39.22000000000042,
+            "return_on_5000_pct": 0.7844000000000083,
+            "realized_drawdown_usd": 14.139999999999894,
+            "worst_trade_usd": -11.569999999999927,
+            "worst_day_usd": -10.559999999999924,
+            "profit_factor": 2.1299337366753233,
+            "expectancy": 3.268333333333368,
+            "gross_profit": 73.93000000000038,
+            "stress10bps_each_side": 15.364620000000418
+          },
+          "trade_retention": 0.9230769230769231,
+          "gross_profit_preserved": 0.8861320867793366
+        }
+      },
+      "accepted_for_activation": false,
+      "reason": "Full causal replay and independent prospective evidence missing"
+    },
+    {
+      "proposed_id": "G7P02STOPDAY",
+      "parent": "CMDGAS1BA",
+      "track": "both",
+      "hypothesis": "After a realized STOP loss, block that symbol until next session",
+      "periods": {
+        "development": {
+          "parent": {
+            "trades": 9,
+            "nominal_pnl": 62.8600000000003,
+            "return_on_5000_pct": 1.2572000000000059,
+            "realized_drawdown_usd": 10.559999999999924,
+            "worst_trade_usd": -10.559999999999924,
+            "worst_day_usd": -10.559999999999924,
+            "profit_factor": 6.952651515151586,
+            "expectancy": 6.9844444444444775,
+            "gross_profit": 73.42000000000021,
+            "stress10bps_each_side": 44.9556800000003
+          },
+          "screen": {
+            "trades": 9,
+            "nominal_pnl": 62.8600000000003,
+            "return_on_5000_pct": 1.2572000000000059,
+            "realized_drawdown_usd": 10.559999999999924,
+            "worst_trade_usd": -10.559999999999924,
+            "worst_day_usd": -10.559999999999924,
+            "profit_factor": 6.952651515151586,
+            "expectancy": 6.9844444444444775,
+            "gross_profit": 73.42000000000021,
+            "stress10bps_each_side": 44.9556800000003
+          },
+          "trade_retention": 1.0,
+          "gross_profit_preserved": 1.0
+        },
+        "retrospective_validation": {
+          "parent": {
+            "trades": 4,
+            "nominal_pnl": -14.13999999999989,
+            "return_on_5000_pct": -0.28279999999999783,
+            "realized_drawdown_usd": 14.13999999999989,
+            "worst_trade_usd": -11.569999999999927,
+            "worst_day_usd": -8.900000000000155,
+            "profit_factor": 0.4144927536231937,
+            "expectancy": -3.5349999999999726,
+            "gross_profit": 10.010000000000142,
+            "stress10bps_each_side": -22.08795999999989
+          },
+          "screen": {
+            "trades": 4,
+            "nominal_pnl": -14.13999999999989,
+            "return_on_5000_pct": -0.28279999999999783,
+            "realized_drawdown_usd": 14.13999999999989,
+            "worst_trade_usd": -11.569999999999927,
+            "worst_day_usd": -8.900000000000155,
+            "profit_factor": 0.4144927536231937,
+            "expectancy": -3.5349999999999726,
+            "gross_profit": 10.010000000000142,
+            "stress10bps_each_side": -22.08795999999989
+          },
+          "trade_retention": 1.0,
+          "gross_profit_preserved": 1.0
+        },
+        "oct12_diagnostic": {
+          "parent": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "screen": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "trade_retention": null,
+          "gross_profit_preserved": null
+        },
+        "all": {
+          "parent": {
+            "trades": 13,
+            "nominal_pnl": 48.720000000000404,
+            "return_on_5000_pct": 0.974400000000008,
+            "realized_drawdown_usd": 14.139999999999894,
+            "worst_trade_usd": -11.569999999999927,
+            "worst_day_usd": -10.559999999999924,
+            "profit_factor": 2.4036300777873945,
+            "expectancy": 3.747692307692339,
+            "gross_profit": 83.43000000000036,
+            "stress10bps_each_side": 22.867720000000404
+          },
+          "screen": {
+            "trades": 13,
+            "nominal_pnl": 48.720000000000404,
+            "return_on_5000_pct": 0.974400000000008,
+            "realized_drawdown_usd": 14.139999999999894,
+            "worst_trade_usd": -11.569999999999927,
+            "worst_day_usd": -10.559999999999924,
+            "profit_factor": 2.4036300777873945,
+            "expectancy": 3.747692307692339,
+            "gross_profit": 83.43000000000036,
+            "stress10bps_each_side": 22.867720000000404
+          },
+          "trade_retention": 1.0,
+          "gross_profit_preserved": 1.0
+        }
+      },
+      "accepted_for_activation": false,
+      "reason": "Full causal replay and independent prospective evidence missing"
+    },
+    {
+      "proposed_id": "G7P03COST",
+      "parent": "CMDBRD1BA",
+      "track": "both",
+      "hypothesis": "Reject contemporaneous entry spread above 0.15%",
+      "periods": {
+        "development": {
+          "parent": {
+            "trades": 54,
+            "nominal_pnl": 43.79999999999963,
+            "return_on_5000_pct": 0.8759999999999926,
+            "realized_drawdown_usd": 56.339999999999705,
+            "worst_trade_usd": -10.350000000000032,
+            "worst_day_usd": -20.809999999999945,
+            "profit_factor": 1.3152213026268413,
+            "expectancy": 0.8111111111111042,
+            "gross_profit": 182.74999999999974,
+            "stress10bps_each_side": -59.72282000000037
+          },
+          "screen": {
+            "trades": 53,
+            "nominal_pnl": 36.429999999999616,
+            "return_on_5000_pct": 0.7285999999999924,
+            "realized_drawdown_usd": 62.93999999999967,
+            "worst_trade_usd": -10.350000000000032,
+            "worst_day_usd": -20.809999999999945,
+            "profit_factor": 1.2621806405181688,
+            "expectancy": 0.6873584905660305,
+            "gross_profit": 175.37999999999968,
+            "stress10bps_each_side": -65.2149000000004
+          },
+          "trade_retention": 0.9814814814814815,
+          "gross_profit_preserved": 0.9596716826265386
+        },
+        "retrospective_validation": {
+          "parent": {
+            "trades": 15,
+            "nominal_pnl": -12.13000000000016,
+            "return_on_5000_pct": -0.2426000000000032,
+            "realized_drawdown_usd": 30.47000000000009,
+            "worst_trade_usd": -8.690000000000078,
+            "worst_day_usd": -19.920000000000208,
+            "profit_factor": 0.7528021194212325,
+            "expectancy": -0.8086666666666774,
+            "gross_profit": 36.93999999999997,
+            "stress10bps_each_side": -41.15578000000016
+          },
+          "screen": {
+            "trades": 15,
+            "nominal_pnl": -12.13000000000016,
+            "return_on_5000_pct": -0.2426000000000032,
+            "realized_drawdown_usd": 30.47000000000009,
+            "worst_trade_usd": -8.690000000000078,
+            "worst_day_usd": -19.920000000000208,
+            "profit_factor": 0.7528021194212325,
+            "expectancy": -0.8086666666666774,
+            "gross_profit": 36.93999999999997,
+            "stress10bps_each_side": -41.15578000000016
+          },
+          "trade_retention": 1.0,
+          "gross_profit_preserved": 1.0
+        },
+        "oct12_diagnostic": {
+          "parent": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "screen": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "trade_retention": null,
+          "gross_profit_preserved": null
+        },
+        "all": {
+          "parent": {
+            "trades": 69,
+            "nominal_pnl": 31.669999999999476,
+            "return_on_5000_pct": 0.6333999999999895,
+            "realized_drawdown_usd": 56.339999999999705,
+            "worst_trade_usd": -10.350000000000032,
+            "worst_day_usd": -20.809999999999945,
+            "profit_factor": 1.1684395277098152,
+            "expectancy": 0.4589855072463692,
+            "gross_profit": 219.6899999999997,
+            "stress10bps_each_side": -100.87860000000052
+          },
+          "screen": {
+            "trades": 68,
+            "nominal_pnl": 24.299999999999464,
+            "return_on_5000_pct": 0.4859999999999893,
+            "realized_drawdown_usd": 62.93999999999967,
+            "worst_trade_usd": -10.350000000000032,
+            "worst_day_usd": -20.809999999999945,
+            "profit_factor": 1.1292415700457366,
+            "expectancy": 0.3573529411764627,
+            "gross_profit": 212.31999999999965,
+            "stress10bps_each_side": -106.37068000000053
+          },
+          "trade_retention": 0.9855072463768116,
+          "gross_profit_preserved": 0.9664527288451906
+        }
+      },
+      "accepted_for_activation": false,
+      "reason": "Full causal replay and independent prospective evidence missing"
+    },
+    {
+      "proposed_id": "G7P03SYMBOL",
+      "parent": "CMDBRD1BA",
+      "track": "A",
+      "hypothesis": "One open position per symbol within the independent account",
+      "periods": {
+        "development": {
+          "parent": {
+            "trades": 54,
+            "nominal_pnl": 43.79999999999963,
+            "return_on_5000_pct": 0.8759999999999926,
+            "realized_drawdown_usd": 56.339999999999705,
+            "worst_trade_usd": -10.350000000000032,
+            "worst_day_usd": -20.809999999999945,
+            "profit_factor": 1.3152213026268413,
+            "expectancy": 0.8111111111111042,
+            "gross_profit": 182.74999999999974,
+            "stress10bps_each_side": -59.72282000000037
+          },
+          "screen": {
+            "trades": 46,
+            "nominal_pnl": 35.45999999999994,
+            "return_on_5000_pct": 0.7091999999999987,
+            "realized_drawdown_usd": 56.96999999999968,
+            "worst_trade_usd": -10.350000000000032,
+            "worst_day_usd": -20.809999999999945,
+            "profit_factor": 1.2772695285010547,
+            "expectancy": 0.7708695652173899,
+            "gross_profit": 163.35000000000005,
+            "stress10bps_each_side": -52.54702000000006
+          },
+          "trade_retention": 0.8518518518518519,
+          "gross_profit_preserved": 0.8938440492476075
+        },
+        "retrospective_validation": {
+          "parent": {
+            "trades": 15,
+            "nominal_pnl": -12.13000000000016,
+            "return_on_5000_pct": -0.2426000000000032,
+            "realized_drawdown_usd": 30.47000000000009,
+            "worst_trade_usd": -8.690000000000078,
+            "worst_day_usd": -19.920000000000208,
+            "profit_factor": 0.7528021194212325,
+            "expectancy": -0.8086666666666774,
+            "gross_profit": 36.93999999999997,
+            "stress10bps_each_side": -41.15578000000016
+          },
+          "screen": {
+            "trades": 15,
+            "nominal_pnl": -12.13000000000016,
+            "return_on_5000_pct": -0.2426000000000032,
+            "realized_drawdown_usd": 30.47000000000009,
+            "worst_trade_usd": -8.690000000000078,
+            "worst_day_usd": -19.920000000000208,
+            "profit_factor": 0.7528021194212325,
+            "expectancy": -0.8086666666666774,
+            "gross_profit": 36.93999999999997,
+            "stress10bps_each_side": -41.15578000000016
+          },
+          "trade_retention": 1.0,
+          "gross_profit_preserved": 1.0
+        },
+        "oct12_diagnostic": {
+          "parent": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "screen": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "trade_retention": null,
+          "gross_profit_preserved": null
+        },
+        "all": {
+          "parent": {
+            "trades": 69,
+            "nominal_pnl": 31.669999999999476,
+            "return_on_5000_pct": 0.6333999999999895,
+            "realized_drawdown_usd": 56.339999999999705,
+            "worst_trade_usd": -10.350000000000032,
+            "worst_day_usd": -20.809999999999945,
+            "profit_factor": 1.1684395277098152,
+            "expectancy": 0.4589855072463692,
+            "gross_profit": 219.6899999999997,
+            "stress10bps_each_side": -100.87860000000052
+          },
+          "screen": {
+            "trades": 61,
+            "nominal_pnl": 23.329999999999778,
+            "return_on_5000_pct": 0.4665999999999956,
+            "realized_drawdown_usd": 56.96999999999968,
+            "worst_trade_usd": -10.350000000000032,
+            "worst_day_usd": -20.809999999999945,
+            "profit_factor": 1.1318377034358031,
+            "expectancy": 0.382459016393439,
+            "gross_profit": 200.29000000000002,
+            "stress10bps_each_side": -93.70280000000022
+          },
+          "trade_retention": 0.8840579710144928,
+          "gross_profit_preserved": 0.9116937502844931
+        }
+      },
+      "accepted_for_activation": false,
+      "reason": "Full causal replay and independent prospective evidence missing"
+    },
+    {
+      "proposed_id": "G7P03STOPDAY",
+      "parent": "CMDBRD1BA",
+      "track": "both",
+      "hypothesis": "After a realized STOP loss, block that symbol until next session",
+      "periods": {
+        "development": {
+          "parent": {
+            "trades": 54,
+            "nominal_pnl": 43.79999999999963,
+            "return_on_5000_pct": 0.8759999999999926,
+            "realized_drawdown_usd": 56.339999999999705,
+            "worst_trade_usd": -10.350000000000032,
+            "worst_day_usd": -20.809999999999945,
+            "profit_factor": 1.3152213026268413,
+            "expectancy": 0.8111111111111042,
+            "gross_profit": 182.74999999999974,
+            "stress10bps_each_side": -59.72282000000037
+          },
+          "screen": {
+            "trades": 48,
+            "nominal_pnl": 41.159999999999414,
+            "return_on_5000_pct": 0.8231999999999883,
+            "realized_drawdown_usd": 51.859999999999864,
+            "worst_trade_usd": -10.350000000000032,
+            "worst_day_usd": -20.809999999999945,
+            "profit_factor": 1.3522464698331136,
+            "expectancy": 0.8574999999999878,
+            "gross_profit": 158.00999999999962,
+            "stress10bps_each_side": -50.73712000000059
+          },
+          "trade_retention": 0.8888888888888888,
+          "gross_profit_preserved": 0.8646238030095751
+        },
+        "retrospective_validation": {
+          "parent": {
+            "trades": 15,
+            "nominal_pnl": -12.13000000000016,
+            "return_on_5000_pct": -0.2426000000000032,
+            "realized_drawdown_usd": 30.47000000000009,
+            "worst_trade_usd": -8.690000000000078,
+            "worst_day_usd": -19.920000000000208,
+            "profit_factor": 0.7528021194212325,
+            "expectancy": -0.8086666666666774,
+            "gross_profit": 36.93999999999997,
+            "stress10bps_each_side": -41.15578000000016
+          },
+          "screen": {
+            "trades": 13,
+            "nominal_pnl": -18.500000000000107,
+            "return_on_5000_pct": -0.3700000000000021,
+            "realized_drawdown_usd": 29.480000000000082,
+            "worst_trade_usd": -8.690000000000078,
+            "worst_day_usd": -18.9300000000002,
+            "profit_factor": 0.6152246256239587,
+            "expectancy": -1.4230769230769313,
+            "gross_profit": 29.580000000000005,
+            "stress10bps_each_side": -43.57950000000011
+          },
+          "trade_retention": 0.8666666666666667,
+          "gross_profit_preserved": 0.8007579859231194
+        },
+        "oct12_diagnostic": {
+          "parent": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "screen": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "trade_retention": null,
+          "gross_profit_preserved": null
+        },
+        "all": {
+          "parent": {
+            "trades": 69,
+            "nominal_pnl": 31.669999999999476,
+            "return_on_5000_pct": 0.6333999999999895,
+            "realized_drawdown_usd": 56.339999999999705,
+            "worst_trade_usd": -10.350000000000032,
+            "worst_day_usd": -20.809999999999945,
+            "profit_factor": 1.1684395277098152,
+            "expectancy": 0.4589855072463692,
+            "gross_profit": 219.6899999999997,
+            "stress10bps_each_side": -100.87860000000052
+          },
+          "screen": {
+            "trades": 61,
+            "nominal_pnl": 22.659999999999293,
+            "return_on_5000_pct": 0.45319999999998584,
+            "realized_drawdown_usd": 51.859999999999864,
+            "worst_trade_usd": -10.350000000000032,
+            "worst_day_usd": -20.809999999999945,
+            "profit_factor": 1.1373916206875598,
+            "expectancy": 0.371475409836054,
+            "gross_profit": 187.58999999999963,
+            "stress10bps_each_side": -94.31662000000071
+          },
+          "trade_retention": 0.8840579710144928,
+          "gross_profit_preserved": 0.8538850198006276
+        }
+      },
+      "accepted_for_activation": false,
+      "reason": "Full causal replay and independent prospective evidence missing"
+    },
+    {
+      "proposed_id": "G7P04COST",
+      "parent": "PT315H12BA",
+      "track": "both",
+      "hypothesis": "Reject contemporaneous entry spread above 0.15%",
+      "periods": {
+        "development": {
+          "parent": {
+            "trades": 11,
+            "nominal_pnl": 48.710000000000186,
+            "return_on_5000_pct": 0.9742000000000037,
+            "realized_drawdown_usd": 42.509999999999756,
+            "worst_trade_usd": -32.4799999999999,
+            "worst_day_usd": -40.129999999999654,
+            "profit_factor": 1.9214907302308055,
+            "expectancy": 4.428181818181835,
+            "gross_profit": 101.57000000000001,
+            "stress10bps_each_side": 26.816460000000188
+          },
+          "screen": {
+            "trades": 8,
+            "nominal_pnl": -20.469999999999935,
+            "return_on_5000_pct": -0.4093999999999987,
+            "realized_drawdown_usd": 42.50999999999975,
+            "worst_trade_usd": -32.4799999999999,
+            "worst_day_usd": -40.129999999999654,
+            "profit_factor": 0.6127506621263714,
+            "expectancy": -2.558749999999992,
+            "gross_profit": 32.38999999999987,
+            "stress10bps_each_side": -36.37619999999993
+          },
+          "trade_retention": 0.7272727272727273,
+          "gross_profit_preserved": 0.3188933740277628
+        },
+        "retrospective_validation": {
+          "parent": {
+            "trades": 4,
+            "nominal_pnl": -7.979999999999831,
+            "return_on_5000_pct": -0.1595999999999966,
+            "realized_drawdown_usd": 26.519999999999936,
+            "worst_trade_usd": -26.519999999999936,
+            "worst_day_usd": -22.17999999999993,
+            "profit_factor": 0.7074780058651076,
+            "expectancy": -1.9949999999999577,
+            "gross_profit": 19.300000000000047,
+            "stress10bps_each_side": -15.96847999999983
+          },
+          "screen": {
+            "trades": 2,
+            "nominal_pnl": 13.440000000000156,
+            "return_on_5000_pct": 0.2688000000000031,
+            "realized_drawdown_usd": 0.7599999999999394,
+            "worst_trade_usd": -0.75999999999994,
+            "worst_day_usd": -0.75999999999994,
+            "profit_factor": 18.68421052631739,
+            "expectancy": 6.720000000000078,
+            "gross_profit": 14.200000000000095,
+            "stress10bps_each_side": 9.447520000000157
+          },
+          "trade_retention": 0.5,
+          "gross_profit_preserved": 0.7357512953367907
+        },
+        "oct12_diagnostic": {
+          "parent": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "screen": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "trade_retention": null,
+          "gross_profit_preserved": null
+        },
+        "all": {
+          "parent": {
+            "trades": 15,
+            "nominal_pnl": 40.73000000000035,
+            "return_on_5000_pct": 0.8146000000000071,
+            "realized_drawdown_usd": 54.8299999999996,
+            "worst_trade_usd": -32.4799999999999,
+            "worst_day_usd": -40.129999999999654,
+            "profit_factor": 1.5082355877214941,
+            "expectancy": 2.7153333333333567,
+            "gross_profit": 120.87000000000005,
+            "stress10bps_each_side": 10.847980000000351
+          },
+          "screen": {
+            "trades": 10,
+            "nominal_pnl": -7.02999999999978,
+            "return_on_5000_pct": -0.1405999999999956,
+            "realized_drawdown_usd": 42.50999999999975,
+            "worst_trade_usd": -32.4799999999999,
+            "worst_day_usd": -40.129999999999654,
+            "profit_factor": 0.8688922044013463,
+            "expectancy": -0.702999999999978,
+            "gross_profit": 46.58999999999997,
+            "stress10bps_each_side": -26.92867999999978
+          },
+          "trade_retention": 0.6666666666666666,
+          "gross_profit_preserved": 0.38545544800198517
+        }
+      },
+      "accepted_for_activation": false,
+      "reason": "Full causal replay and independent prospective evidence missing"
+    },
+    {
+      "proposed_id": "G7P04SYMBOL",
+      "parent": "PT315H12BA",
+      "track": "A",
+      "hypothesis": "One open position per symbol within the independent account",
+      "periods": {
+        "development": {
+          "parent": {
+            "trades": 11,
+            "nominal_pnl": 48.710000000000186,
+            "return_on_5000_pct": 0.9742000000000037,
+            "realized_drawdown_usd": 42.509999999999756,
+            "worst_trade_usd": -32.4799999999999,
+            "worst_day_usd": -40.129999999999654,
+            "profit_factor": 1.9214907302308055,
+            "expectancy": 4.428181818181835,
+            "gross_profit": 101.57000000000001,
+            "stress10bps_each_side": 26.816460000000188
+          },
+          "screen": {
+            "trades": 11,
+            "nominal_pnl": 48.710000000000186,
+            "return_on_5000_pct": 0.9742000000000037,
+            "realized_drawdown_usd": 42.509999999999756,
+            "worst_trade_usd": -32.4799999999999,
+            "worst_day_usd": -40.129999999999654,
+            "profit_factor": 1.9214907302308055,
+            "expectancy": 4.428181818181835,
+            "gross_profit": 101.57000000000001,
+            "stress10bps_each_side": 26.816460000000188
+          },
+          "trade_retention": 1.0,
+          "gross_profit_preserved": 1.0
+        },
+        "retrospective_validation": {
+          "parent": {
+            "trades": 4,
+            "nominal_pnl": -7.979999999999831,
+            "return_on_5000_pct": -0.1595999999999966,
+            "realized_drawdown_usd": 26.519999999999936,
+            "worst_trade_usd": -26.519999999999936,
+            "worst_day_usd": -22.17999999999993,
+            "profit_factor": 0.7074780058651076,
+            "expectancy": -1.9949999999999577,
+            "gross_profit": 19.300000000000047,
+            "stress10bps_each_side": -15.96847999999983
+          },
+          "screen": {
+            "trades": 4,
+            "nominal_pnl": -7.979999999999831,
+            "return_on_5000_pct": -0.1595999999999966,
+            "realized_drawdown_usd": 26.519999999999936,
+            "worst_trade_usd": -26.519999999999936,
+            "worst_day_usd": -22.17999999999993,
+            "profit_factor": 0.7074780058651076,
+            "expectancy": -1.9949999999999577,
+            "gross_profit": 19.300000000000047,
+            "stress10bps_each_side": -15.96847999999983
+          },
+          "trade_retention": 1.0,
+          "gross_profit_preserved": 1.0
+        },
+        "oct12_diagnostic": {
+          "parent": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "screen": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "trade_retention": null,
+          "gross_profit_preserved": null
+        },
+        "all": {
+          "parent": {
+            "trades": 15,
+            "nominal_pnl": 40.73000000000035,
+            "return_on_5000_pct": 0.8146000000000071,
+            "realized_drawdown_usd": 54.8299999999996,
+            "worst_trade_usd": -32.4799999999999,
+            "worst_day_usd": -40.129999999999654,
+            "profit_factor": 1.5082355877214941,
+            "expectancy": 2.7153333333333567,
+            "gross_profit": 120.87000000000005,
+            "stress10bps_each_side": 10.847980000000351
+          },
+          "screen": {
+            "trades": 15,
+            "nominal_pnl": 40.73000000000035,
+            "return_on_5000_pct": 0.8146000000000071,
+            "realized_drawdown_usd": 54.8299999999996,
+            "worst_trade_usd": -32.4799999999999,
+            "worst_day_usd": -40.129999999999654,
+            "profit_factor": 1.5082355877214941,
+            "expectancy": 2.7153333333333567,
+            "gross_profit": 120.87000000000005,
+            "stress10bps_each_side": 10.847980000000351
+          },
+          "trade_retention": 1.0,
+          "gross_profit_preserved": 1.0
+        }
+      },
+      "accepted_for_activation": false,
+      "reason": "Full causal replay and independent prospective evidence missing"
+    },
+    {
+      "proposed_id": "G7P04STOPDAY",
+      "parent": "PT315H12BA",
+      "track": "both",
+      "hypothesis": "After a realized STOP loss, block that symbol until next session",
+      "periods": {
+        "development": {
+          "parent": {
+            "trades": 11,
+            "nominal_pnl": 48.710000000000186,
+            "return_on_5000_pct": 0.9742000000000037,
+            "realized_drawdown_usd": 42.509999999999756,
+            "worst_trade_usd": -32.4799999999999,
+            "worst_day_usd": -40.129999999999654,
+            "profit_factor": 1.9214907302308055,
+            "expectancy": 4.428181818181835,
+            "gross_profit": 101.57000000000001,
+            "stress10bps_each_side": 26.816460000000188
+          },
+          "screen": {
+            "trades": 11,
+            "nominal_pnl": 48.710000000000186,
+            "return_on_5000_pct": 0.9742000000000037,
+            "realized_drawdown_usd": 42.509999999999756,
+            "worst_trade_usd": -32.4799999999999,
+            "worst_day_usd": -40.129999999999654,
+            "profit_factor": 1.9214907302308055,
+            "expectancy": 4.428181818181835,
+            "gross_profit": 101.57000000000001,
+            "stress10bps_each_side": 26.816460000000188
+          },
+          "trade_retention": 1.0,
+          "gross_profit_preserved": 1.0
+        },
+        "retrospective_validation": {
+          "parent": {
+            "trades": 4,
+            "nominal_pnl": -7.979999999999831,
+            "return_on_5000_pct": -0.1595999999999966,
+            "realized_drawdown_usd": 26.519999999999936,
+            "worst_trade_usd": -26.519999999999936,
+            "worst_day_usd": -22.17999999999993,
+            "profit_factor": 0.7074780058651076,
+            "expectancy": -1.9949999999999577,
+            "gross_profit": 19.300000000000047,
+            "stress10bps_each_side": -15.96847999999983
+          },
+          "screen": {
+            "trades": 4,
+            "nominal_pnl": -7.979999999999831,
+            "return_on_5000_pct": -0.1595999999999966,
+            "realized_drawdown_usd": 26.519999999999936,
+            "worst_trade_usd": -26.519999999999936,
+            "worst_day_usd": -22.17999999999993,
+            "profit_factor": 0.7074780058651076,
+            "expectancy": -1.9949999999999577,
+            "gross_profit": 19.300000000000047,
+            "stress10bps_each_side": -15.96847999999983
+          },
+          "trade_retention": 1.0,
+          "gross_profit_preserved": 1.0
+        },
+        "oct12_diagnostic": {
+          "parent": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "screen": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "trade_retention": null,
+          "gross_profit_preserved": null
+        },
+        "all": {
+          "parent": {
+            "trades": 15,
+            "nominal_pnl": 40.73000000000035,
+            "return_on_5000_pct": 0.8146000000000071,
+            "realized_drawdown_usd": 54.8299999999996,
+            "worst_trade_usd": -32.4799999999999,
+            "worst_day_usd": -40.129999999999654,
+            "profit_factor": 1.5082355877214941,
+            "expectancy": 2.7153333333333567,
+            "gross_profit": 120.87000000000005,
+            "stress10bps_each_side": 10.847980000000351
+          },
+          "screen": {
+            "trades": 15,
+            "nominal_pnl": 40.73000000000035,
+            "return_on_5000_pct": 0.8146000000000071,
+            "realized_drawdown_usd": 54.8299999999996,
+            "worst_trade_usd": -32.4799999999999,
+            "worst_day_usd": -40.129999999999654,
+            "profit_factor": 1.5082355877214941,
+            "expectancy": 2.7153333333333567,
+            "gross_profit": 120.87000000000005,
+            "stress10bps_each_side": 10.847980000000351
+          },
+          "trade_retention": 1.0,
+          "gross_profit_preserved": 1.0
+        }
+      },
+      "accepted_for_activation": false,
+      "reason": "Full causal replay and independent prospective evidence missing"
+    },
+    {
+      "proposed_id": "G7P05COST",
+      "parent": "QV4XU1S50V8BA",
+      "track": "both",
+      "hypothesis": "Reject contemporaneous entry spread above 0.15%",
+      "periods": {
+        "development": {
+          "parent": {
+            "trades": 34,
+            "nominal_pnl": 69.59999999999985,
+            "return_on_5000_pct": 1.391999999999997,
+            "realized_drawdown_usd": 145.68000000000015,
+            "worst_trade_usd": -44.97999999999994,
+            "worst_day_usd": -57.399999999999764,
+            "profit_factor": 1.3044086773967802,
+            "expectancy": 2.0470588235294076,
+            "gross_profit": 298.2399999999998,
+            "stress10bps_each_side": 7.587599999999853
+          },
+          "screen": {
+            "trades": 13,
+            "nominal_pnl": -13.72000000000022,
+            "return_on_5000_pct": -0.27440000000000436,
+            "realized_drawdown_usd": 66.6000000000002,
+            "worst_trade_usd": -26.880000000000074,
+            "worst_day_usd": -33.72000000000003,
+            "profit_factor": 0.8311592419394512,
+            "expectancy": -1.0553846153846322,
+            "gross_profit": 67.53999999999996,
+            "stress10bps_each_side": -35.68896000000022
+          },
+          "trade_retention": 0.38235294117647056,
+          "gross_profit_preserved": 0.22646190987124468
+        },
+        "retrospective_validation": {
+          "parent": {
+            "trades": 8,
+            "nominal_pnl": -44.17000000000026,
+            "return_on_5000_pct": -0.8834000000000052,
+            "realized_drawdown_usd": 82.63000000000011,
+            "worst_trade_usd": -50.63999999999996,
+            "worst_day_usd": -79.04,
+            "profit_factor": 0.4654483843640299,
+            "expectancy": -5.521250000000032,
+            "gross_profit": 38.459999999999845,
+            "stress10bps_each_side": -56.442560000000256
+          },
+          "screen": {
+            "trades": 2,
+            "nominal_pnl": 8.479999999999942,
+            "return_on_5000_pct": 0.16959999999999884,
+            "realized_drawdown_usd": 2.8599999999999994,
+            "worst_trade_usd": -2.8599999999999994,
+            "worst_day_usd": -2.8599999999999994,
+            "profit_factor": 3.9650349650349455,
+            "expectancy": 4.239999999999971,
+            "gross_profit": 11.339999999999941,
+            "stress10bps_each_side": 6.415459999999942
+          },
+          "trade_retention": 0.25,
+          "gross_profit_preserved": 0.29485179407176254
+        },
+        "oct12_diagnostic": {
+          "parent": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "screen": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "trade_retention": null,
+          "gross_profit_preserved": null
+        },
+        "all": {
+          "parent": {
+            "trades": 42,
+            "nominal_pnl": 25.42999999999959,
+            "return_on_5000_pct": 0.5085999999999918,
+            "realized_drawdown_usd": 228.31000000000026,
+            "worst_trade_usd": -50.63999999999996,
+            "worst_day_usd": -79.04,
+            "profit_factor": 1.0816975616024658,
+            "expectancy": 0.6054761904761807,
+            "gross_profit": 336.6999999999996,
+            "stress10bps_each_side": -48.8549600000004
+          },
+          "screen": {
+            "trades": 15,
+            "nominal_pnl": -5.240000000000277,
+            "return_on_5000_pct": -0.10480000000000554,
+            "realized_drawdown_usd": 69.4600000000002,
+            "worst_trade_usd": -26.880000000000074,
+            "worst_day_usd": -33.72000000000003,
+            "profit_factor": 0.9377080361388461,
+            "expectancy": -0.3493333333333518,
+            "gross_profit": 78.87999999999991,
+            "stress10bps_each_side": -29.273500000000276
+          },
+          "trade_retention": 0.35714285714285715,
+          "gross_profit_preserved": 0.2342738342738343
+        }
+      },
+      "accepted_for_activation": false,
+      "reason": "Full causal replay and independent prospective evidence missing"
+    },
+    {
+      "proposed_id": "G7P05SYMBOL",
+      "parent": "QV4XU1S50V8BA",
+      "track": "A",
+      "hypothesis": "One open position per symbol within the independent account",
+      "periods": {
+        "development": {
+          "parent": {
+            "trades": 34,
+            "nominal_pnl": 69.59999999999985,
+            "return_on_5000_pct": 1.391999999999997,
+            "realized_drawdown_usd": 145.68000000000015,
+            "worst_trade_usd": -44.97999999999994,
+            "worst_day_usd": -57.399999999999764,
+            "profit_factor": 1.3044086773967802,
+            "expectancy": 2.0470588235294076,
+            "gross_profit": 298.2399999999998,
+            "stress10bps_each_side": 7.587599999999853
+          },
+          "screen": {
+            "trades": 33,
+            "nominal_pnl": 47.039999999999864,
+            "return_on_5000_pct": 0.9407999999999973,
+            "realized_drawdown_usd": 145.68000000000012,
+            "worst_trade_usd": -44.97999999999994,
+            "worst_day_usd": -57.399999999999764,
+            "profit_factor": 1.205738278516444,
+            "expectancy": 1.4254545454545413,
+            "gross_profit": 275.6799999999997,
+            "stress10bps_each_side": -12.97584000000014
+          },
+          "trade_retention": 0.9705882352941176,
+          "gross_profit_preserved": 0.9243562231759654
+        },
+        "retrospective_validation": {
+          "parent": {
+            "trades": 8,
+            "nominal_pnl": -44.17000000000026,
+            "return_on_5000_pct": -0.8834000000000052,
+            "realized_drawdown_usd": 82.63000000000011,
+            "worst_trade_usd": -50.63999999999996,
+            "worst_day_usd": -79.04,
+            "profit_factor": 0.4654483843640299,
+            "expectancy": -5.521250000000032,
+            "gross_profit": 38.459999999999845,
+            "stress10bps_each_side": -56.442560000000256
+          },
+          "screen": {
+            "trades": 8,
+            "nominal_pnl": -44.17000000000026,
+            "return_on_5000_pct": -0.8834000000000052,
+            "realized_drawdown_usd": 82.63000000000011,
+            "worst_trade_usd": -50.63999999999996,
+            "worst_day_usd": -79.04,
+            "profit_factor": 0.4654483843640299,
+            "expectancy": -5.521250000000032,
+            "gross_profit": 38.459999999999845,
+            "stress10bps_each_side": -56.442560000000256
+          },
+          "trade_retention": 1.0,
+          "gross_profit_preserved": 1.0
+        },
+        "oct12_diagnostic": {
+          "parent": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "screen": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "trade_retention": null,
+          "gross_profit_preserved": null
+        },
+        "all": {
+          "parent": {
+            "trades": 42,
+            "nominal_pnl": 25.42999999999959,
+            "return_on_5000_pct": 0.5085999999999918,
+            "realized_drawdown_usd": 228.31000000000026,
+            "worst_trade_usd": -50.63999999999996,
+            "worst_day_usd": -79.04,
+            "profit_factor": 1.0816975616024658,
+            "expectancy": 0.6054761904761807,
+            "gross_profit": 336.6999999999996,
+            "stress10bps_each_side": -48.8549600000004
+          },
+          "screen": {
+            "trades": 41,
+            "nominal_pnl": 2.8699999999995978,
+            "return_on_5000_pct": 0.05739999999999196,
+            "realized_drawdown_usd": 228.31000000000023,
+            "worst_trade_usd": -50.63999999999996,
+            "worst_day_usd": -79.04,
+            "profit_factor": 1.0092202910656327,
+            "expectancy": 0.0699999999999902,
+            "gross_profit": 314.13999999999953,
+            "stress10bps_each_side": -69.4184000000004
+          },
+          "trade_retention": 0.9761904761904762,
+          "gross_profit_preserved": 0.9329967329967327
+        }
+      },
+      "accepted_for_activation": false,
+      "reason": "Full causal replay and independent prospective evidence missing"
+    },
+    {
+      "proposed_id": "G7P05STOPDAY",
+      "parent": "QV4XU1S50V8BA",
+      "track": "both",
+      "hypothesis": "After a realized STOP loss, block that symbol until next session",
+      "periods": {
+        "development": {
+          "parent": {
+            "trades": 34,
+            "nominal_pnl": 69.59999999999985,
+            "return_on_5000_pct": 1.391999999999997,
+            "realized_drawdown_usd": 145.68000000000015,
+            "worst_trade_usd": -44.97999999999994,
+            "worst_day_usd": -57.399999999999764,
+            "profit_factor": 1.3044086773967802,
+            "expectancy": 2.0470588235294076,
+            "gross_profit": 298.2399999999998,
+            "stress10bps_each_side": 7.587599999999853
+          },
+          "screen": {
+            "trades": 34,
+            "nominal_pnl": 69.59999999999985,
+            "return_on_5000_pct": 1.391999999999997,
+            "realized_drawdown_usd": 145.68000000000015,
+            "worst_trade_usd": -44.97999999999994,
+            "worst_day_usd": -57.399999999999764,
+            "profit_factor": 1.3044086773967802,
+            "expectancy": 2.0470588235294076,
+            "gross_profit": 298.2399999999998,
+            "stress10bps_each_side": 7.587599999999853
+          },
+          "trade_retention": 1.0,
+          "gross_profit_preserved": 1.0
+        },
+        "retrospective_validation": {
+          "parent": {
+            "trades": 8,
+            "nominal_pnl": -44.17000000000026,
+            "return_on_5000_pct": -0.8834000000000052,
+            "realized_drawdown_usd": 82.63000000000011,
+            "worst_trade_usd": -50.63999999999996,
+            "worst_day_usd": -79.04,
+            "profit_factor": 0.4654483843640299,
+            "expectancy": -5.521250000000032,
+            "gross_profit": 38.459999999999845,
+            "stress10bps_each_side": -56.442560000000256
+          },
+          "screen": {
+            "trades": 8,
+            "nominal_pnl": -44.17000000000026,
+            "return_on_5000_pct": -0.8834000000000052,
+            "realized_drawdown_usd": 82.63000000000011,
+            "worst_trade_usd": -50.63999999999996,
+            "worst_day_usd": -79.04,
+            "profit_factor": 0.4654483843640299,
+            "expectancy": -5.521250000000032,
+            "gross_profit": 38.459999999999845,
+            "stress10bps_each_side": -56.442560000000256
+          },
+          "trade_retention": 1.0,
+          "gross_profit_preserved": 1.0
+        },
+        "oct12_diagnostic": {
+          "parent": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "screen": {
+            "trades": 0,
+            "nominal_pnl": 0.0,
+            "return_on_5000_pct": 0.0,
+            "realized_drawdown_usd": 0.0,
+            "worst_trade_usd": null,
+            "worst_day_usd": null,
+            "profit_factor": null,
+            "expectancy": null,
+            "gross_profit": 0.0,
+            "stress10bps_each_side": 0.0
+          },
+          "trade_retention": null,
+          "gross_profit_preserved": null
+        },
+        "all": {
+          "parent": {
+            "trades": 42,
+            "nominal_pnl": 25.42999999999959,
+            "return_on_5000_pct": 0.5085999999999918,
+            "realized_drawdown_usd": 228.31000000000026,
+            "worst_trade_usd": -50.63999999999996,
+            "worst_day_usd": -79.04,
+            "profit_factor": 1.0816975616024658,
+            "expectancy": 0.6054761904761807,
+            "gross_profit": 336.6999999999996,
+            "stress10bps_each_side": -48.8549600000004
+          },
+          "screen": {
+            "trades": 42,
+            "nominal_pnl": 25.42999999999959,
+            "return_on_5000_pct": 0.5085999999999918,
+            "realized_drawdown_usd": 228.31000000000026,
+            "worst_trade_usd": -50.63999999999996,
+            "worst_day_usd": -79.04,
+            "profit_factor": 1.0816975616024658,
+            "expectancy": 0.6054761904761807,
+            "gross_profit": 336.6999999999996,
+            "stress10bps_each_side": -48.8549600000004
+          },
+          "trade_retention": 1.0,
+          "gross_profit_preserved": 1.0
+        }
+      },
+      "accepted_for_activation": false,
+      "reason": "Full causal replay and independent prospective evidence missing"
+    }
+  ],
+  "independent_holdout": false,
+  "limitations": "Causal admission screens on recorded opportunities, NOT quote-tape replay.\n\nKept trades retain parent quantities and exits. This cannot evaluate altered\nentry decisions, cash reuse, new signals, or exit paths. No independent holdout.\n"
+}

@@ -31,6 +31,8 @@ COPY generation_three_paper_tracker.py .
 COPY generation_four_paper_tracker.py .
 COPY generation_five_paper_tracker.py .
 COPY generation_six_paper_tracker.py .
+COPY generation_seven_paper_tracker.py .
+COPY GENERATION_SEVEN_RUNTIME_HASHES.json .
 COPY GENERATION_SIX_RETIREMENT.json .
 COPY GENERATION_SIX_RUNTIME_HASHES.json .
 COPY GENERATION_THREE_RETIREMENT_PROPOSAL.json .
@@ -110,3 +112,7 @@ RUN ENABLE_G5_PAPER=1 python -c "from strategies import registry, generation_fiv
 ARG G6_BUILD_REVISION=unavailable
 RUN python -c "import os,pathlib; pathlib.Path('/app/G6_BUILD_REVISION').write_text(os.environ.get('G6_BUILD_REVISION','unavailable')+'\\n')"
 RUN ENABLE_G3_PAPER=1 ENABLE_G4_PAPER=1 ENABLE_G5_PAPER=1 ENABLE_G6_PAPER=1 G3_RETIREMENT_PLAN_PATH=/app/GENERATION_THREE_RETIREMENT_PROPOSAL.json python -c "from strategies import registry, generation_six as g; import generation_six_paper_tracker; assert not registry.FAILED_STRATEGIES; assert len(g.IDS & registry.flash_strategy_configs().keys()) == 240; assert sum(s.name in g.MINUTE_IDS for s in registry.MINUTE_STRATEGIES) == 160; assert len(g.ALL_IDS)==400"
+
+ARG G7_BUILD_REVISION=unavailable
+RUN python -c "import os,pathlib; pathlib.Path('/app/G7_BUILD_REVISION').write_text(os.environ.get('G7_BUILD_REVISION','unavailable')+'\\n')"
+RUN ENABLE_G7_PAPER=1 python -c "from strategies import registry, generation_seven as g; assert not registry.FAILED_STRATEGIES; assert sum(s.name in g.MINUTE_IDS for s in registry.MINUTE_STRATEGIES)==4"

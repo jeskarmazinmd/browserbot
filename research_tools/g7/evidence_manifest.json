@@ -1,0 +1,69 @@
+{
+  "paper_signal_v4_bidask_independent_outcomes.jsonl": {
+    "bytes": 336897362,
+    "sha256": "0bc03b6a92992b094ecd270bccdd0ef4b5a7b3440cc900e48b38a62b7d98e141",
+    "events": {
+      "PAPER_ENTRY_REJECTED": 126774,
+      "PAPER_ENTRY": 106776,
+      "PAPER_EXIT": 106645
+    }
+  },
+  "paper_generation_one_bidask_independent_outcomes.jsonl": {
+    "bytes": 28461273,
+    "sha256": "842ee58945607e6e92841e60fd65d03bbf685b19598ef457b1a2b52066f1e381",
+    "events": {
+      "PAPER_ENTRY": 2744,
+      "PAPER_ENTRY_REJECTED": 7105,
+      "PAPER_EXIT": 2742,
+      "PAPER_PARTIAL_EXIT": 73
+    }
+  },
+  "paper_generation_two_bidask_independent_outcomes.jsonl": {
+    "bytes": 26509385,
+    "sha256": "a0aa10295ce570d9ecddf4449b92843b012525b8347c0b0dcd9c85f8f825a196",
+    "events": {
+      "PAPER_ENTRY": 1580,
+      "PAPER_ENTRY_REJECTED": 8893,
+      "PAPER_EXIT": 1555,
+      "PAPER_PARTIAL_EXIT": 85
+    }
+  },
+  "paper_generation_three_bidask_independent_outcomes.jsonl": {
+    "bytes": 32098862,
+    "sha256": "c2d17a42447d24e12ba25c5c937d48b7dc0063082dfa2cba90d6b8fce13f0851",
+    "events": {
+      "PAPER_ENTRY": 1735,
+      "PAPER_ENTRY_REJECTED": 8548,
+      "PAPER_EXIT": 1716,
+      "PAPER_PARTIAL_EXIT": 14
+    }
+  },
+  "paper_generation_four_bidask_independent_outcomes.jsonl": {
+    "bytes": 634568,
+    "sha256": "388d973a15c3e0dbabfd78b5e7b416623a1be5335d27a517fd0ae4c0c819be38",
+    "events": {
+      "PAPER_ENTRY": 56,
+      "PAPER_EXIT": 56,
+      "PAPER_ENTRY_REJECTED": 74
+    }
+  },
+  "paper_generation_five_bidask_independent_outcomes.jsonl": {
+    "bytes": 3197525,
+    "sha256": "57dd0781b29d7a6c49b19cd062bc5a36584b99e4dcb859d927a0eda02143783e",
+    "events": {
+      "PAPER_ENTRY": 211,
+      "PAPER_ENTRY_REJECTED": 784,
+      "PAPER_EXIT": 211
+    }
+  },
+  "paper_generation_six_bidask_independent_outcomes.jsonl": {
+    "bytes": 9951651,
+    "sha256": "d713542fd0cf137f3c78b619800c225450223c8147d138ac119d55b9270c8d15",
+    "events": {
+      "PAPER_ENTRY_REJECTED": 2954,
+      "PAPER_ENTRY": 118,
+      "PAPER_EXIT": 95,
+      "PAPER_PARTIAL_EXIT": 5
+    }
+  }
+}

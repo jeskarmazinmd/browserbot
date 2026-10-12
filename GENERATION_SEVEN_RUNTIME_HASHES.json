@@ -1,0 +1,19 @@
+{
+  "Dockerfile": "90dda5fdc05d474d7b3cf1389e0a9b9f0adca8ab83275e01b0486312640354f7",
+  "GENERATION_SIX_RUNTIME_HASHES.json": "87bd5d3f52bdf5b75ea3787b54b8207964732433e1416785ab7602b99470ec9e",
+  "executable_paper_engine.py": "0abcbd444aae796df261f5cc59629cc3e9ff6fd8696e492f6e88a04d3b6c8b9b",
+  "fly.toml": "ea7d39d0aa6cbabfd2b3d6c2f157d7777b26146b24213d68b1d8a2c6368c5aca",
+  "generation_one_paper_tracker.py": "6910af7ac87f99e15b57177ccbae79291b73539f356f48a8706c448035badce6",
+  "generation_seven_paper_tracker.py": "648a21803dc457836b35bab55a1c42e6af76442c89d3a3596fa5fb200bcef46c",
+  "generation_two_paper_tracker.py": "8662fd66cf204a82d0e98bbda251828751af89b189e28a086c63340d8463cff5",
+  "live_strategy_runner.py": "d13cade750df6b48e108cf82446d1a9486cfac3882f86a6eb84267f1f9c7cb2c",
+  "paper_outcome_tracker.py": "371e5d8979b9556feb0884928744d51310ff3b9f5bb70a5c71cc0398fa29361f",
+  "reporting/all_engine_performance.py": "6dc2f2e068ebdd4d356a790ac1e5231a8f22477b6d83ab078248fb46d2d26e70",
+  "reporting/generation_seven_performance.py": "8567c4385026e4e473319b3de9ebaa14676948ad9b02fabe0b5f55a4a836ef49",
+  "research_tools/g7/evidence_manifest.json": "14173be4b5bf91c4a69ef243016a9d4b64cd887b504f1b236174c5f1b373a7fd",
+  "research_tools/g7/verify_production.py": "d330f8ac44522748f850bc133ae8739861171a144a608e4e58efafd068b38f97",
+  "strategies/generation_seven.py": "8c9b228d2ebfcf7a942ae80ea483ec328be13a9dcddea1c8b572167c7b024db1",
+  "strategies/registry.py": "0b1b0845d59e0a8dd94890fd240654ef49f0fcb790c644643efd94e16d41100b",
+  "strategies/strategy_cmdbrd1.py": "f4eeaa440a275c81224cdde9456bbba61a8735c9df56cac7abf5391e11705a53",
+  "strategies/strategy_cmdrot1.py": "cd51b2e14768a3b9edde9a196402a08ddf3e5ce7bd4eb46d7a2e06669aa44357"
+}
