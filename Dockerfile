@@ -115,4 +115,4 @@ RUN ENABLE_G3_PAPER=1 ENABLE_G4_PAPER=1 ENABLE_G5_PAPER=1 ENABLE_G6_PAPER=1 G3_R
 
 ARG G7_BUILD_REVISION=unavailable
 RUN python -c "import os,pathlib; pathlib.Path('/app/G7_BUILD_REVISION').write_text(os.environ.get('G7_BUILD_REVISION','unavailable')+'\\n')"
-RUN ENABLE_G7_PAPER=1 python -c "from strategies import registry, generation_seven as g; assert not registry.FAILED_STRATEGIES; assert sum(s.name in g.MINUTE_IDS for s in registry.MINUTE_STRATEGIES)==4"
+RUN ENABLE_G7_PAPER=1 python -c "from strategies import registry, generation_seven as g; assert not registry.FAILED_STRATEGIES; assert sum(s.name in g.MINUTE_IDS for s in registry.MINUTE_STRATEGIES)==len(g.MINUTE_IDS)"
