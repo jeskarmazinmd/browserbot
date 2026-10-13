@@ -19,6 +19,9 @@ G4_ENABLED = os.environ.get('ENABLE_G4_PAPER', '0') == '1'
 G5_ENABLED = os.environ.get('ENABLE_G5_PAPER', '0') == '1'
 G6_ENABLED = os.environ.get('ENABLE_G6_PAPER', '0') == '1'
 G7_ENABLED = os.environ.get('ENABLE_G7_PAPER', '0') == '1'
+G8_ENABLED = os.environ.get('ENABLE_G8_PAPER', '0') == '1'
+if G8_ENABLED:
+    from . import generation_eight
 
 from . import strategy_a
 from . import strategy_b
@@ -240,6 +243,8 @@ if G6_ENABLED:
 
 if G7_ENABLED:
     STRATEGY_CLASSES.extend(('generation_seven', sid + 'Strategy') for sid in sorted(generation_seven.MINUTE_IDS))
+if G8_ENABLED:
+    STRATEGY_CLASSES.extend(('generation_eight', sid + 'Strategy') for sid in sorted(generation_eight.MINUTE_IDS))
 
 # A/B/D/H remain on the established pending-rebound engine until their
 # snapshot replacements reproduce the full legacy event schema.

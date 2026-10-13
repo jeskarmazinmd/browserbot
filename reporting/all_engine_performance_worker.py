@@ -41,9 +41,10 @@ def atomic_json(path, value):
 def load_history():
     try:
         value = json.loads(HISTORY_JSON.read_text())
-        if value.get("version") == VERSION and isinstance(value.get("days"), dict):
+        if isinstance(value.get("days"), dict):
             return value
-    except (OSError, ValueError, TypeError, AttributeError):
+        raise ValueError('Existing daily history has an invalid schema; refuse reset')
+    except FileNotFoundError:
         pass
     return {"version": VERSION, "days": {}}
 
@@ -65,7 +66,7 @@ def render_history(history):
         line = f"{name:<20}"
         for day in visible:
             row = history["days"][day]["modules"].get(name)
-            line += f"{row['return_pct']:+11.2f}%" if row else f"{'-':>12}"
+            line += f"{row['return_pct']:+11.2f}%" if row and row.get('return_pct') is not None else f"{'-':>12}"
         lines.append(line)
     return "\n".join(lines) + "\n"
 

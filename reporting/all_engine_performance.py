@@ -30,6 +30,8 @@ from reporting.generation_four_performance import calculate_generation_four
 from reporting.generation_five_performance import calculate_generation_five
 from reporting.generation_six_performance import calculate_generation_six
 from reporting.generation_seven_performance import calculate_generation_seven
+from reporting.generation_eight_performance import calculate_generation_eight
+from reporting.cutoff_quotes import frozen_books, fresh_bid
 
 
 NY = ZoneInfo("America/New_York")
@@ -380,6 +382,8 @@ def calculate(root="/data", day=None, as_of=None):
     as_of = as_of or datetime.now(timezone.utc)
     day = day or as_of.astimezone(NY).date().isoformat()
     cutoff = min(as_of, cutoff_for(day)) if day == as_of.astimezone(NY).date().isoformat() else cutoff_for(day)
+    # Snapshot the rich books before any expensive ledger/tape scan.
+    rich_books = frozen_books(root, day, cutoff)
     marks = load_market_marks(root, day, cutoff)
 
     # Main independent BA strategies use the collector's live L1 universe.
@@ -395,6 +399,7 @@ def calculate(root="/data", day=None, as_of=None):
 
     trades, modern_names = defaultdict(list), set()
     independent_capital_rows = defaultdict(list)
+    unknown_main = set()
 
     def add(name, opened, closed, pnl, engine, identifier, *, is_open=False):
         if not name or opened is None or pnl is None:
@@ -457,7 +462,7 @@ def calculate(root="/data", day=None, as_of=None):
                 symbol = str(entry.get("symbol") or "").upper()
 
                 if engine == "main_bidask_independent":
-                    quote = live_l1_reader.quotes([symbol]).get(symbol, {})
+                    quote = fresh_bid(rich_books.get(symbol, {}), cutoff)
                 else:
                     quote = equity_quote(symbol, marks)
 
@@ -470,6 +475,8 @@ def calculate(root="/data", day=None, as_of=None):
                     pnl = notional * (bid / entry_price - 1.0)
                 except (KeyError, TypeError, ValueError, ZeroDivisionError):
                     diagnostics["unmarked_by_engine"][engine] += 1
+                    if engine == "main_bidask_independent":
+                        unknown_main.add(f"{strategy_name(entry)}BA")
                     continue
 
                 closed_at = cutoff
@@ -497,6 +504,7 @@ def calculate(root="/data", day=None, as_of=None):
                         exit_row.get("exit_price") if recorded else bid
                     ),
                     "filled_qty": entry.get("filled_qty"),
+                    "is_open": not recorded,
                 })
 
     add_single_leg_execution_ledger(
@@ -664,7 +672,12 @@ def calculate(root="/data", day=None, as_of=None):
             **result,
             "pnl": result["end_equity"] - STARTING_CASH,
             "engine": "main_bidask_independent",
+            "accounting": "risk-sized $5k resimulation of executable recorded opportunities",
+            "actual_fill_quantities": False,
         }
+    for name in unknown_main:
+        modules[name] = {**modules.get(name, {}), "engine": "main_bidask_independent",
+                         "return_pct": None, "pnl": None, "status": "mark_unavailable"}
     research_modules, research_diagnostics = calculate_generation_one(
         root, day, cutoff, marks, equity_quote
     )
@@ -677,14 +690,38 @@ def calculate(root="/data", day=None, as_of=None):
     modules.update(g4_modules)
     g5_modules, g5_diagnostics = calculate_generation_five(root, day, cutoff, marks, equity_quote)
     modules.update(g5_modules)
-    g6_modules, g6_diagnostics = calculate_generation_six(root, day, cutoff, marks, equity_quote)
+    g6_modules, g6_diagnostics = calculate_generation_six(root, day, cutoff, marks,
+        lambda symbol, context: rich_books.get(symbol, {}))
     modules.update(g6_modules)
 
     g7_modules, g7_diagnostics = calculate_generation_seven(
         root, day, cutoff, marks,
-        lambda symbol, context: live_l1_reader.quotes([symbol]).get(symbol, {}),
+        lambda symbol, context: rich_books.get(symbol, {}),
     )
     modules.update(g7_modules)
+    g8_modules, g8_diagnostics = calculate_generation_eight(root, day, cutoff, marks,
+        lambda symbol, context: rich_books.get(symbol, {}))
+    modules.update(g8_modules)
+
+    # Known generation accounts missing a mark are visible as unknown, not
+    # silently absent or scored as zero. No account is created by reporting.
+    for number, ids, engine in (
+        ('one', __import__('generation_one_paper_tracker').IDS, 'generation_one_bidask_independent'),
+        ('two', __import__('generation_two_paper_tracker').IDS, 'generation_two_bidask_independent'),
+        ('three', __import__('generation_three_paper_tracker').IDS, 'generation_three_bidask_independent'),
+        ('four', __import__('generation_four_paper_tracker').IDS, 'generation_four_bidask_independent'),
+        ('five', __import__('generation_five_paper_tracker').IDS, 'generation_five_bidask_independent'),
+        ('six', __import__('generation_six_paper_tracker').IDS, 'generation_six_bidask_independent'),
+        ('seven', __import__('generation_seven_paper_tracker').IDS, 'generation_seven_bidask_independent'),
+    ):
+        birth_path = root / ('paper_generation_' + number + '_bidask_independent_births.json')
+        births = json.loads(birth_path.read_text()) if birth_path.exists() else {}
+        for sid in ids:
+            if (sid in births and parse_time(births[sid]) <= cutoff and sid+'BA' not in modules
+                    and output_enabled(sid) and output_enabled(sid+'BA') and not output_is_pruned(sid)):
+                modules[sid+'BA'] = dict(engine=engine, return_pct=None, pnl=None,
+                    status='accounting_or_mark_unavailable', prospective_start_utc=births[sid],
+                    actual_fill_quantities=True, portfolio_combinable=False)
 
     # Preserve historical ledgers while keeping retired outputs out of active
     # snapshots and future daily-history rows.
@@ -692,9 +729,10 @@ def calculate(root="/data", day=None, as_of=None):
         name: row for name, row in modules.items()
         if not output_is_pruned(name) and output_enabled(name)
     }
-    ranked = sorted(modules.items(), key=lambda item: item[1]["return_pct"], reverse=True)
+    ranked = sorted(modules.items(), key=lambda item: (item[1]["return_pct"] is None,
+                    -(item[1]["return_pct"] or 0.0), item[0]))
     return {
-        "calculation_version": 2,
+        "calculation_version": 4,
         "day": day,
         "as_of": cutoff.isoformat(),
         "starting_cash": STARTING_CASH,
@@ -712,6 +750,7 @@ def calculate(root="/data", day=None, as_of=None):
             "generation_five": g5_diagnostics,
             "generation_six": g6_diagnostics,
             "generation_seven": g7_diagnostics,
+            "generation_eight": g8_diagnostics,
         },
     }
 
@@ -724,7 +763,8 @@ def render_snapshot(snapshot):
         "-" * 55,
     ]
     for rank, (name, row) in enumerate(snapshot["modules"].items(), 1):
-        lines.append(f"{rank:>4}  {name:<18} {row['engine']:<16} {row['return_pct']:>+8.2f}%")
+        value = f"{row['return_pct']:+8.2f}%" if row.get('return_pct') is not None else '  UNKNOWN'
+        lines.append(f"{rank:>4}  {name:<18} {row['engine']:<16} {value}")
     lines.extend([
         "-" * 55,
         f"Modules ranked: {snapshot['module_count']}",

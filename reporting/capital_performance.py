@@ -71,6 +71,7 @@ def simulate_day(
                 exit_price,
                 stop,
                 row.get("filled_qty"),
+                bool(row.get("is_open", False)),
             )
         )
 
@@ -80,6 +81,7 @@ def simulate_day(
     deployed = 0.0
     active = []
     taken = 0
+    open_taken = closed_taken = 0
     skipped = 0
     max_positions = 0
     peak_deployed = 0.0
@@ -104,7 +106,7 @@ def simulate_day(
             record_equity()
 
     for order, item in enumerate(prepared):
-        entry_time, _, _, exit_time, entry, exit_price, stop, filled_qty = item
+        entry_time, _, _, exit_time, entry, exit_price, stop, filled_qty, is_open = item
         release_until(entry_time)
 
         equity = cash + deployed
@@ -133,6 +135,8 @@ def simulate_day(
         cash -= cost
         deployed += cost
         taken += 1
+        open_taken += int(is_open)
+        closed_taken += int(not is_open)
         holds.append((exit_time - entry_time).total_seconds())
 
         heapq.heappush(
@@ -152,6 +156,8 @@ def simulate_day(
     return {
         "signals": len(prepared),
         "taken": taken,
+        "open_taken": open_taken,
+        "closed_taken": closed_taken,
         "skipped": skipped,
         "end_equity": end_equity,
         "return_pct": (end_equity / starting_cash - 1.0) * 100.0,

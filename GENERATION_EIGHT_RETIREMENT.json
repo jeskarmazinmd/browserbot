@@ -1,0 +1,249 @@
+{
+  "schema": "G8_RETIREMENT_V1",
+  "approved_utc": "2026-10-13T20:34:29+00:00",
+  "baseline_commit": "fc22309f399dfb089e135022dc96b0c5abd2e3ee",
+  "permanent_report_ids": [
+    "PT315FD200BA",
+    "G2PGK5BA",
+    "G2PGE2BA",
+    "G2PGD4BA",
+    "G2PGK20BA",
+    "G2PGCTLBA",
+    "G2PGK10BA",
+    "PT315H10BA",
+    "PT315PLOWBA",
+    "M2BA",
+    "ARXP3S35BA",
+    "PT315T75BA",
+    "G2PGB2BA",
+    "G1PGT75BA",
+    "RS1BA",
+    "RS2BA",
+    "C3N25S10NH015LATEBA",
+    "PMIDBA",
+    "G2PGB1BA",
+    "G2PGT50BA",
+    "FXEUR1",
+    "PT315VU40BA",
+    "QV4VB608BA",
+    "CMDMETMR1BA"
+  ],
+  "paused_report_ids": [
+    "G2PGU100BA",
+    "G2PGU200BA"
+  ],
+  "ranking_evidence": [
+    {
+      "module": "PT315FD200BA",
+      "sum_finalized_pct": -14.894200000000033,
+      "sessions": 9,
+      "closed": 31,
+      "profit_factor": 0.25118809102083867,
+      "reason": "eight-session adverse-tail review"
+    },
+    {
+      "module": "G2PGK5BA",
+      "sum_finalized_pct": -12.12060000000001,
+      "sessions": 6,
+      "closed": 69,
+      "profit_factor": 0.4019421116516829,
+      "reason": "high_frequency_adverse"
+    },
+    {
+      "module": "G2PGE2BA",
+      "sum_finalized_pct": -11.673600000000004,
+      "sessions": 6,
+      "closed": 57,
+      "profit_factor": 0.43131619201652405,
+      "reason": "high_frequency_adverse"
+    },
+    {
+      "module": "G2PGD4BA",
+      "sum_finalized_pct": -11.266000000000004,
+      "sessions": 6,
+      "closed": 70,
+      "profit_factor": 0.4842378018074107,
+      "reason": "high_frequency_adverse"
+    },
+    {
+      "module": "G2PGK20BA",
+      "sum_finalized_pct": -11.2592,
+      "sessions": 6,
+      "closed": 71,
+      "profit_factor": 0.4877058877058874,
+      "reason": "high_frequency_adverse"
+    },
+    {
+      "module": "G2PGCTLBA",
+      "sum_finalized_pct": -10.816200000000002,
+      "sessions": 6,
+      "closed": 73,
+      "profit_factor": 0.4774429188447526,
+      "reason": "high_frequency_adverse"
+    },
+    {
+      "module": "G2PGK10BA",
+      "sum_finalized_pct": -10.437600000000007,
+      "sessions": 6,
+      "closed": 73,
+      "profit_factor": 0.48931922930141947,
+      "reason": "high_frequency_adverse"
+    },
+    {
+      "module": "PT315H10BA",
+      "sum_finalized_pct": -9.50839999999995,
+      "sessions": 11,
+      "closed": 114,
+      "profit_factor": 0.5440156387942995,
+      "reason": "mature_adverse"
+    },
+    {
+      "module": "PT315PLOWBA",
+      "sum_finalized_pct": -9.1538,
+      "sessions": 12,
+      "closed": 49,
+      "profit_factor": 0.44618416851099474,
+      "reason": "mature_adverse"
+    },
+    {
+      "module": "M2BA",
+      "sum_finalized_pct": -8.531600000000129,
+      "sessions": 16,
+      "closed": 2066,
+      "profit_factor": 0.7705345601268737,
+      "reason": "mature_adverse"
+    },
+    {
+      "module": "ARXP3S35BA",
+      "sum_finalized_pct": -8.28680000000006,
+      "sessions": 12,
+      "closed": 425,
+      "profit_factor": 0.5713537177593583,
+      "reason": "mature_adverse"
+    },
+    {
+      "module": "PT315T75BA",
+      "sum_finalized_pct": -7.574799999999938,
+      "sessions": 13,
+      "closed": 210,
+      "profit_factor": 0.6930006836499715,
+      "reason": "mature_adverse"
+    },
+    {
+      "module": "G2PGB2BA",
+      "sum_finalized_pct": -7.019200000000011,
+      "sessions": 6,
+      "closed": 69,
+      "profit_factor": 0.39313874671462096,
+      "reason": "high_frequency_adverse"
+    },
+    {
+      "module": "G1PGT75BA",
+      "sum_finalized_pct": -6.994999999999999,
+      "sessions": 8,
+      "closed": 101,
+      "profit_factor": 0.6644086011187978,
+      "reason": "high_frequency_adverse"
+    },
+    {
+      "module": "RS1BA",
+      "sum_finalized_pct": -6.153136000000103,
+      "sessions": 16,
+      "closed": 1879,
+      "profit_factor": 0.6799263143481871,
+      "reason": "mature_adverse"
+    },
+    {
+      "module": "RS2BA",
+      "sum_finalized_pct": -5.811336000000223,
+      "sessions": 16,
+      "closed": 1976,
+      "profit_factor": 0.6639721983374426,
+      "reason": "mature_adverse"
+    },
+    {
+      "module": "C3N25S10NH015LATEBA",
+      "sum_finalized_pct": -5.692235999999884,
+      "sessions": 16,
+      "closed": 113,
+      "profit_factor": 0.5571128165738312,
+      "reason": "mature_adverse"
+    },
+    {
+      "module": "PMIDBA",
+      "sum_finalized_pct": -5.4779219999999125,
+      "sessions": 15,
+      "closed": 129,
+      "profit_factor": 0.8372567389680163,
+      "reason": "mature_adverse"
+    },
+    {
+      "module": "G2PGB1BA",
+      "sum_finalized_pct": -3.972600000000005,
+      "sessions": 6,
+      "closed": 54,
+      "profit_factor": 0.5277123903274124,
+      "reason": "high_frequency_adverse"
+    },
+    {
+      "module": "G2PGT50BA",
+      "sum_finalized_pct": -3.612799999999998,
+      "sessions": 6,
+      "closed": 50,
+      "profit_factor": 0.7007934010236364,
+      "reason": "high_frequency_adverse"
+    },
+    {
+      "module": "FXEUR1",
+      "sum_finalized_pct": -3.325999999999718,
+      "sessions": 16,
+      "closed": 150,
+      "profit_factor": 0.7926526932612278,
+      "reason": "mature native loss; execution qualification absent"
+    },
+    {
+      "module": "PT315VU40BA",
+      "sum_finalized_pct": -3.095199999999987,
+      "sessions": 12,
+      "closed": 72,
+      "profit_factor": 0.7434322033898298,
+      "reason": "mature_adverse"
+    },
+    {
+      "module": "QV4VB608BA",
+      "sum_finalized_pct": -0.5365999999999982,
+      "sessions": 12,
+      "closed": 41,
+      "profit_factor": 0.9061970239216404,
+      "reason": "mature_adverse"
+    },
+    {
+      "module": "CMDMETMR1BA",
+      "sum_finalized_pct": -0.44360000000008837,
+      "sessions": 16,
+      "closed": 80,
+      "profit_factor": 0.8368888578023347,
+      "reason": "mature_adverse"
+    },
+    {
+      "module": "G2PGU100BA",
+      "sum_finalized_pct": -10.908400000000011,
+      "sessions": 6,
+      "closed": 29,
+      "profit_factor": 0.3860441032452686,
+      "worst_trade": -186.7299999999999,
+      "reason": "Reversible tail-risk quarantine; insufficient sample for permanent performance retirement."
+    },
+    {
+      "module": "G2PGU200BA",
+      "sum_finalized_pct": -8.975999999999997,
+      "sessions": 6,
+      "closed": 15,
+      "profit_factor": 0.2987390427975436,
+      "worst_trade": -186.7299999999999,
+      "reason": "Reversible tail-risk quarantine; insufficient sample for permanent performance retirement."
+    }
+  ],
+  "preserve_definitions_and_outcomes": true,
+  "preserve_residual_exits": true
+}

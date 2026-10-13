@@ -142,6 +142,11 @@ def load_symbols():
         .tolist()
     )
     symbols = [symbol for symbol in symbols if symbol]
+    if (os.environ.get('ENABLE_G8_PAPER', '0') == '1'
+            or Path('/data/paper_generation_eight_bidask_independent_births.json').exists()):
+        # Discovery quotes only; do not change broker/legacy eligibility.
+        from strategies.generation_eight import SYMBOLS as g8_symbols
+        symbols = sorted(set(symbols) | set(g8_symbols))
     if not symbols:
         raise RuntimeError(f"Research-universe cache contains zero symbols: {p}")
 

@@ -410,12 +410,13 @@ class GenerationOneExecutionTests(unittest.TestCase):
             self.assertTrue(recovered.register_signal(signal("G1PGN2500", "two", symbol="ABC"), quote(), NOW))
             self.assertLess(recovered._cash_for("G1PGN2500", NOW)[1], 30)
 
-    def test_unmarked_portfolio_is_omitted_instead_of_false_zero_return(self):
+    def test_unmarked_portfolio_is_explicit_unknown_instead_of_false_zero_return(self):
         with tempfile.TemporaryDirectory() as temp:
             tracker = self.tracker(temp)
             tracker.register_signal(signal(), quote(), NOW)
             report = calculate(temp, day="2026-10-01", as_of=NOW)
-            self.assertNotIn("G1PQGBA", report["modules"])
+            self.assertIsNone(report["modules"]["G1PQGBA"]["return_pct"])
+            self.assertEqual(report["modules"]["G1PQGBA"]["status"], "accounting_or_mark_unavailable")
             self.assertEqual(report["diagnostics"]["generation_one"]["unmarked"], 1)
 
 

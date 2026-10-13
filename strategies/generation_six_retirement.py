@@ -26,7 +26,8 @@ def report_retired_ids():return _sets()[0] if enabled() else frozenset()
 def entry_retired_ids():return _sets()[1] if enabled() else frozenset()
 def entry_retired(sid):
  sid=str(sid or '').upper()
- return sid in report_retired_ids() or sid in entry_retired_ids()
+ from .generation_eight_retirement import entry_retired as g8_retired
+ return sid in report_retired_ids() or sid in entry_retired_ids() or g8_retired(sid)
 def evaluation_retired_ids():
  from .pruning import DEPENDENCY_PROTECTED_STRATEGY_IDS
  return entry_retired_ids()-DEPENDENCY_PROTECTED_STRATEGY_IDS-{'PMID'}

@@ -200,6 +200,8 @@ class AllEnginePerformanceTests(unittest.TestCase):
                         "symbol": "XYZ",
                         "bid": 10.20,
                         "ask": 10.22,
+                        "quote_time_ms": datetime(2026, 8, 11, 18, 0, tzinfo=timezone.utc).timestamp() * 1000,
+                        "realtime": True,
                         "collector_observed_at": "2026-08-11T18:00:00+00:00",
                     }
                 },
