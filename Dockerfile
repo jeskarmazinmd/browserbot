@@ -2,6 +2,9 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# Preserve the build inputs checked by the runtime provenance manifests.
+COPY Dockerfile fly.toml /app/
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
