@@ -69,6 +69,8 @@ class OptionsRVTracker:
         return buys >= sells and buys > 0 and sells > 0
 
     def open(self, signal, now):
+        from strategies.generation_nine_retirement import entry_retired
+        if entry_retired(signal.get("strategy_id")):return False
         key = str(signal["setup_id"])
         if key in self.seen or key in self.active:
             return False

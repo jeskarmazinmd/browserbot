@@ -36,6 +36,9 @@ COPY generation_five_paper_tracker.py .
 COPY generation_six_paper_tracker.py .
 COPY generation_seven_paper_tracker.py .
 COPY generation_eight_paper_tracker.py .
+COPY generation_nine_paper_tracker.py .
+COPY GENERATION_NINE_RETIREMENT.json .
+COPY GENERATION_NINE_RUNTIME_HASHES.json .
 COPY GENERATION_EIGHT_CATALOG.json .
 COPY GENERATION_EIGHT_RETIREMENT.json .
 COPY GENERATION_EIGHT_RUNTIME_HASHES.json .
@@ -127,3 +130,7 @@ RUN ENABLE_G7_PAPER=1 python -c "from strategies import registry, generation_sev
 ARG G8_BUILD_REVISION=unavailable
 RUN python -c "import os,pathlib; pathlib.Path('/app/G8_BUILD_REVISION').write_text(os.environ.get('G8_BUILD_REVISION','unavailable'))"
 RUN ENABLE_G8_PAPER=1 ENABLE_G8_RETIREMENTS=1 python -c "from strategies import registry, generation_eight as g; import generation_eight_paper_tracker; assert not registry.FAILED_STRATEGIES; assert sum(s.name in g.MINUTE_IDS for s in registry.MINUTE_STRATEGIES)==120"
+
+RUN python -c "from strategies.generation_nine import IDS; from generation_nine_paper_tracker import GenerationNineTracker; assert len(IDS)==400"
+ARG G9_BUILD_REVISION=unavailable
+RUN python -c "import os,pathlib; pathlib.Path('/app/G9_BUILD_REVISION').write_text(os.environ.get('G9_BUILD_REVISION','unavailable'))"

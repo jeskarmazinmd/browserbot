@@ -1,0 +1,15 @@
+----------------------------------------------------------------------
+Ran 224 tests in 6.547s
+
+OK
+G9 local checks and runtime source hashes passed
+
+All Python assertions extracted from Dockerfile passed locally. Docker is not installed in this environment; no Docker image build or Fly deployment was performed.
+
+Additional legacy suites exposed three failures that were reproduced on the untouched baseline 4fe31bf in a separate worktree:
+- tests.test_statarb6: two tests expect six active legacy modules, but the baseline has two.
+- tests.test_options_rv6.test_defined_risk_credit_spread_crosses_quotes: its baseline exit expectation fails under the existing cash-flow model.
+These were not changed as part of G9. Relevant options cash-flow and worker wiring suites pass.
+
+Production-environment retirement check: all 130 retained IDs remain output-enabled; all 466 exact retired IDs are output-disabled. Legacy source producers are preserved; new paper entries and active rankings are gated.
+Benchmark: research/g9/benchmark.json (synthetic compute evidence only).

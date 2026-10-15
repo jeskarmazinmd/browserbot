@@ -1,0 +1,7766 @@
+{
+  "schema": "G9_RETIREMENT_V1",
+  "source_sha256": "613d60ef63cbb1736c1ae48026647ce38933e4f1f5a3841781c111ace0e5223a",
+  "days": [
+    "2026-10-08",
+    "2026-10-09",
+    "2026-10-12",
+    "2026-10-13",
+    "2026-10-15"
+  ],
+  "reason": "User approved exact supplied ranks 131\u2013596; rounded displays retained, no re-ranking",
+  "ranking": [
+    {
+      "rank": 1,
+      "module_id": "STHEDGE2",
+      "daily_return_pct": [
+        1.02,
+        0.28,
+        0.17,
+        0.34,
+        0.27
+      ],
+      "reported_total_pct": 2.08
+    },
+    {
+      "rank": 2,
+      "module_id": "STRESMOM1",
+      "daily_return_pct": [
+        1.5,
+        0.35,
+        null,
+        -0.04,
+        -0.22
+      ],
+      "reported_total_pct": 1.6
+    },
+    {
+      "rank": 3,
+      "module_id": "G3MPR150BA",
+      "daily_return_pct": [
+        0.0,
+        -0.03,
+        1.17,
+        0.0,
+        0.38
+      ],
+      "reported_total_pct": 1.52
+    },
+    {
+      "rank": 4,
+      "module_id": "G3QS30BA",
+      "daily_return_pct": [
+        0.0,
+        0.48,
+        0.63,
+        0.27,
+        0.0
+      ],
+      "reported_total_pct": 1.37
+    },
+    {
+      "rank": 5,
+      "module_id": "G3QV425X1000BA",
+      "daily_return_pct": [
+        0.28,
+        0.48,
+        0.63,
+        -0.06,
+        0.0
+      ],
+      "reported_total_pct": 1.31
+    },
+    {
+      "rank": 6,
+      "module_id": "G3CGLB30BA",
+      "daily_return_pct": [
+        -0.06,
+        0.27,
+        0.03,
+        1.02,
+        -0.18
+      ],
+      "reported_total_pct": 1.09
+    },
+    {
+      "rank": 7,
+      "module_id": "G3QV425X600BA",
+      "daily_return_pct": [
+        0.0,
+        0.48,
+        0.63,
+        -0.06,
+        0.0
+      ],
+      "reported_total_pct": 1.04
+    },
+    {
+      "rank": 8,
+      "module_id": "G3MPR100BA",
+      "daily_return_pct": [
+        0.0,
+        0.1,
+        0.61,
+        0.0,
+        0.31
+      ],
+      "reported_total_pct": 1.02
+    },
+    {
+      "rank": 9,
+      "module_id": "G3QCTLBA",
+      "daily_return_pct": [
+        -0.13,
+        0.48,
+        0.53,
+        0.06,
+        0.0
+      ],
+      "reported_total_pct": 0.93
+    },
+    {
+      "rank": 10,
+      "module_id": "G3QS20BA",
+      "daily_return_pct": [
+        0.0,
+        0.23,
+        0.63,
+        -0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.85
+    },
+    {
+      "rank": 11,
+      "module_id": "G3MT65BA",
+      "daily_return_pct": [
+        0.0,
+        -0.03,
+        0.45,
+        0.0,
+        0.42
+      ],
+      "reported_total_pct": 0.84
+    },
+    {
+      "rank": 12,
+      "module_id": "G3MT75BA",
+      "daily_return_pct": [
+        0.0,
+        -0.03,
+        0.45,
+        0.0,
+        0.42
+      ],
+      "reported_total_pct": 0.84
+    },
+    {
+      "rank": 13,
+      "module_id": "G3MPR125BA",
+      "daily_return_pct": [
+        0.0,
+        0.0,
+        0.45,
+        0.0,
+        0.38
+      ],
+      "reported_total_pct": 0.83
+    },
+    {
+      "rank": 14,
+      "module_id": "G2QVD4BA",
+      "daily_return_pct": [
+        -0.04,
+        0.48,
+        0.5,
+        -0.13,
+        0.0
+      ],
+      "reported_total_pct": 0.8
+    },
+    {
+      "rank": 15,
+      "module_id": "G3MU50BA",
+      "daily_return_pct": [
+        0.0,
+        -0.03,
+        0.45,
+        0.0,
+        0.34
+      ],
+      "reported_total_pct": 0.76
+    },
+    {
+      "rank": 16,
+      "module_id": "G3QD2BA",
+      "daily_return_pct": [
+        -0.06,
+        0.48,
+        0.53,
+        -0.18,
+        0.0
+      ],
+      "reported_total_pct": 0.76
+    },
+    {
+      "rank": 17,
+      "module_id": "G3MR260BA",
+      "daily_return_pct": [
+        0.0,
+        0.07,
+        0.45,
+        0.0,
+        0.21
+      ],
+      "reported_total_pct": 0.73
+    },
+    {
+      "rank": 18,
+      "module_id": "G3MT50BA",
+      "daily_return_pct": [
+        0.0,
+        -0.03,
+        0.45,
+        0.0,
+        0.25
+      ],
+      "reported_total_pct": 0.67
+    },
+    {
+      "rank": 19,
+      "module_id": "G3QD3BA",
+      "daily_return_pct": [
+        -0.08,
+        0.48,
+        0.53,
+        -0.33,
+        0.0
+      ],
+      "reported_total_pct": 0.6
+    },
+    {
+      "rank": 20,
+      "module_id": "G6R02PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.02,
+        0.32,
+        0.17
+      ],
+      "reported_total_pct": 0.46
+    },
+    {
+      "rank": 21,
+      "module_id": "G3QQ1BA",
+      "daily_return_pct": [
+        0.0,
+        0.23,
+        0.63,
+        -0.39,
+        0.0
+      ],
+      "reported_total_pct": 0.46
+    },
+    {
+      "rank": 22,
+      "module_id": "G6R02CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.04,
+        0.28,
+        0.13
+      ],
+      "reported_total_pct": 0.45
+    },
+    {
+      "rank": 23,
+      "module_id": "G7ROTPROTECTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        0.23,
+        0.19
+      ],
+      "reported_total_pct": 0.42
+    },
+    {
+      "rank": 24,
+      "module_id": "G7BRDSTABLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        0.16,
+        0.25
+      ],
+      "reported_total_pct": 0.42
+    },
+    {
+      "rank": 25,
+      "module_id": "G3MW1230BA",
+      "daily_return_pct": [
+        0.0,
+        -0.47,
+        0.45,
+        0.0,
+        0.42
+      ],
+      "reported_total_pct": 0.4
+    },
+    {
+      "rank": 26,
+      "module_id": "G6R07CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.0,
+        0.25,
+        0.14
+      ],
+      "reported_total_pct": 0.39
+    },
+    {
+      "rank": 27,
+      "module_id": "G3QD4BA",
+      "daily_return_pct": [
+        -0.1,
+        0.48,
+        0.53,
+        -0.55,
+        0.0
+      ],
+      "reported_total_pct": 0.35
+    },
+    {
+      "rank": 28,
+      "module_id": "G6R05TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.39,
+        -0.04
+      ],
+      "reported_total_pct": 0.35
+    },
+    {
+      "rank": 29,
+      "module_id": "G6R04TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.01,
+        0.31,
+        0.02
+      ],
+      "reported_total_pct": 0.35
+    },
+    {
+      "rank": 30,
+      "module_id": "G6R03PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.01,
+        0.18,
+        0.16
+      ],
+      "reported_total_pct": 0.34
+    },
+    {
+      "rank": 31,
+      "module_id": "G6R05ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.33,
+        -0.02
+      ],
+      "reported_total_pct": 0.31
+    },
+    {
+      "rank": 32,
+      "module_id": "G6R03FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.04,
+        0.11,
+        0.14
+      ],
+      "reported_total_pct": 0.29
+    },
+    {
+      "rank": 33,
+      "module_id": "G2QVK30BA",
+      "daily_return_pct": [
+        -0.12,
+        0.48,
+        0.21,
+        -0.28,
+        0.0
+      ],
+      "reported_total_pct": 0.29
+    },
+    {
+      "rank": 34,
+      "module_id": "G3MR270BA",
+      "daily_return_pct": [
+        0.0,
+        0.07,
+        0.0,
+        0.0,
+        0.21
+      ],
+      "reported_total_pct": 0.29
+    },
+    {
+      "rank": 35,
+      "module_id": "G2QVE3BA",
+      "daily_return_pct": [
+        -0.06,
+        0.48,
+        0.5,
+        -0.63,
+        0.0
+      ],
+      "reported_total_pct": 0.28
+    },
+    {
+      "rank": 36,
+      "module_id": "G6R01CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.01,
+        0.23,
+        0.07
+      ],
+      "reported_total_pct": 0.28
+    },
+    {
+      "rank": 37,
+      "module_id": "G6R02FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.01,
+        0.12,
+        0.16
+      ],
+      "reported_total_pct": 0.28
+    },
+    {
+      "rank": 38,
+      "module_id": "G6R02ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.06,
+        0.09,
+        0.13
+      ],
+      "reported_total_pct": 0.27
+    },
+    {
+      "rank": 39,
+      "module_id": "G6R05CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.33,
+        -0.06
+      ],
+      "reported_total_pct": 0.27
+    },
+    {
+      "rank": 40,
+      "module_id": "G6R05PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.35,
+        -0.09
+      ],
+      "reported_total_pct": 0.26
+    },
+    {
+      "rank": 41,
+      "module_id": "G6R03CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.06,
+        0.11,
+        0.1
+      ],
+      "reported_total_pct": 0.26
+    },
+    {
+      "rank": 42,
+      "module_id": "G6R04PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.02,
+        0.05,
+        0.19
+      ],
+      "reported_total_pct": 0.26
+    },
+    {
+      "rank": 43,
+      "module_id": "G2QVONEBA",
+      "daily_return_pct": [
+        -0.12,
+        0.48,
+        0.53,
+        -0.63,
+        0.0
+      ],
+      "reported_total_pct": 0.26
+    },
+    {
+      "rank": 44,
+      "module_id": "G6R03ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.04,
+        0.11,
+        0.1
+      ],
+      "reported_total_pct": 0.25
+    },
+    {
+      "rank": 45,
+      "module_id": "G3QH12BA",
+      "daily_return_pct": [
+        0.0,
+        0.25,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.25
+    },
+    {
+      "rank": 46,
+      "module_id": "G3MR50BA",
+      "daily_return_pct": [
+        0.0,
+        0.04,
+        -0.02,
+        0.0,
+        0.22
+      ],
+      "reported_total_pct": 0.24
+    },
+    {
+      "rank": 47,
+      "module_id": "G6R01ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.04,
+        0.23,
+        0.05
+      ],
+      "reported_total_pct": 0.24
+    },
+    {
+      "rank": 48,
+      "module_id": "G6R01RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.18,
+        0.06
+      ],
+      "reported_total_pct": 0.24
+    },
+    {
+      "rank": 49,
+      "module_id": "G6R01PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.05,
+        0.17,
+        0.11
+      ],
+      "reported_total_pct": 0.23
+    },
+    {
+      "rank": 50,
+      "module_id": "G6R05FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.23,
+        0.0
+      ],
+      "reported_total_pct": 0.23
+    },
+    {
+      "rank": 51,
+      "module_id": "G2QVD2BA",
+      "daily_return_pct": [
+        0.0,
+        0.48,
+        0.22,
+        -0.47,
+        0.0
+      ],
+      "reported_total_pct": 0.23
+    },
+    {
+      "rank": 52,
+      "module_id": "G3MP3BA",
+      "daily_return_pct": [
+        0.0,
+        0.1,
+        -0.03,
+        0.0,
+        0.15
+      ],
+      "reported_total_pct": 0.22
+    },
+    {
+      "rank": 53,
+      "module_id": "G6R01TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.0,
+        0.23,
+        -0.01
+      ],
+      "reported_total_pct": 0.21
+    },
+    {
+      "rank": 54,
+      "module_id": "G6R02TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.06,
+        0.09,
+        0.06
+      ],
+      "reported_total_pct": 0.21
+    },
+    {
+      "rank": 55,
+      "module_id": "G3MW1130BA",
+      "daily_return_pct": [
+        0.81,
+        -1.24,
+        0.31,
+        0.11,
+        0.23
+      ],
+      "reported_total_pct": 0.21
+    },
+    {
+      "rank": 56,
+      "module_id": "G6R01FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.01,
+        0.09,
+        0.12
+      ],
+      "reported_total_pct": 0.21
+    },
+    {
+      "rank": 57,
+      "module_id": "G3MU75BA",
+      "daily_return_pct": [
+        0.0,
+        -0.03,
+        0.0,
+        0.0,
+        0.23
+      ],
+      "reported_total_pct": 0.2
+    },
+    {
+      "rank": 58,
+      "module_id": "G6R03TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.04,
+        0.11,
+        0.03
+      ],
+      "reported_total_pct": 0.19
+    },
+    {
+      "rank": 59,
+      "module_id": "G5RBTIMEBA",
+      "daily_return_pct": [
+        0.15,
+        -0.09,
+        -0.02,
+        0.14,
+        -0.01
+      ],
+      "reported_total_pct": 0.18
+    },
+    {
+      "rank": 60,
+      "module_id": "G6P04PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.18
+      ],
+      "reported_total_pct": 0.18
+    },
+    {
+      "rank": 61,
+      "module_id": "G6R07TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.04,
+        0.21,
+        0.01
+      ],
+      "reported_total_pct": 0.18
+    },
+    {
+      "rank": 62,
+      "module_id": "G6R02COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.17
+      ],
+      "reported_total_pct": 0.17
+    },
+    {
+      "rank": 63,
+      "module_id": "G6R03COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.17
+      ],
+      "reported_total_pct": 0.17
+    },
+    {
+      "rank": 64,
+      "module_id": "G6R04COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        null,
+        0.17
+      ],
+      "reported_total_pct": 0.17
+    },
+    {
+      "rank": 65,
+      "module_id": "G2QVK20BA",
+      "daily_return_pct": [
+        -0.12,
+        0.48,
+        -0.02,
+        -0.17,
+        0.0
+      ],
+      "reported_total_pct": 0.17
+    },
+    {
+      "rank": 66,
+      "module_id": "G3MR25BA",
+      "daily_return_pct": [
+        0.0,
+        0.02,
+        0.04,
+        0.0,
+        0.11
+      ],
+      "reported_total_pct": 0.17
+    },
+    {
+      "rank": 67,
+      "module_id": "PULLCONT2BA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.16,
+        -0.31,
+        0.3
+      ],
+      "reported_total_pct": 0.16
+    },
+    {
+      "rank": 68,
+      "module_id": "G6R05PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.32,
+        -0.16
+      ],
+      "reported_total_pct": 0.16
+    },
+    {
+      "rank": 69,
+      "module_id": "G6R02RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.06,
+        0.1
+      ],
+      "reported_total_pct": 0.16
+    },
+    {
+      "rank": 70,
+      "module_id": "G6B05TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.14
+      ],
+      "reported_total_pct": 0.14
+    },
+    {
+      "rank": 71,
+      "module_id": "G3MR10BA",
+      "daily_return_pct": [
+        0.0,
+        0.01,
+        0.09,
+        0.0,
+        0.04
+      ],
+      "reported_total_pct": 0.14
+    },
+    {
+      "rank": 72,
+      "module_id": "G3MRB15BA",
+      "daily_return_pct": [
+        0.0,
+        -0.04,
+        -0.03,
+        0.0,
+        0.21
+      ],
+      "reported_total_pct": 0.14
+    },
+    {
+      "rank": 73,
+      "module_id": "G6R06PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.11,
+        0.32,
+        -0.08
+      ],
+      "reported_total_pct": 0.13
+    },
+    {
+      "rank": 74,
+      "module_id": "G6R04FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.12
+      ],
+      "reported_total_pct": 0.13
+    },
+    {
+      "rank": 75,
+      "module_id": "G6R03PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.03,
+        0.11,
+        -0.01
+      ],
+      "reported_total_pct": 0.13
+    },
+    {
+      "rank": 76,
+      "module_id": "G6R02PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.01,
+        0.12,
+        0.01
+      ],
+      "reported_total_pct": 0.13
+    },
+    {
+      "rank": 77,
+      "module_id": "G6P04TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.13
+      ],
+      "reported_total_pct": 0.13
+    },
+    {
+      "rank": 78,
+      "module_id": "G6R05RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.2,
+        -0.08
+      ],
+      "reported_total_pct": 0.12
+    },
+    {
+      "rank": 79,
+      "module_id": "G6B01TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.11
+      ],
+      "reported_total_pct": 0.11
+    },
+    {
+      "rank": 80,
+      "module_id": "PAIRTR1BA",
+      "daily_return_pct": [
+        0.13,
+        -0.01,
+        null,
+        null,
+        -0.01
+      ],
+      "reported_total_pct": 0.11
+    },
+    {
+      "rank": 81,
+      "module_id": "G2QVK10BA",
+      "daily_return_pct": [
+        -0.12,
+        0.27,
+        -0.24,
+        -0.1,
+        0.28
+      ],
+      "reported_total_pct": 0.09
+    },
+    {
+      "rank": 82,
+      "module_id": "G6V05TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.04,
+        0.05
+      ],
+      "reported_total_pct": 0.09
+    },
+    {
+      "rank": 83,
+      "module_id": "G6R06ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.07,
+        0.24,
+        -0.08
+      ],
+      "reported_total_pct": 0.09
+    },
+    {
+      "rank": 84,
+      "module_id": "G6V05RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.04,
+        0.04
+      ],
+      "reported_total_pct": 0.08
+    },
+    {
+      "rank": 85,
+      "module_id": "G6R06TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.07,
+        0.24,
+        -0.08
+      ],
+      "reported_total_pct": 0.08
+    },
+    {
+      "rank": 86,
+      "module_id": "G6V05CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.03,
+        0.04,
+        0.07
+      ],
+      "reported_total_pct": 0.08
+    },
+    {
+      "rank": 87,
+      "module_id": "G6R07FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.0,
+        -0.06,
+        0.14
+      ],
+      "reported_total_pct": 0.08
+    },
+    {
+      "rank": 88,
+      "module_id": "G6R10CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.03,
+        0.03
+      ],
+      "reported_total_pct": 0.07
+    },
+    {
+      "rank": 89,
+      "module_id": "G6R10RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.03,
+        0.03
+      ],
+      "reported_total_pct": 0.07
+    },
+    {
+      "rank": 90,
+      "module_id": "G6R10ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.03,
+        0.03
+      ],
+      "reported_total_pct": 0.07
+    },
+    {
+      "rank": 91,
+      "module_id": "G6R10TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.03,
+        0.03
+      ],
+      "reported_total_pct": 0.07
+    },
+    {
+      "rank": 92,
+      "module_id": "G6R07RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.02,
+        0.02,
+        0.06
+      ],
+      "reported_total_pct": 0.07
+    },
+    {
+      "rank": 93,
+      "module_id": "G6V01CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.04,
+        0.02
+      ],
+      "reported_total_pct": 0.06
+    },
+    {
+      "rank": 94,
+      "module_id": "G6R06RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.02,
+        0.15,
+        -0.06
+      ],
+      "reported_total_pct": 0.06
+    },
+    {
+      "rank": 95,
+      "module_id": "G6P04CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.06
+      ],
+      "reported_total_pct": 0.06
+    },
+    {
+      "rank": 96,
+      "module_id": "G6P04ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.06
+      ],
+      "reported_total_pct": 0.06
+    },
+    {
+      "rank": 97,
+      "module_id": "G6R08PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.06,
+        -0.2,
+        0.2
+      ],
+      "reported_total_pct": 0.06
+    },
+    {
+      "rank": 98,
+      "module_id": "G6V05PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.03,
+        0.02
+      ],
+      "reported_total_pct": 0.05
+    },
+    {
+      "rank": 99,
+      "module_id": "G3TT60BA",
+      "daily_return_pct": [
+        0.0,
+        0.13,
+        -0.1,
+        0.01,
+        0.0
+      ],
+      "reported_total_pct": 0.05
+    },
+    {
+      "rank": 100,
+      "module_id": "G6R01PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.04,
+        0.09,
+        -0.01
+      ],
+      "reported_total_pct": 0.05
+    },
+    {
+      "rank": 101,
+      "module_id": "G6R10PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.06,
+        -0.02
+      ],
+      "reported_total_pct": 0.05
+    },
+    {
+      "rank": 102,
+      "module_id": "G4JCONTTECHBA",
+      "daily_return_pct": [
+        0.0,
+        0.04,
+        0.0,
+        0.01,
+        0.0
+      ],
+      "reported_total_pct": 0.04
+    },
+    {
+      "rank": 103,
+      "module_id": "G5SECTOREXECBA",
+      "daily_return_pct": [
+        0.0,
+        0.01,
+        0.0,
+        0.0,
+        0.03
+      ],
+      "reported_total_pct": 0.04
+    },
+    {
+      "rank": 104,
+      "module_id": "G6V05ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.04,
+        0.0
+      ],
+      "reported_total_pct": 0.04
+    },
+    {
+      "rank": 105,
+      "module_id": "G6V05PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        -0.03,
+        0.07
+      ],
+      "reported_total_pct": 0.04
+    },
+    {
+      "rank": 106,
+      "module_id": "G6V01RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.02,
+        0.04,
+        0.01
+      ],
+      "reported_total_pct": 0.03
+    },
+    {
+      "rank": 107,
+      "module_id": "G6P04FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.03
+      ],
+      "reported_total_pct": 0.03
+    },
+    {
+      "rank": 108,
+      "module_id": "G6R04CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.01,
+        -0.07,
+        0.08
+      ],
+      "reported_total_pct": 0.03
+    },
+    {
+      "rank": 109,
+      "module_id": "G6P04PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.03
+      ],
+      "reported_total_pct": 0.03
+    },
+    {
+      "rank": 110,
+      "module_id": "G6B04RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.03
+      ],
+      "reported_total_pct": 0.03
+    },
+    {
+      "rank": 111,
+      "module_id": "G6R03RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.07,
+        -0.04
+      ],
+      "reported_total_pct": 0.03
+    },
+    {
+      "rank": 112,
+      "module_id": "G6R10PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.03,
+        -0.01
+      ],
+      "reported_total_pct": 0.03
+    },
+    {
+      "rank": 113,
+      "module_id": "G6R09ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        -0.01,
+        0.03
+      ],
+      "reported_total_pct": 0.02
+    },
+    {
+      "rank": 114,
+      "module_id": "G6R09TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        -0.01,
+        0.03
+      ],
+      "reported_total_pct": 0.02
+    },
+    {
+      "rank": 115,
+      "module_id": "G6R10FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.03,
+        -0.01
+      ],
+      "reported_total_pct": 0.02
+    },
+    {
+      "rank": 116,
+      "module_id": "G6R04ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.01,
+        -0.08,
+        0.08
+      ],
+      "reported_total_pct": 0.02
+    },
+    {
+      "rank": 117,
+      "module_id": "G3QS10BA",
+      "daily_return_pct": [
+        0.0,
+        0.23,
+        0.0,
+        -0.21,
+        0.0
+      ],
+      "reported_total_pct": 0.02
+    },
+    {
+      "rank": 118,
+      "module_id": "G4JFADEINDEXBA",
+      "daily_return_pct": [
+        0.0,
+        0.01,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.01
+    },
+    {
+      "rank": 119,
+      "module_id": "G4JFADESECTORBA",
+      "daily_return_pct": [
+        0.0,
+        0.01,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.01
+    },
+    {
+      "rank": 120,
+      "module_id": "G6R08FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.03,
+        -0.06,
+        0.11
+      ],
+      "reported_total_pct": 0.01
+    },
+    {
+      "rank": 121,
+      "module_id": "G6V03RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.01
+      ],
+      "reported_total_pct": 0.01
+    },
+    {
+      "rank": 122,
+      "module_id": "G6V01ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.03,
+        0.04,
+        0.0
+      ],
+      "reported_total_pct": 0.01
+    },
+    {
+      "rank": 123,
+      "module_id": "G6V01TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.03,
+        0.04,
+        0.0
+      ],
+      "reported_total_pct": 0.01
+    },
+    {
+      "rank": 124,
+      "module_id": "G6V05FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        -0.03,
+        0.05
+      ],
+      "reported_total_pct": 0.01
+    },
+    {
+      "rank": 125,
+      "module_id": "G3QONEBA",
+      "daily_return_pct": [
+        -0.45,
+        0.48,
+        0.53,
+        -0.54,
+        0.0
+      ],
+      "reported_total_pct": 0.01
+    },
+    {
+      "rank": 126,
+      "module_id": "G4OCCUPYINDEXBA",
+      "daily_return_pct": [
+        0.0,
+        0.01,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.01
+    },
+    {
+      "rank": 127,
+      "module_id": "G6R08COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.01
+      ],
+      "reported_total_pct": 0.01
+    },
+    {
+      "rank": 128,
+      "module_id": "G6V01PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.04,
+        -0.03,
+        0.0
+      ],
+      "reported_total_pct": 0.01
+    },
+    {
+      "rank": 129,
+      "module_id": "G6R09FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        -0.01,
+        0.01
+      ],
+      "reported_total_pct": 0.01
+    },
+    {
+      "rank": 130,
+      "module_id": "G6R09PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        -0.01,
+        0.01
+      ],
+      "reported_total_pct": 0.01
+    },
+    {
+      "rank": 131,
+      "module_id": "G6R06PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.09,
+        0.18,
+        -0.08
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 132,
+      "module_id": "G3MU100BA",
+      "daily_return_pct": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 133,
+      "module_id": "G3MU150BA",
+      "daily_return_pct": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 134,
+      "module_id": "G6B01COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 135,
+      "module_id": "G6B01RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 136,
+      "module_id": "G6B02COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 137,
+      "module_id": "G6B02CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 138,
+      "module_id": "G6B02FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 139,
+      "module_id": "G6B02PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 140,
+      "module_id": "G6B02PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 141,
+      "module_id": "G6B02RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 142,
+      "module_id": "G6B02ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 143,
+      "module_id": "G6B02TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 144,
+      "module_id": "G6B03COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 145,
+      "module_id": "G6B03CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 146,
+      "module_id": "G6B03FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 147,
+      "module_id": "G6B03PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 148,
+      "module_id": "G6B03PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 149,
+      "module_id": "G6B03RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 150,
+      "module_id": "G6B03ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 151,
+      "module_id": "G6B03TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 152,
+      "module_id": "G6B05COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 153,
+      "module_id": "G6B05RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 154,
+      "module_id": "G6L01COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 155,
+      "module_id": "G6L01CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 156,
+      "module_id": "G6L01FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 157,
+      "module_id": "G6L01PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 158,
+      "module_id": "G6L01PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 159,
+      "module_id": "G6L01RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 160,
+      "module_id": "G6L01ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 161,
+      "module_id": "G6L01TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 162,
+      "module_id": "G6L02COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 163,
+      "module_id": "G6L02CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 164,
+      "module_id": "G6L02FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 165,
+      "module_id": "G6L02PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 166,
+      "module_id": "G6L02PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 167,
+      "module_id": "G6L02RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 168,
+      "module_id": "G6L02ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 169,
+      "module_id": "G6L02TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 170,
+      "module_id": "G6L03COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 171,
+      "module_id": "G6L03CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 172,
+      "module_id": "G6L03FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 173,
+      "module_id": "G6L03PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 174,
+      "module_id": "G6L03PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 175,
+      "module_id": "G6L03RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 176,
+      "module_id": "G6L03ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 177,
+      "module_id": "G6L03TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 178,
+      "module_id": "G6L04COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 179,
+      "module_id": "G6L04CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 180,
+      "module_id": "G6L04FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 181,
+      "module_id": "G6L04PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 182,
+      "module_id": "G6L04PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 183,
+      "module_id": "G6L04RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 184,
+      "module_id": "G6L04ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 185,
+      "module_id": "G6L04TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 186,
+      "module_id": "G6L05COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 187,
+      "module_id": "G6L05CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 188,
+      "module_id": "G6L05FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 189,
+      "module_id": "G6L05PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 190,
+      "module_id": "G6L05PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 191,
+      "module_id": "G6L05RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 192,
+      "module_id": "G6L05ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 193,
+      "module_id": "G6L05TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 194,
+      "module_id": "G6L06COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 195,
+      "module_id": "G6L06CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 196,
+      "module_id": "G6L06FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 197,
+      "module_id": "G6L06PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 198,
+      "module_id": "G6L06PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 199,
+      "module_id": "G6L06RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 200,
+      "module_id": "G6L06ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 201,
+      "module_id": "G6L06TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 202,
+      "module_id": "G6L07COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 203,
+      "module_id": "G6L07CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 204,
+      "module_id": "G6L07FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 205,
+      "module_id": "G6L07PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 206,
+      "module_id": "G6L07PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 207,
+      "module_id": "G6L07RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 208,
+      "module_id": "G6L07ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 209,
+      "module_id": "G6L07TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 210,
+      "module_id": "G6L08COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 211,
+      "module_id": "G6L08CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 212,
+      "module_id": "G6L08FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 213,
+      "module_id": "G6L08PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 214,
+      "module_id": "G6L08PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 215,
+      "module_id": "G6L08RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 216,
+      "module_id": "G6L08ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 217,
+      "module_id": "G6L08TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 218,
+      "module_id": "G6L09COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 219,
+      "module_id": "G6L09CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 220,
+      "module_id": "G6L09FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 221,
+      "module_id": "G6L09PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 222,
+      "module_id": "G6L09PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 223,
+      "module_id": "G6L09RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 224,
+      "module_id": "G6L09ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 225,
+      "module_id": "G6L09TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 226,
+      "module_id": "G6L10COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 227,
+      "module_id": "G6L10CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 228,
+      "module_id": "G6L10FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 229,
+      "module_id": "G6L10PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 230,
+      "module_id": "G6L10PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 231,
+      "module_id": "G6L10RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 232,
+      "module_id": "G6L10ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 233,
+      "module_id": "G6L10TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 234,
+      "module_id": "G6M01COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 235,
+      "module_id": "G6M01ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 236,
+      "module_id": "G6M02COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 237,
+      "module_id": "G6M02CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 238,
+      "module_id": "G6M02FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 239,
+      "module_id": "G6M02PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 240,
+      "module_id": "G6M02PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 241,
+      "module_id": "G6M02RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 242,
+      "module_id": "G6M02ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 243,
+      "module_id": "G6M02TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 244,
+      "module_id": "G6M03COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 245,
+      "module_id": "G6M03CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 246,
+      "module_id": "G6M03FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 247,
+      "module_id": "G6M03PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 248,
+      "module_id": "G6M03PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 249,
+      "module_id": "G6M03RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 250,
+      "module_id": "G6M03ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 251,
+      "module_id": "G6M03TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 252,
+      "module_id": "G6M04COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 253,
+      "module_id": "G6M04CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 254,
+      "module_id": "G6M04FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 255,
+      "module_id": "G6M04PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 256,
+      "module_id": "G6M04PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 257,
+      "module_id": "G6M04RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 258,
+      "module_id": "G6M04ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 259,
+      "module_id": "G6M04TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 260,
+      "module_id": "G6M05COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 261,
+      "module_id": "G6M05CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 262,
+      "module_id": "G6M05FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 263,
+      "module_id": "G6M05PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 264,
+      "module_id": "G6M05PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 265,
+      "module_id": "G6M05RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 266,
+      "module_id": "G6M05ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 267,
+      "module_id": "G6M05TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 268,
+      "module_id": "G6M06COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 269,
+      "module_id": "G6M06CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 270,
+      "module_id": "G6M06FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 271,
+      "module_id": "G6M06PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 272,
+      "module_id": "G6M06PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 273,
+      "module_id": "G6M06RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 274,
+      "module_id": "G6M06ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 275,
+      "module_id": "G6M06TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 276,
+      "module_id": "G6M07COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 277,
+      "module_id": "G6M07CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 278,
+      "module_id": "G6M07FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 279,
+      "module_id": "G6M07PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 280,
+      "module_id": "G6M07PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 281,
+      "module_id": "G6M07RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 282,
+      "module_id": "G6M07ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 283,
+      "module_id": "G6M07TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 284,
+      "module_id": "G6M08COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 285,
+      "module_id": "G6M08ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 286,
+      "module_id": "G6M09COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 287,
+      "module_id": "G6M09CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 288,
+      "module_id": "G6M09FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 289,
+      "module_id": "G6M09PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 290,
+      "module_id": "G6M09PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 291,
+      "module_id": "G6M09RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 292,
+      "module_id": "G6M09ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 293,
+      "module_id": "G6M09TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 294,
+      "module_id": "G6M10COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 295,
+      "module_id": "G6M10CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 296,
+      "module_id": "G6M10FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 297,
+      "module_id": "G6M10PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 298,
+      "module_id": "G6M10PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 299,
+      "module_id": "G6M10RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 300,
+      "module_id": "G6M10ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 301,
+      "module_id": "G6M10TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 302,
+      "module_id": "G6M11COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 303,
+      "module_id": "G6M11CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 304,
+      "module_id": "G6M11FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 305,
+      "module_id": "G6M11PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 306,
+      "module_id": "G6M11PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 307,
+      "module_id": "G6M11RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 308,
+      "module_id": "G6M11ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 309,
+      "module_id": "G6M11TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 310,
+      "module_id": "G6M12COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 311,
+      "module_id": "G6M12CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 312,
+      "module_id": "G6M12FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 313,
+      "module_id": "G6M12PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 314,
+      "module_id": "G6M12PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 315,
+      "module_id": "G6M12RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 316,
+      "module_id": "G6M12ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 317,
+      "module_id": "G6M12TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 318,
+      "module_id": "G6M13COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 319,
+      "module_id": "G6M13CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 320,
+      "module_id": "G6M13FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 321,
+      "module_id": "G6M13PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 322,
+      "module_id": "G6M13PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 323,
+      "module_id": "G6M13RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 324,
+      "module_id": "G6M13ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 325,
+      "module_id": "G6M13TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 326,
+      "module_id": "G6M14COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 327,
+      "module_id": "G6M14CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 328,
+      "module_id": "G6M14FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 329,
+      "module_id": "G6M14PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 330,
+      "module_id": "G6M14PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 331,
+      "module_id": "G6M14RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 332,
+      "module_id": "G6M14ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 333,
+      "module_id": "G6M14TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 334,
+      "module_id": "G6M15COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 335,
+      "module_id": "G6M15CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 336,
+      "module_id": "G6M15FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 337,
+      "module_id": "G6M15PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 338,
+      "module_id": "G6M15PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 339,
+      "module_id": "G6M15RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 340,
+      "module_id": "G6M15ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 341,
+      "module_id": "G6M15TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 342,
+      "module_id": "G6P01COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 343,
+      "module_id": "G6P01CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 344,
+      "module_id": "G6P01FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 345,
+      "module_id": "G6P01PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 346,
+      "module_id": "G6P01PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 347,
+      "module_id": "G6P01RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 348,
+      "module_id": "G6P01ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 349,
+      "module_id": "G6P01TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 350,
+      "module_id": "G6P02COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 351,
+      "module_id": "G6P02CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 352,
+      "module_id": "G6P02FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 353,
+      "module_id": "G6P02PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 354,
+      "module_id": "G6P02PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 355,
+      "module_id": "G6P02RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 356,
+      "module_id": "G6P02ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 357,
+      "module_id": "G6P02TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 358,
+      "module_id": "G6P03COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 359,
+      "module_id": "G6P03CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 360,
+      "module_id": "G6P03FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 361,
+      "module_id": "G6P03PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 362,
+      "module_id": "G6P03PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 363,
+      "module_id": "G6P03RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 364,
+      "module_id": "G6P03ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 365,
+      "module_id": "G6P03TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 366,
+      "module_id": "G6P04COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 367,
+      "module_id": "G6P04RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 368,
+      "module_id": "G6P05COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 369,
+      "module_id": "G6P05CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 370,
+      "module_id": "G6P05FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 371,
+      "module_id": "G6P05PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 372,
+      "module_id": "G6P05PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 373,
+      "module_id": "G6P05RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 374,
+      "module_id": "G6R01COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 375,
+      "module_id": "G6R07COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 376,
+      "module_id": "G6R09COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 377,
+      "module_id": "G6R10COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 378,
+      "module_id": "G6V01COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 379,
+      "module_id": "G6V02COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 380,
+      "module_id": "G6V02ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 381,
+      "module_id": "G6V03COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 382,
+      "module_id": "G6V03FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 383,
+      "module_id": "G6V03PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 384,
+      "module_id": "G6V03ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 385,
+      "module_id": "G6V04COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 386,
+      "module_id": "G6V04CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 387,
+      "module_id": "G6V04FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 388,
+      "module_id": "G6V04PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 389,
+      "module_id": "G6V04PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 390,
+      "module_id": "G6V04RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 391,
+      "module_id": "G6V04ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 392,
+      "module_id": "G6V04TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 393,
+      "module_id": "G6V05COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 394,
+      "module_id": "G8B01BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 395,
+      "module_id": "G8B01CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 396,
+      "module_id": "G8B01RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 397,
+      "module_id": "G8B01TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 398,
+      "module_id": "G8B02BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 399,
+      "module_id": "G8B02CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 400,
+      "module_id": "G8B02RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 401,
+      "module_id": "G8B02TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 402,
+      "module_id": "G8B03BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 403,
+      "module_id": "G8B03CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 404,
+      "module_id": "G8B03RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 405,
+      "module_id": "G8B03TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 406,
+      "module_id": "G8B04BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 407,
+      "module_id": "G8B04CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 408,
+      "module_id": "G8B04RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 409,
+      "module_id": "G8B04TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 410,
+      "module_id": "G8B05BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 411,
+      "module_id": "G8B05CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 412,
+      "module_id": "G8B05RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 413,
+      "module_id": "G8B05TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 414,
+      "module_id": "G8E01BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 415,
+      "module_id": "G8E01CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 416,
+      "module_id": "G8E01RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 417,
+      "module_id": "G8E01TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 418,
+      "module_id": "G8E02BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 419,
+      "module_id": "G8E02CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 420,
+      "module_id": "G8E02RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 421,
+      "module_id": "G8E02TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 422,
+      "module_id": "G8E03BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 423,
+      "module_id": "G8E03CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 424,
+      "module_id": "G8E03RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 425,
+      "module_id": "G8E03TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 426,
+      "module_id": "G8E04BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 427,
+      "module_id": "G8E04CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 428,
+      "module_id": "G8E04RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 429,
+      "module_id": "G8E04TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 430,
+      "module_id": "G8E05BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 431,
+      "module_id": "G8E05CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 432,
+      "module_id": "G8E05RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 433,
+      "module_id": "G8E05TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 434,
+      "module_id": "G8F01BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 435,
+      "module_id": "G8F01CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 436,
+      "module_id": "G8F01RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 437,
+      "module_id": "G8F01TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 438,
+      "module_id": "G8F02BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 439,
+      "module_id": "G8F02CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 440,
+      "module_id": "G8F02RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 441,
+      "module_id": "G8F02TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 442,
+      "module_id": "G8F03BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 443,
+      "module_id": "G8F03CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 444,
+      "module_id": "G8F03RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 445,
+      "module_id": "G8F03TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 446,
+      "module_id": "G8F04BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 447,
+      "module_id": "G8F04CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 448,
+      "module_id": "G8F04RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 449,
+      "module_id": "G8F04TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 450,
+      "module_id": "G8F05BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 451,
+      "module_id": "G8F05CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 452,
+      "module_id": "G8F05RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 453,
+      "module_id": "G8F05TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 454,
+      "module_id": "G8R01BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 455,
+      "module_id": "G8R01CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 456,
+      "module_id": "G8R01RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 457,
+      "module_id": "G8R01TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 458,
+      "module_id": "G8R02BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 459,
+      "module_id": "G8R02CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 460,
+      "module_id": "G8R02RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 461,
+      "module_id": "G8R02TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 462,
+      "module_id": "G8R03BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 463,
+      "module_id": "G8R03CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 464,
+      "module_id": "G8R03RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 465,
+      "module_id": "G8R03TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 466,
+      "module_id": "G8R04BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 467,
+      "module_id": "G8R04CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 468,
+      "module_id": "G8R04RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 469,
+      "module_id": "G8R04TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 470,
+      "module_id": "G8R05BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 471,
+      "module_id": "G8R05CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 472,
+      "module_id": "G8R05RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 473,
+      "module_id": "G8R05TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 474,
+      "module_id": "G8T01BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 475,
+      "module_id": "G8T01CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 476,
+      "module_id": "G8T01RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 477,
+      "module_id": "G8T01TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 478,
+      "module_id": "G8T02BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 479,
+      "module_id": "G8T02CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 480,
+      "module_id": "G8T02RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 481,
+      "module_id": "G8T02TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 482,
+      "module_id": "G8T03BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 483,
+      "module_id": "G8T03CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 484,
+      "module_id": "G8T03RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 485,
+      "module_id": "G8T03TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 486,
+      "module_id": "G8T04BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 487,
+      "module_id": "G8T04CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 488,
+      "module_id": "G8T04RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 489,
+      "module_id": "G8T04TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 490,
+      "module_id": "G8T05BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 491,
+      "module_id": "G8T05CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 492,
+      "module_id": "G8T05RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 493,
+      "module_id": "G8T05TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 494,
+      "module_id": "G8X01BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 495,
+      "module_id": "G8X01CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 496,
+      "module_id": "G8X01RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 497,
+      "module_id": "G8X01TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 498,
+      "module_id": "G8X02BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 499,
+      "module_id": "G8X02CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 500,
+      "module_id": "G8X02RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 501,
+      "module_id": "G8X02TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 502,
+      "module_id": "G8X03BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 503,
+      "module_id": "G8X03CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 504,
+      "module_id": "G8X03RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 505,
+      "module_id": "G8X03TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 506,
+      "module_id": "G8X04BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 507,
+      "module_id": "G8X04CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 508,
+      "module_id": "G8X04RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 509,
+      "module_id": "G8X04TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 510,
+      "module_id": "G8X05BALANCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 511,
+      "module_id": "G8X05CYCLEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 512,
+      "module_id": "G8X05RESOURCEBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 513,
+      "module_id": "G8X05TECHBA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        0.0
+      ],
+      "reported_total_pct": 0.0
+    },
+    {
+      "rank": 514,
+      "module_id": "G4RREVTECHBA",
+      "daily_return_pct": [
+        0.01,
+        0.02,
+        -0.03,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": -0.0
+    },
+    {
+      "rank": 515,
+      "module_id": "G6R08CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.02,
+        -0.07,
+        0.09
+      ],
+      "reported_total_pct": -0.0
+    },
+    {
+      "rank": 516,
+      "module_id": "G6R08ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.02,
+        -0.07,
+        0.09
+      ],
+      "reported_total_pct": -0.0
+    },
+    {
+      "rank": 517,
+      "module_id": "G6B04FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        -0.0
+      ],
+      "reported_total_pct": -0.0
+    },
+    {
+      "rank": 518,
+      "module_id": "G6V03CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.03,
+        0.0,
+        0.02
+      ],
+      "reported_total_pct": -0.0
+    },
+    {
+      "rank": 519,
+      "module_id": "G6R07ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.05,
+        -0.02,
+        0.07
+      ],
+      "reported_total_pct": -0.0
+    },
+    {
+      "rank": 520,
+      "module_id": "G6R09RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        -0.01,
+        0.0
+      ],
+      "reported_total_pct": -0.01
+    },
+    {
+      "rank": 521,
+      "module_id": "G2QVD3BA",
+      "daily_return_pct": [
+        -0.02,
+        0.48,
+        0.22,
+        -0.69,
+        0.0
+      ],
+      "reported_total_pct": -0.01
+    },
+    {
+      "rank": 522,
+      "module_id": "G6B04COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        -0.01
+      ],
+      "reported_total_pct": -0.01
+    },
+    {
+      "rank": 523,
+      "module_id": "G6B04ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        -0.01
+      ],
+      "reported_total_pct": -0.01
+    },
+    {
+      "rank": 524,
+      "module_id": "G6B04TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        -0.01
+      ],
+      "reported_total_pct": -0.01
+    },
+    {
+      "rank": 525,
+      "module_id": "PAIRMR1BA",
+      "daily_return_pct": [
+        -0.0,
+        0.03,
+        -0.0,
+        0.0,
+        -0.05
+      ],
+      "reported_total_pct": -0.02
+    },
+    {
+      "rank": 526,
+      "module_id": "G6B01FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        -0.02
+      ],
+      "reported_total_pct": -0.02
+    },
+    {
+      "rank": 527,
+      "module_id": "G6B05PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        -0.02
+      ],
+      "reported_total_pct": -0.02
+    },
+    {
+      "rank": 528,
+      "module_id": "G6B04CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        -0.01,
+        -0.01
+      ],
+      "reported_total_pct": -0.02
+    },
+    {
+      "rank": 529,
+      "module_id": "G6B04PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        -0.02
+      ],
+      "reported_total_pct": -0.02
+    },
+    {
+      "rank": 530,
+      "module_id": "G6R09PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        -0.03,
+        0.01
+      ],
+      "reported_total_pct": -0.02
+    },
+    {
+      "rank": 531,
+      "module_id": "G6V01PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.01,
+        0.03,
+        -0.05
+      ],
+      "reported_total_pct": -0.02
+    },
+    {
+      "rank": 532,
+      "module_id": "G6R09CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        -0.01,
+        -0.02
+      ],
+      "reported_total_pct": -0.03
+    },
+    {
+      "rank": 533,
+      "module_id": "G6R04PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        -0.02,
+        -0.01
+      ],
+      "reported_total_pct": -0.03
+    },
+    {
+      "rank": 534,
+      "module_id": "G6R06CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.12,
+        0.21,
+        -0.13
+      ],
+      "reported_total_pct": -0.03
+    },
+    {
+      "rank": 535,
+      "module_id": "G6V03TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.03,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": -0.03
+    },
+    {
+      "rank": 536,
+      "module_id": "G6B04PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        -0.03
+      ],
+      "reported_total_pct": -0.03
+    },
+    {
+      "rank": 537,
+      "module_id": "G6B01PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        -0.03
+      ],
+      "reported_total_pct": -0.03
+    },
+    {
+      "rank": 538,
+      "module_id": "G6B05FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        -0.03
+      ],
+      "reported_total_pct": -0.03
+    },
+    {
+      "rank": 539,
+      "module_id": "G6R05COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        -0.04
+      ],
+      "reported_total_pct": -0.04
+    },
+    {
+      "rank": 540,
+      "module_id": "G1MQBA",
+      "daily_return_pct": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        -0.04
+      ],
+      "reported_total_pct": -0.04
+    },
+    {
+      "rank": 541,
+      "module_id": "G6V02PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.04,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": -0.04
+    },
+    {
+      "rank": 542,
+      "module_id": "G6R08RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        -0.0,
+        -0.04
+      ],
+      "reported_total_pct": -0.05
+    },
+    {
+      "rank": 543,
+      "module_id": "G6V03PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        -0.05
+      ],
+      "reported_total_pct": -0.05
+    },
+    {
+      "rank": 544,
+      "module_id": "G6R06COSTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        -0.05
+      ],
+      "reported_total_pct": -0.05
+    },
+    {
+      "rank": 545,
+      "module_id": "G6P05ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.05,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": -0.05
+    },
+    {
+      "rank": 546,
+      "module_id": "G6P05TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.05,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": -0.05
+    },
+    {
+      "rank": 547,
+      "module_id": "G6V02FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.05,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": -0.05
+    },
+    {
+      "rank": 548,
+      "module_id": "G6R07PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.01,
+        -0.17,
+        0.11
+      ],
+      "reported_total_pct": -0.06
+    },
+    {
+      "rank": 549,
+      "module_id": "G6V02PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.06,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": -0.06
+    },
+    {
+      "rank": 550,
+      "module_id": "G6R08TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.02,
+        -0.07,
+        0.03
+      ],
+      "reported_total_pct": -0.06
+    },
+    {
+      "rank": 551,
+      "module_id": "G6V01FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.03,
+        -0.03,
+        0.0
+      ],
+      "reported_total_pct": -0.06
+    },
+    {
+      "rank": 552,
+      "module_id": "G6V02RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.07,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": -0.07
+    },
+    {
+      "rank": 553,
+      "module_id": "G6B01CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        -0.07
+      ],
+      "reported_total_pct": -0.07
+    },
+    {
+      "rank": 554,
+      "module_id": "G6B05ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        -0.07
+      ],
+      "reported_total_pct": -0.07
+    },
+    {
+      "rank": 555,
+      "module_id": "G2QVE2BA",
+      "daily_return_pct": [
+        -0.06,
+        0.48,
+        0.5,
+        -0.99,
+        0.0
+      ],
+      "reported_total_pct": -0.08
+    },
+    {
+      "rank": 556,
+      "module_id": "PREVR1BA",
+      "daily_return_pct": [
+        null,
+        0.12,
+        null,
+        -0.03,
+        -0.2
+      ],
+      "reported_total_pct": -0.1
+    },
+    {
+      "rank": 557,
+      "module_id": "G6V02CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.1,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": -0.1
+    },
+    {
+      "rank": 558,
+      "module_id": "G6B01ROOMBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        -0.1
+      ],
+      "reported_total_pct": -0.1
+    },
+    {
+      "rank": 559,
+      "module_id": "G6B05CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        -0.1
+      ],
+      "reported_total_pct": -0.1
+    },
+    {
+      "rank": 560,
+      "module_id": "G6R07PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.04,
+        -0.06,
+        -0.01
+      ],
+      "reported_total_pct": -0.11
+    },
+    {
+      "rank": 561,
+      "module_id": "C3F_DEN5BA",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        -0.15,
+        0.04
+      ],
+      "reported_total_pct": -0.11
+    },
+    {
+      "rank": 562,
+      "module_id": "G6R04RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        -0.07,
+        -0.05
+      ],
+      "reported_total_pct": -0.12
+    },
+    {
+      "rank": 563,
+      "module_id": "G6B01PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        -0.12
+      ],
+      "reported_total_pct": -0.12
+    },
+    {
+      "rank": 564,
+      "module_id": "G6V02TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.12,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": -0.12
+    },
+    {
+      "rank": 565,
+      "module_id": "G6B05PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        0.0,
+        0.0,
+        -0.13
+      ],
+      "reported_total_pct": -0.13
+    },
+    {
+      "rank": 566,
+      "module_id": "G6R08PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.04,
+        -0.06,
+        -0.04
+      ],
+      "reported_total_pct": -0.14
+    },
+    {
+      "rank": 567,
+      "module_id": "G6M01RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.15,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": -0.15
+    },
+    {
+      "rank": 568,
+      "module_id": "G6M08RISKBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.15,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": -0.15
+    },
+    {
+      "rank": 569,
+      "module_id": "G6R06FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.09,
+        0.04,
+        -0.1
+      ],
+      "reported_total_pct": -0.15
+    },
+    {
+      "rank": 570,
+      "module_id": "G3CGCTLBA",
+      "daily_return_pct": [
+        -0.07,
+        0.2,
+        -0.33,
+        0.2,
+        -0.2
+      ],
+      "reported_total_pct": -0.2
+    },
+    {
+      "rank": 571,
+      "module_id": "G6M01CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.24,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": -0.24
+    },
+    {
+      "rank": 572,
+      "module_id": "G6M01FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.24,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": -0.24
+    },
+    {
+      "rank": 573,
+      "module_id": "G6M01PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.24,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": -0.24
+    },
+    {
+      "rank": 574,
+      "module_id": "G6M01TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.24,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": -0.24
+    },
+    {
+      "rank": 575,
+      "module_id": "G6M08CTLBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.24,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": -0.24
+    },
+    {
+      "rank": 576,
+      "module_id": "G6M08FASTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.24,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": -0.24
+    },
+    {
+      "rank": 577,
+      "module_id": "G6M08PROGRESSBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.24,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": -0.24
+    },
+    {
+      "rank": 578,
+      "module_id": "G6M08TARGETBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.24,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": -0.24
+    },
+    {
+      "rank": 579,
+      "module_id": "G2QVE5BA",
+      "daily_return_pct": [
+        -0.06,
+        0.48,
+        0.59,
+        -1.27,
+        0.0
+      ],
+      "reported_total_pct": -0.27
+    },
+    {
+      "rank": 580,
+      "module_id": "G2QVT75BA",
+      "daily_return_pct": [
+        -0.11,
+        0.19,
+        0.3,
+        -0.7,
+        0.0
+      ],
+      "reported_total_pct": -0.31
+    },
+    {
+      "rank": 581,
+      "module_id": "FXJPY1",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        -0.31
+      ],
+      "reported_total_pct": -0.31
+    },
+    {
+      "rank": 582,
+      "module_id": "G2QVT65BA",
+      "daily_return_pct": [
+        -0.11,
+        0.19,
+        0.26,
+        -0.7,
+        0.0
+      ],
+      "reported_total_pct": -0.35
+    },
+    {
+      "rank": 583,
+      "module_id": "G3TE90BA",
+      "daily_return_pct": [
+        -0.23,
+        0.09,
+        -0.47,
+        0.21,
+        0.0
+      ],
+      "reported_total_pct": -0.39
+    },
+    {
+      "rank": 584,
+      "module_id": "G2QVE8BA",
+      "daily_return_pct": [
+        -0.06,
+        0.23,
+        0.27,
+        -0.84,
+        0.0
+      ],
+      "reported_total_pct": -0.4
+    },
+    {
+      "rank": 585,
+      "module_id": "G3MD2BA",
+      "daily_return_pct": [
+        -0.02,
+        -1.0,
+        0.73,
+        0.0,
+        -0.11
+      ],
+      "reported_total_pct": -0.4
+    },
+    {
+      "rank": 586,
+      "module_id": "G6M01PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.51,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": -0.51
+    },
+    {
+      "rank": 587,
+      "module_id": "G6M08PATIENTBA",
+      "daily_return_pct": [
+        null,
+        null,
+        -0.51,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": -0.51
+    },
+    {
+      "rank": 588,
+      "module_id": "G3MRB20BA",
+      "daily_return_pct": [
+        0.0,
+        -0.04,
+        -0.48,
+        0.0,
+        0.0
+      ],
+      "reported_total_pct": -0.53
+    },
+    {
+      "rank": 589,
+      "module_id": "G2QVS10BA",
+      "daily_return_pct": [
+        0.0,
+        0.23,
+        0.0,
+        -0.84,
+        0.0
+      ],
+      "reported_total_pct": -0.61
+    },
+    {
+      "rank": 590,
+      "module_id": "RVCALLCR1",
+      "daily_return_pct": [
+        null,
+        null,
+        null,
+        null,
+        -1.35
+      ],
+      "reported_total_pct": -1.35
+    },
+    {
+      "rank": 591,
+      "module_id": "G3MCTLBA",
+      "daily_return_pct": [
+        0.0,
+        -1.14,
+        0.75,
+        -1.47,
+        0.27
+      ],
+      "reported_total_pct": -1.59
+    },
+    {
+      "rank": 592,
+      "module_id": "G3MD4BA",
+      "daily_return_pct": [
+        0.0,
+        -0.76,
+        -1.37,
+        0.0,
+        0.51
+      ],
+      "reported_total_pct": -1.62
+    },
+    {
+      "rank": 593,
+      "module_id": "G3MK5BA",
+      "daily_return_pct": [
+        0.0,
+        -0.18,
+        -0.58,
+        0.0,
+        -1.17
+      ],
+      "reported_total_pct": -1.92
+    },
+    {
+      "rank": 594,
+      "module_id": "G3MD3BA",
+      "daily_return_pct": [
+        0.0,
+        -1.19,
+        0.42,
+        -1.32,
+        0.15
+      ],
+      "reported_total_pct": -1.94
+    },
+    {
+      "rank": 595,
+      "module_id": "G3MF200BA",
+      "daily_return_pct": [
+        -0.64,
+        0.0,
+        -1.1,
+        0.0,
+        -0.88
+      ],
+      "reported_total_pct": -2.62
+    },
+    {
+      "rank": 596,
+      "module_id": "G3MK30BA",
+      "daily_return_pct": [
+        0.0,
+        -0.63,
+        -1.11,
+        0.0,
+        -1.27
+      ],
+      "reported_total_pct": -3.01
+    }
+  ],
+  "retained_report_ids": [
+    "STHEDGE2",
+    "STRESMOM1",
+    "G3MPR150BA",
+    "G3QS30BA",
+    "G3QV425X1000BA",
+    "G3CGLB30BA",
+    "G3QV425X600BA",
+    "G3MPR100BA",
+    "G3QCTLBA",
+    "G3QS20BA",
+    "G3MT65BA",
+    "G3MT75BA",
+    "G3MPR125BA",
+    "G2QVD4BA",
+    "G3MU50BA",
+    "G3QD2BA",
+    "G3MR260BA",
+    "G3MT50BA",
+    "G3QD3BA",
+    "G6R02PATIENTBA",
+    "G3QQ1BA",
+    "G6R02CTLBA",
+    "G7ROTPROTECTBA",
+    "G7BRDSTABLEBA",
+    "G3MW1230BA",
+    "G6R07CTLBA",
+    "G3QD4BA",
+    "G6R05TARGETBA",
+    "G6R04TARGETBA",
+    "G6R03PATIENTBA",
+    "G6R05ROOMBA",
+    "G6R03FASTBA",
+    "G2QVK30BA",
+    "G3MR270BA",
+    "G2QVE3BA",
+    "G6R01CTLBA",
+    "G6R02FASTBA",
+    "G6R02ROOMBA",
+    "G6R05CTLBA",
+    "G6R05PATIENTBA",
+    "G6R03CTLBA",
+    "G6R04PATIENTBA",
+    "G2QVONEBA",
+    "G6R03ROOMBA",
+    "G3QH12BA",
+    "G3MR50BA",
+    "G6R01ROOMBA",
+    "G6R01RISKBA",
+    "G6R01PATIENTBA",
+    "G6R05FASTBA",
+    "G2QVD2BA",
+    "G3MP3BA",
+    "G6R01TARGETBA",
+    "G6R02TARGETBA",
+    "G3MW1130BA",
+    "G6R01FASTBA",
+    "G3MU75BA",
+    "G6R03TARGETBA",
+    "G5RBTIMEBA",
+    "G6P04PATIENTBA",
+    "G6R07TARGETBA",
+    "G6R02COSTBA",
+    "G6R03COSTBA",
+    "G6R04COSTBA",
+    "G2QVK20BA",
+    "G3MR25BA",
+    "PULLCONT2BA",
+    "G6R05PROGRESSBA",
+    "G6R02RISKBA",
+    "G6B05TARGETBA",
+    "G3MR10BA",
+    "G3MRB15BA",
+    "G6R06PATIENTBA",
+    "G6R04FASTBA",
+    "G6R03PROGRESSBA",
+    "G6R02PROGRESSBA",
+    "G6P04TARGETBA",
+    "G6R05RISKBA",
+    "G6B01TARGETBA",
+    "PAIRTR1BA",
+    "G2QVK10BA",
+    "G6V05TARGETBA",
+    "G6R06ROOMBA",
+    "G6V05RISKBA",
+    "G6R06TARGETBA",
+    "G6V05CTLBA",
+    "G6R07FASTBA",
+    "G6R10CTLBA",
+    "G6R10RISKBA",
+    "G6R10ROOMBA",
+    "G6R10TARGETBA",
+    "G6R07RISKBA",
+    "G6V01CTLBA",
+    "G6R06RISKBA",
+    "G6P04CTLBA",
+    "G6P04ROOMBA",
+    "G6R08PATIENTBA",
+    "G6V05PATIENTBA",
+    "G3TT60BA",
+    "G6R01PROGRESSBA",
+    "G6R10PATIENTBA",
+    "G4JCONTTECHBA",
+    "G5SECTOREXECBA",
+    "G6V05ROOMBA",
+    "G6V05PROGRESSBA",
+    "G6V01RISKBA",
+    "G6P04FASTBA",
+    "G6R04CTLBA",
+    "G6P04PROGRESSBA",
+    "G6B04RISKBA",
+    "G6R03RISKBA",
+    "G6R10PROGRESSBA",
+    "G6R09ROOMBA",
+    "G6R09TARGETBA",
+    "G6R10FASTBA",
+    "G6R04ROOMBA",
+    "G3QS10BA",
+    "G4JFADEINDEXBA",
+    "G4JFADESECTORBA",
+    "G6R08FASTBA",
+    "G6V03RISKBA",
+    "G6V01ROOMBA",
+    "G6V01TARGETBA",
+    "G6V05FASTBA",
+    "G3QONEBA",
+    "G4OCCUPYINDEXBA",
+    "G6R08COSTBA",
+    "G6V01PROGRESSBA",
+    "G6R09FASTBA",
+    "G6R09PROGRESSBA"
+  ],
+  "retired_report_ids": [
+    "G6R06PROGRESSBA",
+    "G3MU100BA",
+    "G3MU150BA",
+    "G6B01COSTBA",
+    "G6B01RISKBA",
+    "G6B02COSTBA",
+    "G6B02CTLBA",
+    "G6B02FASTBA",
+    "G6B02PATIENTBA",
+    "G6B02PROGRESSBA",
+    "G6B02RISKBA",
+    "G6B02ROOMBA",
+    "G6B02TARGETBA",
+    "G6B03COSTBA",
+    "G6B03CTLBA",
+    "G6B03FASTBA",
+    "G6B03PATIENTBA",
+    "G6B03PROGRESSBA",
+    "G6B03RISKBA",
+    "G6B03ROOMBA",
+    "G6B03TARGETBA",
+    "G6B05COSTBA",
+    "G6B05RISKBA",
+    "G6L01COSTBA",
+    "G6L01CTLBA",
+    "G6L01FASTBA",
+    "G6L01PATIENTBA",
+    "G6L01PROGRESSBA",
+    "G6L01RISKBA",
+    "G6L01ROOMBA",
+    "G6L01TARGETBA",
+    "G6L02COSTBA",
+    "G6L02CTLBA",
+    "G6L02FASTBA",
+    "G6L02PATIENTBA",
+    "G6L02PROGRESSBA",
+    "G6L02RISKBA",
+    "G6L02ROOMBA",
+    "G6L02TARGETBA",
+    "G6L03COSTBA",
+    "G6L03CTLBA",
+    "G6L03FASTBA",
+    "G6L03PATIENTBA",
+    "G6L03PROGRESSBA",
+    "G6L03RISKBA",
+    "G6L03ROOMBA",
+    "G6L03TARGETBA",
+    "G6L04COSTBA",
+    "G6L04CTLBA",
+    "G6L04FASTBA",
+    "G6L04PATIENTBA",
+    "G6L04PROGRESSBA",
+    "G6L04RISKBA",
+    "G6L04ROOMBA",
+    "G6L04TARGETBA",
+    "G6L05COSTBA",
+    "G6L05CTLBA",
+    "G6L05FASTBA",
+    "G6L05PATIENTBA",
+    "G6L05PROGRESSBA",
+    "G6L05RISKBA",
+    "G6L05ROOMBA",
+    "G6L05TARGETBA",
+    "G6L06COSTBA",
+    "G6L06CTLBA",
+    "G6L06FASTBA",
+    "G6L06PATIENTBA",
+    "G6L06PROGRESSBA",
+    "G6L06RISKBA",
+    "G6L06ROOMBA",
+    "G6L06TARGETBA",
+    "G6L07COSTBA",
+    "G6L07CTLBA",
+    "G6L07FASTBA",
+    "G6L07PATIENTBA",
+    "G6L07PROGRESSBA",
+    "G6L07RISKBA",
+    "G6L07ROOMBA",
+    "G6L07TARGETBA",
+    "G6L08COSTBA",
+    "G6L08CTLBA",
+    "G6L08FASTBA",
+    "G6L08PATIENTBA",
+    "G6L08PROGRESSBA",
+    "G6L08RISKBA",
+    "G6L08ROOMBA",
+    "G6L08TARGETBA",
+    "G6L09COSTBA",
+    "G6L09CTLBA",
+    "G6L09FASTBA",
+    "G6L09PATIENTBA",
+    "G6L09PROGRESSBA",
+    "G6L09RISKBA",
+    "G6L09ROOMBA",
+    "G6L09TARGETBA",
+    "G6L10COSTBA",
+    "G6L10CTLBA",
+    "G6L10FASTBA",
+    "G6L10PATIENTBA",
+    "G6L10PROGRESSBA",
+    "G6L10RISKBA",
+    "G6L10ROOMBA",
+    "G6L10TARGETBA",
+    "G6M01COSTBA",
+    "G6M01ROOMBA",
+    "G6M02COSTBA",
+    "G6M02CTLBA",
+    "G6M02FASTBA",
+    "G6M02PATIENTBA",
+    "G6M02PROGRESSBA",
+    "G6M02RISKBA",
+    "G6M02ROOMBA",
+    "G6M02TARGETBA",
+    "G6M03COSTBA",
+    "G6M03CTLBA",
+    "G6M03FASTBA",
+    "G6M03PATIENTBA",
+    "G6M03PROGRESSBA",
+    "G6M03RISKBA",
+    "G6M03ROOMBA",
+    "G6M03TARGETBA",
+    "G6M04COSTBA",
+    "G6M04CTLBA",
+    "G6M04FASTBA",
+    "G6M04PATIENTBA",
+    "G6M04PROGRESSBA",
+    "G6M04RISKBA",
+    "G6M04ROOMBA",
+    "G6M04TARGETBA",
+    "G6M05COSTBA",
+    "G6M05CTLBA",
+    "G6M05FASTBA",
+    "G6M05PATIENTBA",
+    "G6M05PROGRESSBA",
+    "G6M05RISKBA",
+    "G6M05ROOMBA",
+    "G6M05TARGETBA",
+    "G6M06COSTBA",
+    "G6M06CTLBA",
+    "G6M06FASTBA",
+    "G6M06PATIENTBA",
+    "G6M06PROGRESSBA",
+    "G6M06RISKBA",
+    "G6M06ROOMBA",
+    "G6M06TARGETBA",
+    "G6M07COSTBA",
+    "G6M07CTLBA",
+    "G6M07FASTBA",
+    "G6M07PATIENTBA",
+    "G6M07PROGRESSBA",
+    "G6M07RISKBA",
+    "G6M07ROOMBA",
+    "G6M07TARGETBA",
+    "G6M08COSTBA",
+    "G6M08ROOMBA",
+    "G6M09COSTBA",
+    "G6M09CTLBA",
+    "G6M09FASTBA",
+    "G6M09PATIENTBA",
+    "G6M09PROGRESSBA",
+    "G6M09RISKBA",
+    "G6M09ROOMBA",
+    "G6M09TARGETBA",
+    "G6M10COSTBA",
+    "G6M10CTLBA",
+    "G6M10FASTBA",
+    "G6M10PATIENTBA",
+    "G6M10PROGRESSBA",
+    "G6M10RISKBA",
+    "G6M10ROOMBA",
+    "G6M10TARGETBA",
+    "G6M11COSTBA",
+    "G6M11CTLBA",
+    "G6M11FASTBA",
+    "G6M11PATIENTBA",
+    "G6M11PROGRESSBA",
+    "G6M11RISKBA",
+    "G6M11ROOMBA",
+    "G6M11TARGETBA",
+    "G6M12COSTBA",
+    "G6M12CTLBA",
+    "G6M12FASTBA",
+    "G6M12PATIENTBA",
+    "G6M12PROGRESSBA",
+    "G6M12RISKBA",
+    "G6M12ROOMBA",
+    "G6M12TARGETBA",
+    "G6M13COSTBA",
+    "G6M13CTLBA",
+    "G6M13FASTBA",
+    "G6M13PATIENTBA",
+    "G6M13PROGRESSBA",
+    "G6M13RISKBA",
+    "G6M13ROOMBA",
+    "G6M13TARGETBA",
+    "G6M14COSTBA",
+    "G6M14CTLBA",
+    "G6M14FASTBA",
+    "G6M14PATIENTBA",
+    "G6M14PROGRESSBA",
+    "G6M14RISKBA",
+    "G6M14ROOMBA",
+    "G6M14TARGETBA",
+    "G6M15COSTBA",
+    "G6M15CTLBA",
+    "G6M15FASTBA",
+    "G6M15PATIENTBA",
+    "G6M15PROGRESSBA",
+    "G6M15RISKBA",
+    "G6M15ROOMBA",
+    "G6M15TARGETBA",
+    "G6P01COSTBA",
+    "G6P01CTLBA",
+    "G6P01FASTBA",
+    "G6P01PATIENTBA",
+    "G6P01PROGRESSBA",
+    "G6P01RISKBA",
+    "G6P01ROOMBA",
+    "G6P01TARGETBA",
+    "G6P02COSTBA",
+    "G6P02CTLBA",
+    "G6P02FASTBA",
+    "G6P02PATIENTBA",
+    "G6P02PROGRESSBA",
+    "G6P02RISKBA",
+    "G6P02ROOMBA",
+    "G6P02TARGETBA",
+    "G6P03COSTBA",
+    "G6P03CTLBA",
+    "G6P03FASTBA",
+    "G6P03PATIENTBA",
+    "G6P03PROGRESSBA",
+    "G6P03RISKBA",
+    "G6P03ROOMBA",
+    "G6P03TARGETBA",
+    "G6P04COSTBA",
+    "G6P04RISKBA",
+    "G6P05COSTBA",
+    "G6P05CTLBA",
+    "G6P05FASTBA",
+    "G6P05PATIENTBA",
+    "G6P05PROGRESSBA",
+    "G6P05RISKBA",
+    "G6R01COSTBA",
+    "G6R07COSTBA",
+    "G6R09COSTBA",
+    "G6R10COSTBA",
+    "G6V01COSTBA",
+    "G6V02COSTBA",
+    "G6V02ROOMBA",
+    "G6V03COSTBA",
+    "G6V03FASTBA",
+    "G6V03PROGRESSBA",
+    "G6V03ROOMBA",
+    "G6V04COSTBA",
+    "G6V04CTLBA",
+    "G6V04FASTBA",
+    "G6V04PATIENTBA",
+    "G6V04PROGRESSBA",
+    "G6V04RISKBA",
+    "G6V04ROOMBA",
+    "G6V04TARGETBA",
+    "G6V05COSTBA",
+    "G8B01BALANCEBA",
+    "G8B01CYCLEBA",
+    "G8B01RESOURCEBA",
+    "G8B01TECHBA",
+    "G8B02BALANCEBA",
+    "G8B02CYCLEBA",
+    "G8B02RESOURCEBA",
+    "G8B02TECHBA",
+    "G8B03BALANCEBA",
+    "G8B03CYCLEBA",
+    "G8B03RESOURCEBA",
+    "G8B03TECHBA",
+    "G8B04BALANCEBA",
+    "G8B04CYCLEBA",
+    "G8B04RESOURCEBA",
+    "G8B04TECHBA",
+    "G8B05BALANCEBA",
+    "G8B05CYCLEBA",
+    "G8B05RESOURCEBA",
+    "G8B05TECHBA",
+    "G8E01BALANCEBA",
+    "G8E01CYCLEBA",
+    "G8E01RESOURCEBA",
+    "G8E01TECHBA",
+    "G8E02BALANCEBA",
+    "G8E02CYCLEBA",
+    "G8E02RESOURCEBA",
+    "G8E02TECHBA",
+    "G8E03BALANCEBA",
+    "G8E03CYCLEBA",
+    "G8E03RESOURCEBA",
+    "G8E03TECHBA",
+    "G8E04BALANCEBA",
+    "G8E04CYCLEBA",
+    "G8E04RESOURCEBA",
+    "G8E04TECHBA",
+    "G8E05BALANCEBA",
+    "G8E05CYCLEBA",
+    "G8E05RESOURCEBA",
+    "G8E05TECHBA",
+    "G8F01BALANCEBA",
+    "G8F01CYCLEBA",
+    "G8F01RESOURCEBA",
+    "G8F01TECHBA",
+    "G8F02BALANCEBA",
+    "G8F02CYCLEBA",
+    "G8F02RESOURCEBA",
+    "G8F02TECHBA",
+    "G8F03BALANCEBA",
+    "G8F03CYCLEBA",
+    "G8F03RESOURCEBA",
+    "G8F03TECHBA",
+    "G8F04BALANCEBA",
+    "G8F04CYCLEBA",
+    "G8F04RESOURCEBA",
+    "G8F04TECHBA",
+    "G8F05BALANCEBA",
+    "G8F05CYCLEBA",
+    "G8F05RESOURCEBA",
+    "G8F05TECHBA",
+    "G8R01BALANCEBA",
+    "G8R01CYCLEBA",
+    "G8R01RESOURCEBA",
+    "G8R01TECHBA",
+    "G8R02BALANCEBA",
+    "G8R02CYCLEBA",
+    "G8R02RESOURCEBA",
+    "G8R02TECHBA",
+    "G8R03BALANCEBA",
+    "G8R03CYCLEBA",
+    "G8R03RESOURCEBA",
+    "G8R03TECHBA",
+    "G8R04BALANCEBA",
+    "G8R04CYCLEBA",
+    "G8R04RESOURCEBA",
+    "G8R04TECHBA",
+    "G8R05BALANCEBA",
+    "G8R05CYCLEBA",
+    "G8R05RESOURCEBA",
+    "G8R05TECHBA",
+    "G8T01BALANCEBA",
+    "G8T01CYCLEBA",
+    "G8T01RESOURCEBA",
+    "G8T01TECHBA",
+    "G8T02BALANCEBA",
+    "G8T02CYCLEBA",
+    "G8T02RESOURCEBA",
+    "G8T02TECHBA",
+    "G8T03BALANCEBA",
+    "G8T03CYCLEBA",
+    "G8T03RESOURCEBA",
+    "G8T03TECHBA",
+    "G8T04BALANCEBA",
+    "G8T04CYCLEBA",
+    "G8T04RESOURCEBA",
+    "G8T04TECHBA",
+    "G8T05BALANCEBA",
+    "G8T05CYCLEBA",
+    "G8T05RESOURCEBA",
+    "G8T05TECHBA",
+    "G8X01BALANCEBA",
+    "G8X01CYCLEBA",
+    "G8X01RESOURCEBA",
+    "G8X01TECHBA",
+    "G8X02BALANCEBA",
+    "G8X02CYCLEBA",
+    "G8X02RESOURCEBA",
+    "G8X02TECHBA",
+    "G8X03BALANCEBA",
+    "G8X03CYCLEBA",
+    "G8X03RESOURCEBA",
+    "G8X03TECHBA",
+    "G8X04BALANCEBA",
+    "G8X04CYCLEBA",
+    "G8X04RESOURCEBA",
+    "G8X04TECHBA",
+    "G8X05BALANCEBA",
+    "G8X05CYCLEBA",
+    "G8X05RESOURCEBA",
+    "G8X05TECHBA",
+    "G4RREVTECHBA",
+    "G6R08CTLBA",
+    "G6R08ROOMBA",
+    "G6B04FASTBA",
+    "G6V03CTLBA",
+    "G6R07ROOMBA",
+    "G6R09RISKBA",
+    "G2QVD3BA",
+    "G6B04COSTBA",
+    "G6B04ROOMBA",
+    "G6B04TARGETBA",
+    "PAIRMR1BA",
+    "G6B01FASTBA",
+    "G6B05PROGRESSBA",
+    "G6B04CTLBA",
+    "G6B04PROGRESSBA",
+    "G6R09PATIENTBA",
+    "G6V01PATIENTBA",
+    "G6R09CTLBA",
+    "G6R04PROGRESSBA",
+    "G6R06CTLBA",
+    "G6V03TARGETBA",
+    "G6B04PATIENTBA",
+    "G6B01PROGRESSBA",
+    "G6B05FASTBA",
+    "G6R05COSTBA",
+    "G1MQBA",
+    "G6V02PATIENTBA",
+    "G6R08RISKBA",
+    "G6V03PATIENTBA",
+    "G6R06COSTBA",
+    "G6P05ROOMBA",
+    "G6P05TARGETBA",
+    "G6V02FASTBA",
+    "G6R07PATIENTBA",
+    "G6V02PROGRESSBA",
+    "G6R08TARGETBA",
+    "G6V01FASTBA",
+    "G6V02RISKBA",
+    "G6B01CTLBA",
+    "G6B05ROOMBA",
+    "G2QVE2BA",
+    "PREVR1BA",
+    "G6V02CTLBA",
+    "G6B01ROOMBA",
+    "G6B05CTLBA",
+    "G6R07PROGRESSBA",
+    "C3F_DEN5BA",
+    "G6R04RISKBA",
+    "G6B01PATIENTBA",
+    "G6V02TARGETBA",
+    "G6B05PATIENTBA",
+    "G6R08PROGRESSBA",
+    "G6M01RISKBA",
+    "G6M08RISKBA",
+    "G6R06FASTBA",
+    "G3CGCTLBA",
+    "G6M01CTLBA",
+    "G6M01FASTBA",
+    "G6M01PROGRESSBA",
+    "G6M01TARGETBA",
+    "G6M08CTLBA",
+    "G6M08FASTBA",
+    "G6M08PROGRESSBA",
+    "G6M08TARGETBA",
+    "G2QVE5BA",
+    "G2QVT75BA",
+    "FXJPY1",
+    "G2QVT65BA",
+    "G3TE90BA",
+    "G2QVE8BA",
+    "G3MD2BA",
+    "G6M01PATIENTBA",
+    "G6M08PATIENTBA",
+    "G3MRB20BA",
+    "G2QVS10BA",
+    "RVCALLCR1",
+    "G3MCTLBA",
+    "G3MD4BA",
+    "G3MK5BA",
+    "G3MD3BA",
+    "G3MF200BA",
+    "G3MK30BA"
+  ]
+}

@@ -31,6 +31,7 @@ from reporting.generation_five_performance import calculate_generation_five
 from reporting.generation_six_performance import calculate_generation_six
 from reporting.generation_seven_performance import calculate_generation_seven
 from reporting.generation_eight_performance import calculate_generation_eight
+from reporting.generation_nine_performance import calculate_generation_nine
 from reporting.cutoff_quotes import frozen_books, fresh_bid
 
 
@@ -702,6 +703,13 @@ def calculate(root="/data", day=None, as_of=None):
     g8_modules, g8_diagnostics = calculate_generation_eight(root, day, cutoff, marks,
         lambda symbol, context: rich_books.get(symbol, {}))
     modules.update(g8_modules)
+    from strategies.generation_nine import valid_quote as g9_valid_quote
+    g9_quotes = dict(marks["equity"])
+    for symbol, quote in rich_books.items():
+        if g9_valid_quote(quote, cutoff):
+            g9_quotes[symbol] = quote
+    g9_modules, g9_diagnostics = calculate_generation_nine(root, day, cutoff, g9_quotes)
+    modules.update(g9_modules)
 
     # Known generation accounts missing a mark are visible as unknown, not
     # silently absent or scored as zero. No account is created by reporting.
@@ -751,6 +759,7 @@ def calculate(root="/data", day=None, as_of=None):
             "generation_six": g6_diagnostics,
             "generation_seven": g7_diagnostics,
             "generation_eight": g8_diagnostics,
+            "generation_nine": g9_diagnostics,
         },
     }
 

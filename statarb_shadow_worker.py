@@ -5,6 +5,8 @@ from datetime import datetime,timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 from statarb_paper_tracker import StatArbPaperTracker
+from generation_nine_paper_tracker import GenerationNineTracker, FILE_STEM as G9_FILE_STEM
+from strategies import generation_nine as g9
 from strategies.pruning import active_output_ids
 
 NY=ZoneInfo("America/New_York")
@@ -24,7 +26,7 @@ def fetch_quotes():
  import requests
  r=requests.get(QUOTE_URL,headers={"Authorization":f"Bearer {_token()}","Accept":"application/json"},params={"symbols":",".join(SYMBOLS)},timeout=20);r.raise_for_status();return r.json()
 def normalize(symbol,payload):
- q=payload.get("quote") or {};return {"symbol":str(symbol).upper(),"realtime":payload.get("realtime") is True,"bid":q.get("bidPrice"),"ask":q.get("askPrice"),"last":q.get("lastPrice"),"quote_time_ms":q.get("quoteTime")}
+ q=payload.get("quote") or {};return {"symbol":str(symbol).upper(),"realtime":payload.get("realtime") is True,"bid":q.get("bidPrice"),"ask":q.get("askPrice"),"last":q.get("lastPrice"),"quote_time_ms":q.get("quoteTime"),"bid_time_ms":q.get("bidTime",q.get("quoteTime")),"ask_time_ms":q.get("askTime",q.get("quoteTime")),"bid_size_raw":q.get("bidSize"),"ask_size_raw":q.get("askSize")}
 def fresh(q,now):
  try:
   b=float(q["bid"]);a=float(q["ask"]);age=abs(now.timestamp()-float(q["quote_time_ms"])/1000);return q.get("realtime") is True and b>0 and a>=b and age<=MAX_AGE
@@ -42,14 +44,29 @@ def load_strategies():
   for sid in ids:
    m=importlib.import_module(f"{package}.strategy_{sid.lower()}");assert m.PAPER_ONLY is True and m.LIVE_ORDER_PLACEMENT is False;out.append(m.Strategy())
  return out
+def g9_cycle(tracker,population,now,quotes):
+ if tracker is None:return
+ observed=population.observe(now,quotes)
+ tracker.update(quotes,now,population)
+ if observed and os.environ.get('ENABLE_G9_PAPER','0')=='1':
+  for spec in g9.CATALOG:
+   if spec.strategy_id in tracker.active:continue
+   last=tracker.last.get(spec.strategy_id)
+   if last and (now-last).total_seconds()<spec.cooldown_minutes*60:continue
+   decision=population.decision(spec,now)
+   if decision:tracker.open(decision,quotes,now)
+ tracker.status()
+
 def main():
  tracker=StatArbPaperTracker(DATA_ROOT);strategies=load_strategies();decisions_total=0;errors=0;requests_total=0
+ g9_tracker=GenerationNineTracker(DATA_ROOT) if os.environ.get('ENABLE_G9_PAPER','0')=='1' or (DATA_ROOT/(G9_FILE_STEM+'_births.json')).exists() else None
+ g9_population=g9.Population()
  while True:
   started=time.monotonic();now=datetime.now(timezone.utc)
   if not regular_market(now):
    _atomic({"updated_at":now.isoformat(),"status":"WAITING_REGULAR_MARKET","strategies":len(strategies),"symbols":len(SYMBOLS),"fresh_symbols":0,"active_paper_groups":len(tracker.active),"decisions":decisions_total,"errors":errors,"requests":requests_total,"broker_execution_enabled":False});time.sleep(30);continue
   try:
-   raw=fetch_quotes();requests_total+=1;quotes={s:normalize(s,p) for s,p in raw.items() if s in SYMBOLS};usable={s:q for s,q in quotes.items() if fresh(q,now)};archive(now,usable);tracker.update(now,usable);decisions=[]
+   raw=fetch_quotes();now=datetime.now(timezone.utc);requests_total+=1;quotes={s:normalize(s,p) for s,p in raw.items() if s in SYMBOLS};usable={s:q for s,q in quotes.items() if fresh(q,now)};archive(now,usable);tracker.update(now,usable);g9_cycle(g9_tracker,g9_population,now,quotes);decisions=[]
    if entry_window(now):
     snap={"timestamp":now,"quotes":usable}
     for strategy in strategies:

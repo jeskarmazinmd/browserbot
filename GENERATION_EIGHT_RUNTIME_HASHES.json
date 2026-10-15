@@ -1,14 +1,14 @@
 {
-  "Dockerfile": "77acfad640c4337f4e9a5230b6884f173b33ef1aa1baa3115c8237621903417e",
+  "Dockerfile": "b31a7eec2ffe090b792456c08ac2bd4ea88323a6f77c110cde6446f7b73da5d1",
   "GENERATION_EIGHT_CATALOG.json": "2df135069664d671e6d42409191f5fee82e5ca3903aac0f0c3c178565f0669a0",
   "GENERATION_EIGHT_RETIREMENT.json": "e2e91ab515ceefb36ae09f55a1c4072b31ed822997c3fdefaa88565700035021",
-  "GENERATION_SEVEN_RUNTIME_HASHES.json": "8259e8019e8b1b18a35001e23f3c628475d44ff66323019febe50dd792a0f85c",
-  "GENERATION_SIX_RUNTIME_HASHES.json": "b26127bc0be0ffae76cf2775e68f55f0ef9a933367320c88a15c54dd5c3681f9",
-  "fly.toml": "45ba6c62b8c4a8e1a07659c7acf7b98b244e59555252b5ae68e80d2dd3620b1b",
+  "GENERATION_SEVEN_RUNTIME_HASHES.json": "dd958def297a333674b6d6524fac2e61e45448afe7cb05ce9142f879e338b3a4",
+  "GENERATION_SIX_RUNTIME_HASHES.json": "7206f267f0d84b31e0303eef8c95f71128c56beb7be286197386b56eb06c4a21",
+  "fly.toml": "7215a31b494e1795f36460500db7104b5f26f186394f4bbc67c7cb33e075b6e9",
   "generation_eight_paper_tracker.py": "27be907b2f5b96eddba612eb182e28b86c42989ef96f0bf403c71eb9fa70cf6a",
   "live_quote_collector.py": "ed064a6135027513691e10145548e5e03963c592ffb0483ac6ea22f494b248b1",
   "live_strategy_runner.py": "73a9a1b86122f48e1aba8bf6456a197c646d75c8287dcaf3831fefe6bc1f0979",
-  "reporting/all_engine_performance.py": "ac485e3b61a8fe80b71feac5295b8b9e2858acf2feeda93b446c18a2d2f5d492",
+  "reporting/all_engine_performance.py": "790f384e80c290cb2d32fba7c90929cb1feb3c934d4b2c7d02c07a9353ea7a0a",
   "reporting/all_engine_performance_worker.py": "13f04debd662b2bee5bafc6438f3d3863d04afd02d3927b694c2330116e222ca",
   "reporting/capital_performance.py": "587e5bb3ac02076a82f2b42c72f5e838fc2b8435ad8621ef8fbe338a24db4167",
   "reporting/cutoff_quotes.py": "d5954e3a24f8300d1ead2ae06aadbd6cfa420805041f6ba50f523959dcccf7df",
@@ -19,6 +19,6 @@
   "research_tools/g8/verify_production.py": "d8a57093e103b1450d504ff1a16f2bb4ccddbe660b444d239ef0eacdd4313312",
   "strategies/generation_eight.py": "6fec0a250dc182a2ebd85ddb8a2bea1c7546977147bdefb3f69d657dc6a29ce4",
   "strategies/generation_eight_retirement.py": "b11bf00d9ff77bd72df74e62e45385aeb327e228cff9cf60b7c3371018965f87",
-  "strategies/generation_six_retirement.py": "d1f976abf05375731f279a78b1281995ec0b348783d9ea948ffa9bcb2ee4c5f0",
+  "strategies/generation_six_retirement.py": "9e9f047657c2592f8e6de20fe06604c302ee510734d2e9c6e4ad777081066f33",
   "strategies/registry.py": "1bd53f2d0e62f687232ed9e48ffc670e761e59569fc57cd6aa45e9b7453fd8d2"
 }

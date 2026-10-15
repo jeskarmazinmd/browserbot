@@ -1,0 +1,14 @@
+{
+  "population": 400,
+  "population_hash": "71abf88a8814c036d4c20a5d0f646751bc57481d7f9fb69e5d60ae700c769f31",
+  "symbols": 37,
+  "measured_minutes": 25,
+  "median_seconds": 3.6157026870000664,
+  "p95_seconds": 3.7785561539999435,
+  "max_seconds": 3.824449976999972,
+  "feature_cache_keys": 2916,
+  "peak_traced_mb": 1.8882951736450195,
+  "synthetic_decisions": 5064,
+  "market_requests_added": 0,
+  "performance_evidence": false
+}
