@@ -1,4 +1,4 @@
-"""Actual G9 fills, $5k daily equal starts, no synthetic sizing or backfill."""
+"""Hypothetical G9 fills; daily P&L / $5k reference, versioned execution."""
 import json
 from pathlib import Path
 from strategies import generation_nine as g
@@ -8,9 +8,9 @@ from generation_nine_paper_tracker import FILE_STEM,mark_group
 
 def calculate_generation_nine(root,day,cutoff,quotes):
     root=Path(root);birth_path=root/(FILE_STEM+'_births.json')
-    diagnostics=dict(entries=0,closes=0,rejected=0,unmarked=0,carry_unverified=0)
+    diagnostics=dict(entries=0,closes=0,rejected=0,unmarked=0,carry_unverified=0,counts_by_execution_version={})
     if not birth_path.exists():return {},diagnostics
-    births=json.loads(birth_path.read_text());entries={};closes={};rejected={};carry=set()
+    births=json.loads(birth_path.read_text());entries={};closes={};rejected={};carry=set();versions={}
     path=root/(FILE_STEM+'_outcomes.jsonl')
     if path.exists():
         with path.open() as handle:
@@ -19,6 +19,11 @@ def calculate_generation_nine(root,day,cutoff,quotes):
                 if t>cutoff:continue
                 if sid not in g.IDS or sid not in births or t<g.utc(births[sid]):raise ValueError('Invalid G9 provenance')
                 d=t.astimezone(g.NY).date().isoformat()
+                if d==day:
+                    version=r.get('execution_version','G9_LEGACY_V1')
+                    versions.setdefault(sid,set()).add(version)
+                    counts=diagnostics['counts_by_execution_version'].setdefault(version,{})
+                    counts[r['event']]=counts.get(r['event'],0)+1
                 if r['event']=='OPEN':entries[r['group_id']]=r
                 elif r['event']=='CLOSE':
                     gid=r['group_id']
@@ -47,8 +52,11 @@ def calculate_generation_nine(root,day,cutoff,quotes):
             signals=count+skip,taken=count,skipped=skip,open_taken=opened,closed_taken=closed,
             status='carry_unverified' if sid in carry else 'mark_unavailable' if unknown else 'prospective' if count else 'no_entries',
             prospective_start_utc=births[sid],actual_fill_quantities=True,portfolio_combinable=False,
+            broker_execution_enabled=False,broker_margin_verified=False,broker_buying_power_verified=False,
+            execution_versions=sorted(versions.get(sid,set())),
+            execution_feasibility='hypothetical research; broker constraints unverified',
             short_locate_verified=False,borrow_fees='estimated, not verified',family=g.SPECS[sid].family,
-            accounting='actual paired fills, commissions and estimated borrow; daily equal-start $5k')
+            accounting='hypothetical paired fills, commissions and estimated borrow; daily P&L / $5k reference; sizing uses cumulative equity')
         diagnostics['entries']+=count;diagnostics['closes']+=closed;diagnostics['rejected']+=skip
     diagnostics['carry_unverified']=len(carry)
     return modules,diagnostics

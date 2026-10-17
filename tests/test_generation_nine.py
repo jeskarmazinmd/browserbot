@@ -54,7 +54,7 @@ class Tests(unittest.TestCase):
             for b in q.values():b.update(bid=99.999,ask=100.001)
             self.assertTrue(self.t.open(decision(s.strategy_id,t),q,t),s.strategy_id)
         self.assertEqual(len(self.t.active),400)
-        for r in self.t.active.values():self.assertLessEqual(r['gross_notional_used'],1000.)
+        for r in self.t.active.values():self.assertLessEqual(r['gross_notional_used'],5000.)
     def test_both_legs_fresh_liquid_and_finite(self):
         for bad in ['stale','future','nan','crossed','delayed','size','missing_size']:
             with self.subTest(bad=bad):
