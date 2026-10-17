@@ -135,3 +135,33 @@ class SizingTests(unittest.TestCase):
         self.assertFalse(mods['G9Z01']['broker_margin_verified'])
         self.assertFalse(mods['G9Z01']['broker_execution_enabled'])
         self.assertEqual(diagnostics['counts_by_execution_version'][EXECUTION_VERSION]['OPEN'],1)
+
+    def test_weekend_uses_fresh_waiting_worker_not_old_g9_timestamp(self):
+        from datetime import timedelta
+        from research_tools.verify_generation_nine import inspect
+        weekend=NOW+timedelta(days=1)
+        worker=self.root/'statarb_shadow_status.json'
+        state=dict(updated_at=weekend.isoformat(),status='WAITING_REGULAR_MARKET',broker_execution_enabled=False)
+        worker.write_text(json.dumps(state))
+        result=inspect(self.root,now=weekend)
+        self.assertTrue(all(result['checks'].values()),result)
+        self.assertFalse(result['regular_market'])
+        self.assertGreater(result['status_age_seconds'],180)
+        state['updated_at']=(weekend-timedelta(seconds=181)).isoformat();worker.write_text(json.dumps(state))
+        self.assertFalse(inspect(self.root,now=weekend)['checks']['fresh_status'])
+        state.update(updated_at=weekend.isoformat(),status='ERROR_BACKOFF');worker.write_text(json.dumps(state))
+        self.assertFalse(inspect(self.root,now=weekend)['checks']['fresh_status'])
+        worker.unlink()
+        self.assertFalse(inspect(self.root,now=weekend)['checks']['fresh_status'])
+        self.assertTrue(inspect(self.root,now=NOW)['checks']['fresh_status'])
+
+    def test_legacy_production_verifier_understands_v2_cap_and_migration(self):
+        from research_tools.g9.verify_production import inspect
+        self.assertTrue(self.t.open(decision(),self.books(),NOW))
+        self.t.status()
+        p=self.t.manifest_path;m=json.loads(p.read_text())
+        m['sources']['generation_nine_paper_tracker.py']=LEGACY_TRACKER_HASH;p.write_text(json.dumps(m))
+        with patch('research_tools.g9.verify_production.inspect_v2',return_value=dict(checks={})), patch.dict('os.environ',{'ENABLE_G9_RETIREMENTS':'1'}):
+            result=inspect(self.root,allow_warmup=True)
+        self.assertGreater(self.t.active['G9Z01']['gross_notional_used'],1000)
+        self.assertFalse(any('hash mismatch' in x or 'Frozen rule' in x or 'Oversized' in x for x in result['errors']),result)

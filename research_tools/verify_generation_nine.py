@@ -12,7 +12,17 @@ def inspect(root, now=None):
     status=json.loads((root/(FILE_STEM+'_status.json')).read_text())
     execution=json.loads((root/(FILE_STEM+'_execution_v2.json')).read_text())
     births=json.loads((root/(FILE_STEM+'_births.json')).read_text())
-    age=((now or datetime.now(timezone.utc))-g.utc(status['updated_at'])).total_seconds()
+    now=now or datetime.now(timezone.utc)
+    age=(now-g.utc(status['updated_at'])).total_seconds()
+    worker_path=root/'statarb_shadow_status.json'
+    worker=json.loads(worker_path.read_text()) if worker_path.exists() else {}
+    worker_age=(now-g.utc(worker['updated_at'])).total_seconds() if worker.get('updated_at') else None
+    et=now.astimezone(g.NY)
+    regular=et.weekday()<5 and 570<=et.hour*60+et.minute<960
+    waiting=(not regular and worker.get('status')=='WAITING_REGULAR_MARKET'
+             and worker_age is not None and 0<=worker_age<=180
+             and worker.get('broker_execution_enabled') is False)
+    heartbeat_ok=0<=age<=180 if regular else waiting
     checks=dict(execution_version=status.get('execution_version')==EXECUTION_VERSION,
                 source_hashes=execution['policy']['sources']==source_hashes(),
                 population=status.get('population_hash')==g.POPULATION_HASH and set(births)==g.IDS,
@@ -21,8 +31,9 @@ def inspect(root, now=None):
                 broker_margin_unverified=status.get('broker_margin_verified') is False,
                 broker_buying_power_unverified=status.get('broker_buying_power_verified') is False,
                 locate_unverified=status.get('short_locate_verified') is False,
-                fresh_status=0<=age<=180)
-    return dict(checks=checks,status_age_seconds=age,status=status,
+                fresh_status=heartbeat_ok)
+    return dict(checks=checks,status_age_seconds=age,worker_age_seconds=worker_age,
+                worker_status=worker.get('status'),regular_market=regular,status=status,
                 interpretation='OPEN events prove hypothetical paper admissions only; broker eligibility remains unverified')
 
 

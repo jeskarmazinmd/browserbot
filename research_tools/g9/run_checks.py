@@ -10,7 +10,7 @@ import sys
 def run():
     root=Path(__file__).resolve().parents[2]
     env={**os.environ,'ENABLE_G9_PAPER':'0','ENABLE_G9_RETIREMENTS':'0'}
-    suites=['tests.test_generation_nine','tests.test_statarb2','tests.test_statarb_shadow_wiring',
+    suites=['tests.test_generation_nine','tests.test_generation_nine_sizing','tests.test_statarb2','tests.test_statarb_shadow_wiring',
             'tests.test_generation_one','tests.test_generation_two','tests.test_generation_three',
             'tests.test_generation_four','tests.test_generation_five','tests.test_generation_six',
             'tests.test_generation_seven','tests.test_generation_eight','tests.test_all_engine_performance',

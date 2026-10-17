@@ -5,7 +5,8 @@ import hashlib
 import json
 import os
 from pathlib import Path
-from generation_nine_paper_tracker import FILE_STEM,source_hashes
+from generation_nine_paper_tracker import FILE_STEM,source_hashes,EXECUTION_VERSION,MAX_GROSS,LEGACY_TRACKER_HASH
+from research_tools.verify_generation_nine import inspect as inspect_v2
 from strategies import generation_nine as g
 from strategies.generation_nine_retirement import plan
 from strategies.output_switches import output_enabled
@@ -21,7 +22,13 @@ def inspect(root='/data',allow_warmup=False):
     m=json.loads(manifest.read_text()) if manifest.exists() else {}
     b=json.loads(birth.read_text()) if birth.exists() else {}
     st=json.loads(status.read_text()) if status.exists() else {}
-    if m.get('population_hash')!=g.POPULATION_HASH or m.get('sources')!=source_hashes():errors.append('Frozen rule manifest mismatch')
+    current=source_hashes()
+    legacy=dict(current, **{'generation_nine_paper_tracker.py':LEGACY_TRACKER_HASH})
+    if m.get('population_hash')!=g.POPULATION_HASH or m.get('sources') not in (current,legacy):errors.append('Frozen rule manifest mismatch')
+    try:
+        execution=inspect_v2(root)
+        errors.extend('V2 check failed: '+key for key,value in execution['checks'].items() if not value)
+    except (ValueError,KeyError,OSError) as exc:errors.append('V2 verification unavailable: '+str(exc))
     if set(b)!=g.IDS:errors.append('400 births not present')
     if os.environ.get('ENABLE_G9_RETIREMENTS')!='1':errors.append('G9 retirements not enabled')
     if os.environ.get('ENABLE_G9_PAPER')!='1':errors.append('G9 entries not enabled')
@@ -39,7 +46,8 @@ def inspect(root='/data',allow_warmup=False):
                 if event=='OPEN':
                     if sid in active:errors.append('Overlapping G9 groups')
                     active.add(sid)
-                    if r['gross_notional_used']>1000.000001:errors.append('Oversized G9 group')
+                    cap=MAX_GROSS if r.get('execution_version')==EXECUTION_VERSION else 1000.
+                    if r['gross_notional_used']>cap+.000001:errors.append('Oversized G9 group')
                     if r.get('paper_only') is not True or r.get('broker_execution_enabled') is not False:errors.append('G9 paper contract violation')
                     for leg in r['legs']:
                         q=leg['quote'];t=g.utc(r['timestamp']);side='ask' if leg['side']=='LONG' else 'bid'
