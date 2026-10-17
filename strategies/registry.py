@@ -14,6 +14,9 @@ from . import generation_one, generation_one_minute, generation_two
 from . import generation_three, generation_four, generation_five, generation_six, generation_seven
 from .research_retirement import retired_ids
 
+G10_ENABLED = os.environ.get('ENABLE_G10_PAPER', '0') == '1'
+from . import generation_ten
+
 G3_ENABLED = os.environ.get('ENABLE_G3_PAPER', '0') == '1'
 G4_ENABLED = os.environ.get('ENABLE_G4_PAPER', '0') == '1'
 G5_ENABLED = os.environ.get('ENABLE_G5_PAPER', '0') == '1'
@@ -86,6 +89,9 @@ if G3_ENABLED:
     FLASH_STRATEGY_MODULES.update({sid: module for sid, module in generation_three.MODULES.items() if sid not in DISABLED_FLASH_STRATEGY_IDS})
 if G6_ENABLED:
     FLASH_STRATEGY_MODULES.update(generation_six.MODULES)
+
+if G10_ENABLED:
+    FLASH_STRATEGY_MODULES.update(generation_ten.MODULES)
 
 
 def flash_strategy_configs():

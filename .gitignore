@@ -37,3 +37,5 @@ strategy_profile_bundle.tgz
 
 .venv-forensics/
 .venv-g4/
+
+.venv-g10/

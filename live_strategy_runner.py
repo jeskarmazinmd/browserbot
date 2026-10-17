@@ -16,6 +16,8 @@ from strategies.output_switches import output_enabled
 from strategies.independent_flash_filters import IDS as INDEPENDENT_FLASH_FILTER_IDS, Filters as IndependentFlashFilters
 from generation_one_paper_tracker import GenerationOneBidAskTracker, IDS as GENERATION_ONE_IDS
 from generation_two_paper_tracker import GenerationTwoBidAskTracker, IDS as GENERATION_TWO_IDS
+from generation_ten_paper_tracker import start_tracker as start_g10_tracker, safe_call as g10_call, IDS as GENERATION_TEN_IDS
+from strategies.registry import G10_ENABLED
 from generation_three_paper_tracker import GenerationThreeBidAskTracker, IDS as GENERATION_THREE_IDS
 from generation_four_paper_tracker import GenerationFourBidAskTracker, IDS as GENERATION_FOUR_IDS
 from generation_five_paper_tracker import GenerationFiveBidAskTracker, IDS as GENERATION_FIVE_IDS
@@ -2457,6 +2459,10 @@ def main():
         DATA_ROOT, now_provider=quote_source.now,
     ) if RUN_MODE == 'LIVE' and (G8_ENABLED or (Path(DATA_ROOT) / 'paper_generation_eight_bidask_independent_births.json').exists()) else None
 
+    generation_ten_outcomes = start_g10_tracker(
+        DATA_ROOT, now_provider=quote_source.now,
+    ) if RUN_MODE == 'LIVE' and (G10_ENABLED or (Path(DATA_ROOT) / 'paper_generation_ten_bidask_independent_births.json').exists()) else None
+
     def register_single_leg_paper(signal):
         """Admit an executable BA trade directly from the strategy signal."""
         if str(signal.get('strategy_id') or '').startswith('G8'):
@@ -2515,6 +2521,12 @@ def main():
             return generation_one_outcomes.register_signal(
                 signal, quotes.get(symbol), quote_source.now()
             )
+        if str(signal.get('strategy_id') or '').startswith('G10'):
+            if signal.get('strategy_id') not in GENERATION_TEN_IDS or RUN_MODE != 'LIVE' or not G10_ENABLED or generation_ten_outcomes is None:
+                return False
+            symbol = str(signal.get('symbol') or '').upper()
+            quotes = independent_l1.quotes({symbol} | generation_ten_outcomes.symbols())
+            return g10_call(generation_ten_outcomes, 'register_signal', signal, quotes.get(symbol), quote_source.now(), quotes)
         if RUN_MODE != "LIVE":
             return paper_outcomes.register(signal)
         if not output_enabled(signal.get("strategy_id")):
@@ -2828,6 +2840,8 @@ def main():
                     independent_ba_symbols |= generation_seven_outcomes.symbols()
                 if generation_eight_outcomes is not None:
                     independent_ba_symbols |= generation_eight_outcomes.symbols()
+                if generation_ten_outcomes is not None:
+                    independent_ba_symbols |= generation_ten_outcomes.symbols()
                 independent_multi_leg_symbols = independent_multi_leg_outcomes.symbols()
                 execution_symbols = (
                     set(positions)
@@ -2930,6 +2944,8 @@ def main():
                           f"strategy={outcome['strategy_id']} symbol={outcome['symbol']} "
                           f"reason={outcome['exit_reason']} pnl={outcome['pnl']:+.2f}", flush=True)
 
+                if generation_ten_outcomes is not None:
+                    g10_call(generation_ten_outcomes, 'update_quotes', independent_quotes, quote_source.now())
                 if generation_three_outcomes is not None:
                     for outcome in generation_three_outcomes.update_quotes(independent_quotes, quote_source.now()):
                         print('GENERATION_THREE_BA_OUTCOME '
@@ -3078,6 +3094,7 @@ def main():
                 independent_dedupe_day = market_day
 
             spy_30m_return_pct = None
+            g10_market_feature_time = None
             spy_5m_return_pct = None
             spy_1m_return_pct = None
             market_confirmation_symbol = None
@@ -3091,6 +3108,7 @@ def main():
                     spy_5m_return_pct = _simple_return_pct(spy_minutes.iloc[-6], spy_minutes.iloc[-1])
                 if len(spy_minutes) >= 2:
                     spy_1m_return_pct = _simple_return_pct(spy_minutes.iloc[-2], spy_minutes.iloc[-1])
+                g10_market_feature_time = spy_minutes.index[-1].isoformat() if len(spy_minutes) >= 6 else None
                 market_confirmation_symbol = "SPY"
                 qqq_group = df[df["symbol"].astype(str) == "QQQ"].sort_values("timestamp")
                 qqq_minutes = minute_prices(qqq_group).dropna()
@@ -3100,6 +3118,7 @@ def main():
                     if spy_5m_return_pct is None or qqq_5m > spy_5m_return_pct:
                         spy_5m_return_pct = qqq_5m
                         spy_1m_return_pct = qqq_1m
+                        g10_market_feature_time = qqq_minutes.index[-1].isoformat()
                         market_confirmation_symbol = "QQQ"
             except Exception:
                 spy_30m_return_pct = None
@@ -3107,6 +3126,7 @@ def main():
                 spy_1m_return_pct = None
 
             scan_stats = {
+                "g10_ready_windows": 0,
                 "symbols_seen": 0,
                 "positions_skipped": 0,
                 "triggers": 0,
@@ -3464,7 +3484,7 @@ def main():
 
                     # G2 rules use the already-frozen flash data and L1 book.
                     # Avoid one redundant candle request per child confirmation.
-                    if strategy_id != "LT65" and strategy_id not in GENERATION_TWO_IDS and strategy_id not in GENERATION_THREE_IDS:
+                    if strategy_id != "LT65" and strategy_id not in GENERATION_TWO_IDS and strategy_id not in GENERATION_THREE_IDS and not strategy_id.startswith("G10"):
                         confirmed_event.update(fetch_rebound_volume_metrics(
                             sym, pending["created_at"], confirmed_event.get("avg_volume_1m_pre30")
                         ))
@@ -3485,6 +3505,7 @@ def main():
                 )
                 flash_measurement = measure_latest_flash(sym, g, prices=flash_prices)
                 if flash_measurement is not None:
+                    scan_stats["g10_ready_windows"] += 1
                     near_events.append(flash_measurement)
                     scan_stats["near_candidates"] += 1
                 else:
@@ -3588,6 +3609,9 @@ def main():
                 f"calculation_errors={scan_stats['calculation_errors']}",
                 flush=True,
             )
+
+            if generation_ten_outcomes is not None and G10_ENABLED and RUN_MODE == 'LIVE':
+                g10_call(generation_ten_outcomes, 'observe_scan', quote_source.now(), scan_stats['symbols_seen'], scan_stats['g10_ready_windows'])
 
             for error_sample in scan_error_samples:
                 print(f"SCAN_ERROR_SAMPLE {error_sample}", flush=True)
@@ -3729,6 +3753,8 @@ def main():
                     e["market_5m_return_pct"] = spy_5m_return_pct
                     e["market_1m_return_pct"] = spy_1m_return_pct
                     e["market_confirmation_symbol"] = market_confirmation_symbol
+                    if str(e.get("strategy_id", "")).startswith("G10"):
+                        e["market_feature_time"] = g10_market_feature_time
 
                     append_strategy_event(
                         e.get("strategy_id", STRATEGY_A),
@@ -3971,6 +3997,8 @@ def main():
                         derived_signal_counts[derived["strategy_id"]] += 1
 
                 for e in live_nh015_candidates:
+                    if str(e.get('strategy_id', '')).startswith('G10'):
+                        continue  # G10 can never reach broker allocation or order paths.
                     sym = e["symbol"]
 
                     # LIVE market data does not imply permission to trade.

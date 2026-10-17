@@ -31,6 +31,7 @@ from reporting.generation_five_performance import calculate_generation_five
 from reporting.generation_six_performance import calculate_generation_six
 from reporting.generation_seven_performance import calculate_generation_seven
 from reporting.generation_eight_performance import calculate_generation_eight
+from reporting.generation_ten_performance import calculate_generation_ten
 from reporting.generation_nine_performance import calculate_generation_nine
 from reporting.cutoff_quotes import frozen_books, fresh_bid
 
@@ -710,6 +711,13 @@ def calculate(root="/data", day=None, as_of=None):
             g9_quotes[symbol] = quote
     g9_modules, g9_diagnostics = calculate_generation_nine(root, day, cutoff, g9_quotes)
     modules.update(g9_modules)
+    try:
+        g10_modules, g10_diagnostics = calculate_generation_ten(root, day, cutoff)
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        # Preserve other generations' reporting; G10 stays unknown and auditable.
+        g10_modules = {}
+        g10_diagnostics = {'error': type(exc).__name__ + ': ' + str(exc), 'unmarked': 200}
+    modules.update(g10_modules)
 
     # Known generation accounts missing a mark are visible as unknown, not
     # silently absent or scored as zero. No account is created by reporting.
@@ -721,9 +729,16 @@ def calculate(root="/data", day=None, as_of=None):
         ('five', __import__('generation_five_paper_tracker').IDS, 'generation_five_bidask_independent'),
         ('six', __import__('generation_six_paper_tracker').IDS, 'generation_six_bidask_independent'),
         ('seven', __import__('generation_seven_paper_tracker').IDS, 'generation_seven_bidask_independent'),
+        ('ten', __import__('generation_ten_paper_tracker').IDS, 'generation_ten_bidask_independent'),
     ):
         birth_path = root / ('paper_generation_' + number + '_bidask_independent_births.json')
-        births = json.loads(birth_path.read_text()) if birth_path.exists() else {}
+        try:
+            births = json.loads(birth_path.read_text()) if birth_path.exists() else {}
+            if not isinstance(births, dict):raise ValueError('Birth map must be an object')
+        except (OSError, ValueError) as exc:
+            if number != 'ten':raise
+            g10_diagnostics['error'] = 'Invalid G10 birth provenance: ' + str(exc)
+            continue
         for sid in ids:
             if (sid in births and parse_time(births[sid]) <= cutoff and sid+'BA' not in modules
                     and output_enabled(sid) and output_enabled(sid+'BA') and not output_is_pruned(sid)):
@@ -760,6 +775,7 @@ def calculate(root="/data", day=None, as_of=None):
             "generation_seven": g7_diagnostics,
             "generation_eight": g8_diagnostics,
             "generation_nine": g9_diagnostics,
+            "generation_ten": g10_diagnostics,
         },
     }
 

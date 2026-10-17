@@ -37,6 +37,8 @@ COPY generation_six_paper_tracker.py .
 COPY generation_seven_paper_tracker.py .
 COPY generation_eight_paper_tracker.py .
 COPY generation_nine_paper_tracker.py .
+COPY generation_ten_paper_tracker.py .
+COPY GENERATION_TEN_CATALOG.json GENERATION_TEN_RUNTIME_HASHES.json GENERATION_TEN_RESEARCH.md ./
 COPY GENERATION_NINE_RETIREMENT.json .
 COPY GENERATION_NINE_RUNTIME_HASHES.json .
 COPY GENERATION_EIGHT_CATALOG.json .
@@ -134,3 +136,7 @@ RUN ENABLE_G8_PAPER=1 ENABLE_G8_RETIREMENTS=1 python -c "from strategies import 
 RUN python -c "from strategies.generation_nine import IDS; from generation_nine_paper_tracker import GenerationNineTracker; assert len(IDS)==400"
 ARG G9_BUILD_REVISION=unavailable
 RUN python -c "import os,pathlib; pathlib.Path('/app/G9_BUILD_REVISION').write_text(os.environ.get('G9_BUILD_REVISION','unavailable'))"
+
+ARG G10_BUILD_REVISION=unknown
+ENV G10_BUILD_REVISION=$G10_BUILD_REVISION
+RUN ENABLE_G10_PAPER=1 python -c "from strategies import registry as r, generation_ten as g; assert len(g.IDS)==200; assert len(g.IDS & r.flash_strategy_configs().keys())==200; assert all(m.PAPER_ONLY and m.CONFIG['live_order_placement'] is False for m in g.MODULES.values())"

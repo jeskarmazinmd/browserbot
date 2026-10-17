@@ -118,3 +118,5 @@ forensics_data/
 
 .venv-forensics/
 .venv-g4/
+
+.venv-g10/

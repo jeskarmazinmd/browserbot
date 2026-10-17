@@ -7,6 +7,7 @@ primary_region = "lax"
   app = "python -u supervisor.py"
 
 [env]
+  ENABLE_G10_PAPER = "1"
   ENABLE_G9_PAPER = "1"
   ENABLE_G9_RETIREMENTS = "1"
   ENABLE_G3_PAPER = "1"
