@@ -1,14 +1,14 @@
 {
-  "Dockerfile": "8b06713bececde18b631389c7d1e885fe57df75e3e231f34764d5ed7e193c141",
-  "GENERATION_NINE_RUNTIME_HASHES.json": "df3f8ded4d67496f0059fd799c0e7879225f07823b6f2846cc01bd5d2f80bf31",
+  "Dockerfile": "14ae716ef2c55893b3fe4be46b37bd5b77c45bfd323f9c9659590d2dd63d93ab",
+  "GENERATION_NINE_RUNTIME_HASHES.json": "42a2c4a3037aebd9ee216f3d8a6b8752bc8b59bf6f1ca2cfb99098836219ec04",
   "GENERATION_TEN_CATALOG.json": "017cbac5c43ad5d46631d70284e4612ab0d7b701f6844427cf98cdd0fd9a382b",
   "GENERATION_TEN_RESEARCH.md": "1980fa9cf9fa21d858c85b1861364f22307316ecf9c158530a1aebbf134b246f",
   "executable_paper_engine.py": "0abcbd444aae796df261f5cc59629cc3e9ff6fd8696e492f6e88a04d3b6c8b9b",
-  "fly.toml": "a0969b17b97eb7e2d391b2fc55f0b4c2b609a509869223754a6e8a99515bb209",
+  "fly.toml": "84bafd4af866109126817c8548843d52e6612ce04d5c1d18ad84e642bf1a44de",
   "generation_ten_paper_tracker.py": "124d3e9f58918df137426500cddd84a4847245d9e6c7f288b8fbd052415c9d9e",
   "generation_three_paper_tracker.py": "90444a51dee05e4378ff3dccbac518b83d88efc8f1a0b5cc940441b78f814c9b",
-  "live_strategy_runner.py": "1185dcafbeb9d245b978e193fb2d581a593d22940acd450bf246364af18523ec",
-  "reporting/all_engine_performance.py": "20951f7087778527e1edd9c105a3d2554b8d0f508aec92df125345b03c1ee235",
+  "live_strategy_runner.py": "1db4e814f1ee982f3437955bb27963904c595b6e9a8cf24a2e0a1c9b0c6484c8",
+  "reporting/all_engine_performance.py": "80bc153cf30e48dc7b8efe7ef315dd100fdfc1cbd502fa6ac27ce61ed98d2b27",
   "reporting/generation_ten_performance.py": "0fe61f996e6e3d0612f5ed0a1715d01fe50528185922741d49978651f682bf61",
   "research_tools/g10/LOCAL_VALIDATION.json": "22a86c9cb30450b21ba3d55e98b52c320f1cfec4f9f1b0cbb50e4f50de339607",
   "research_tools/g10/audit.py": "02a34ae51657bf5b5f6703a763bef3537214a1ba9ad7c15dea1b822fb99d64c9",
@@ -19,6 +19,6 @@
   "research_tools/g10/verify_production.py": "086ef2cb25964866069e67c3b1cd75c8bdebc6fcbdd2fdf0a3ba0f15f2248f67",
   "strategies/generation_ten.py": "de9641dde8cc5db875758cc1e57756c2483203bf315a5418824e0a20bb31ef00",
   "strategies/generation_three.py": "6a6b8941a58ec3271db9ae669ee07f80ceb19ad2dc0d0ca48733d6510bf07eca",
-  "strategies/manifest.py": "183f62bf215c5988a6c19d4a315f3128584afb6de4e56fb2a96cf47d923d5de1",
-  "strategies/registry.py": "936873025911042b69ba331c7f57c1ac847cd94ac02a65023e90589dd93a4deb"
+  "strategies/manifest.py": "bb5e7b54622f0bb26c7691cc811cc5ea3803f1d406b166e71e5e1e40b6fbe72f",
+  "strategies/registry.py": "1322523e015cd8ad5ac336b064c347d927b2b6e6593bb149d08d7eb7a41e4ea4"
 }

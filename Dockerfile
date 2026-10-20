@@ -38,6 +38,8 @@ COPY generation_seven_paper_tracker.py .
 COPY generation_eight_paper_tracker.py .
 COPY generation_nine_paper_tracker.py .
 COPY generation_ten_paper_tracker.py .
+COPY generation_eleven_paper_tracker.py .
+COPY GENERATION_ELEVEN_RETIREMENT.json GENERATION_ELEVEN_CATALOG.json GENERATION_ELEVEN_RUNTIME_HASHES.json GENERATION_ELEVEN_RESEARCH.md ./
 COPY GENERATION_TEN_CATALOG.json GENERATION_TEN_RUNTIME_HASHES.json GENERATION_TEN_RESEARCH.md ./
 COPY GENERATION_NINE_RETIREMENT.json .
 COPY GENERATION_NINE_RUNTIME_HASHES.json .
@@ -140,3 +142,7 @@ RUN python -c "import os,pathlib; pathlib.Path('/app/G9_BUILD_REVISION').write_t
 ARG G10_BUILD_REVISION=unknown
 ENV G10_BUILD_REVISION=$G10_BUILD_REVISION
 RUN ENABLE_G10_PAPER=1 python -c "from strategies import registry as r, generation_ten as g; assert len(g.IDS)==200; assert len(g.IDS & r.flash_strategy_configs().keys())==200; assert all(m.PAPER_ONLY and m.CONFIG['live_order_placement'] is False for m in g.MODULES.values())"
+
+ARG G11_BUILD_REVISION=unknown
+ENV G11_BUILD_REVISION=$G11_BUILD_REVISION
+RUN python -c "from strategies import generation_eleven as g; import generation_eleven_paper_tracker; assert len(g.IDS)==722 and len(g.MODULES)==132"

@@ -1,0 +1,4347 @@
+{
+  "limitations": [
+    "Descriptive selected sample, not out-of-sample evidence or statistical significance.",
+    "Latest snapshot differs from reference cutoff; fixed parent list retained.",
+    "Legacy single-leg fills do not establish commissions or slippage; added-cost sensitivity holds paths and quantities fixed.",
+    "Closed P&L excludes unresolved open hypothetical-close values.",
+    "Compounded fixed-$5000 daily observations are a ranking score, not a validated reinvested account return."
+  ],
+  "parents": {
+    "G3CGLB30BA": {
+      "by_day": {
+        "2026-10-07": -0.8999999999999773,
+        "2026-10-08": -2.759999999999991,
+        "2026-10-09": 13.71000000000015,
+        "2026-10-12": 1.7300000000000182,
+        "2026-10-13": 50.770000000000095,
+        "2026-10-14": -17.100000000000023,
+        "2026-10-15": -8.899999999999977,
+        "2026-10-16": -8.370000000000005
+      },
+      "captured_observations": [
+        1.0154000000000019,
+        -0.17799999999999955,
+        -0.1674000000000001,
+        0.0,
+        0.0
+      ],
+      "closed_pnl": 28.18000000000029,
+      "closes": 16,
+      "entries": 16,
+      "entry_fingerprints": [
+        {
+          "legs": null,
+          "quantity": 90,
+          "symbol": "UNG",
+          "time": "2026-10-07T18:32:13.538691+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 92,
+          "symbol": "UNG",
+          "time": "2026-10-08T17:03:41.311508+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 91,
+          "symbol": "UNG",
+          "time": "2026-10-09T13:37:13.565044+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 90,
+          "symbol": "UNG",
+          "time": "2026-10-09T14:07:36.045853+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 89,
+          "symbol": "UNG",
+          "time": "2026-10-09T14:37:13.745136+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 92,
+          "symbol": "UNG",
+          "time": "2026-10-12T13:33:04.141381+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 91,
+          "symbol": "UNG",
+          "time": "2026-10-12T15:12:15.758162+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 90,
+          "symbol": "UNG",
+          "time": "2026-10-13T13:35:06.213168+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 89,
+          "symbol": "UNG",
+          "time": "2026-10-13T14:09:07.801495+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 89,
+          "symbol": "UNG",
+          "time": "2026-10-13T14:39:42.304103+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 89,
+          "symbol": "UNG",
+          "time": "2026-10-13T17:01:16.494265+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 88,
+          "symbol": "UNG",
+          "time": "2026-10-13T17:46:13.570616+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 90,
+          "symbol": "UNG",
+          "time": "2026-10-14T15:04:16.547578+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 90,
+          "symbol": "UNG",
+          "time": "2026-10-14T18:14:38.989552+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 89,
+          "symbol": "UNG",
+          "time": "2026-10-15T14:24:22.787441+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 93,
+          "symbol": "UNG",
+          "time": "2026-10-16T16:40:48.825756+00:00"
+        }
+      ],
+      "entry_notional": 15911.98,
+      "entry_overlap": [
+        {
+          "jaccard": 0.0,
+          "other": "G3MPR150BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G3MT50BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05CTLBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05ROOMBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05TARGETBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R06PATIENTBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R07CTLBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G7ROTPROTECTBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G9LONG15"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G9LONG16"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G9LONG17"
+        }
+      ],
+      "extra_2bps_and_commission_closed_pnl": 7.101172000000291,
+      "hold_seconds": [
+        4986.010437,
+        10296.055483,
+        2249.940234,
+        4211.584344,
+        12696.623267,
+        1224.673412,
+        937.599053,
+        2637.12292,
+        12439.941267,
+        11156.192023,
+        6099.201589,
+        7743.79261,
+        4635.460138,
+        4540.802444,
+        4785.612919,
+        5801.004708
+      ],
+      "latest_report": {
+        "actual_fill_quantities": true,
+        "closed_taken": 0,
+        "end_equity": 5000.0,
+        "engine": "generation_three_bidask_independent",
+        "open_taken": 0,
+        "pnl": 0.0,
+        "portfolio_combinable": false,
+        "prospective_start_utc": "2026-10-06T21:18:53.810149+00:00",
+        "research_metadata": {
+          "comparison_id": "G3CGCTL",
+          "config": {
+            "flash_drop_pct": 1.0,
+            "live_order_placement": false,
+            "min_remaining_upside_pct": 0.2,
+            "pending_rebound_timeout_seconds": 600,
+            "rebound_confirmation_pct": 0.001,
+            "stop_loss_fraction": 0.008
+          },
+          "created_utc": "2026-10-06T20:40:00+00:00",
+          "description": "30m aligned UNG/XLE confirmation",
+          "execution_anchor": "actual ASK; progress clock begins at actual fill",
+          "family": "GENERATION_THREE",
+          "generation": 3,
+          "paper_only": true,
+          "parameters": {
+            "architecture": "GAS_CONFIRM",
+            "breadth": 0.65,
+            "buffer_pct": 0.08,
+            "checkpoint_mode": "conditional_return",
+            "checkpoint_seconds": 0,
+            "comparison_id": "G3CGCTL",
+            "cooldown_seconds": 1200,
+            "end_minute": 955,
+            "equity": 5000.0,
+            "hypothesis": "30m aligned UNG/XLE confirmation",
+            "lookback": 30,
+            "max_entry_spread_pct": "unbounded",
+            "max_position_fraction": 0.2,
+            "max_price": "unbounded",
+            "max_units": 8.0,
+            "min_executable_upside_pct": 0.2,
+            "min_flash_drop": 1.0,
+            "min_pre_r2": 0.5,
+            "min_pre_return": 0.75,
+            "min_price": 0.0,
+            "min_return": 0.55,
+            "min_return_pct": 0.0,
+            "min_target_spread_multiple": 0.0,
+            "min_units": 4.25,
+            "notional": 1000.0,
+            "one_position_per_symbol": false,
+            "portfolio_risk_fraction": null,
+            "range_pct": 1.5,
+            "rebound_fraction": 0.001,
+            "required_gain_pct": 0.25,
+            "ret5": 0.25,
+            "risk_fraction": null,
+            "secondary_return": 0.1,
+            "source": "CMDGAS1",
+            "start_minute": 570,
+            "stop": 0.008,
+            "strategy_id": "G3CGLB30",
+            "target_pct": 1.0,
+            "target_scale": 1.0,
+            "universe": [
+              "UNG",
+              "XLE"
+            ],
+            "up_fraction": 0.58,
+            "votes": 1
+          },
+          "prospective_start_policy": "durable first activation; no historical backfill",
+          "source_commit": "4c66d144f2de28bef8b80b46208186f66455e045",
+          "source_strategy_ids": [
+            "CMDGAS1"
+          ],
+          "strategy_id": "G3CGLB30"
+        },
+        "return_pct": 0.0,
+        "signals": 0,
+        "skipped": 0,
+        "starting_cash": 5000.0,
+        "status": "no_entries",
+        "taken": 0
+      },
+      "median_hold_seconds": 4885.811678,
+      "missing_execution_evidence": 16,
+      "missing_observations": 0,
+      "oct14_recorded_closed_pnl": -17.100000000000023,
+      "pnl_excluding_best_close_day": -22.589999999999804,
+      "positive_observations": 1,
+      "reference_observations": [
+        1.0154,
+        -0.178,
+        -0.1674,
+        0.0,
+        0.0
+      ],
+      "rejections": {
+        "outside_entry_window": 4,
+        "outside_prospective_signal_window": 5,
+        "stale_or_future_quote": 17
+      },
+      "selected_sample_return_correlations": [
+        {
+          "correlation": -0.5305056496572613,
+          "other": "G3MPR150BA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.6493323610963467,
+          "other": "G3MT50BA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.7454809618003242,
+          "other": "G6R05CTLBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.8903388411501824,
+          "other": "G6R05ROOMBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.897386946685367,
+          "other": "G6R05TARGETBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.8216019795868804,
+          "other": "G6R06PATIENTBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.7718928273793065,
+          "other": "G6R07CTLBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.07711437301731057,
+          "other": "G7ROTPROTECTBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.6572750343702501,
+          "other": "G9LONG15",
+          "paired_observations": 3
+        },
+        {
+          "correlation": 0.6572750343702501,
+          "other": "G9LONG16",
+          "paired_observations": 3
+        },
+        {
+          "correlation": 0.6572750343702501,
+          "other": "G9LONG17",
+          "paired_observations": 3
+        }
+      ]
+    },
+    "G3MPR150BA": {
+      "by_day": {
+        "2026-10-07": 30.325799999999845,
+        "2026-10-09": -1.5,
+        "2026-10-12": 58.399999999999864,
+        "2026-10-14": 4.4500000000000455,
+        "2026-10-15": 19.230000000000132,
+        "2026-10-16": 11.0
+      },
+      "captured_observations": [
+        0.0,
+        0.38460000000000266,
+        0.22,
+        0.0,
+        0.0
+      ],
+      "closed_pnl": 121.90579999999989,
+      "closes": 11,
+      "entries": 11,
+      "entry_fingerprints": [
+        {
+          "legs": null,
+          "quantity": 300,
+          "symbol": "BIYA",
+          "time": "2026-10-07T17:06:00.258188+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 2011,
+          "symbol": "GIPR",
+          "time": "2026-10-07T17:28:49.455911+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 75,
+          "symbol": "PCG",
+          "time": "2026-10-09T16:24:00.342473+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 160,
+          "symbol": "GRML",
+          "time": "2026-10-12T16:58:42.108304+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 934,
+          "symbol": "WBUY",
+          "time": "2026-10-12T17:15:18.413985+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 101,
+          "symbol": "IBRX",
+          "time": "2026-10-14T16:22:16.687347+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 29,
+          "symbol": "LQDA",
+          "time": "2026-10-14T16:46:54.339367+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 283,
+          "symbol": "PRME",
+          "time": "2026-10-15T17:25:30.269233+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 115,
+          "symbol": "CWVX",
+          "time": "2026-10-15T17:45:55.401396+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 96,
+          "symbol": "CRWG",
+          "time": "2026-10-15T17:47:06.283667+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 55,
+          "symbol": "UVXY",
+          "time": "2026-10-16T17:33:57.002368+00:00"
+        }
+      ],
+      "entry_notional": 10611.409199999998,
+      "entry_overlap": [
+        {
+          "jaccard": 0.0,
+          "other": "G3CGLB30BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G3MT50BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05CTLBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05ROOMBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05TARGETBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R06PATIENTBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R07CTLBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G7ROTPROTECTBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G9LONG15"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G9LONG16"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G9LONG17"
+        }
+      ],
+      "extra_2bps_and_commission_closed_pnl": 75.21505515999989,
+      "hold_seconds": [
+        111.292567,
+        8889.178663,
+        12674.717421,
+        730.794079,
+        376.600844,
+        856.553357,
+        11289.654039,
+        159.263974,
+        3302.990517,
+        6677.070788,
+        1168.808067
+      ],
+      "latest_report": {
+        "actual_fill_quantities": true,
+        "closed_taken": 0,
+        "end_equity": 5000.0,
+        "engine": "generation_three_bidask_independent",
+        "open_taken": 0,
+        "pnl": 0.0,
+        "portfolio_combinable": false,
+        "prospective_start_utc": "2026-10-06T21:18:53.810149+00:00",
+        "research_metadata": {
+          "comparison_id": "G3MCTL",
+          "config": {
+            "flash_drop_pct": 1.0,
+            "live_order_placement": false,
+            "min_remaining_upside_pct": 0.2,
+            "pending_rebound_timeout_seconds": 600,
+            "rebound_confirmation_pct": 0.001,
+            "stop_loss_fraction": 0.05
+          },
+          "created_utc": "2026-10-06T20:40:00+00:00",
+          "description": "Pre-flash return >= 1.5%",
+          "execution_anchor": "actual ASK; progress clock begins at actual fill",
+          "family": "GENERATION_THREE",
+          "generation": 3,
+          "paper_only": true,
+          "parameters": {
+            "architecture": "MIDDAY",
+            "breadth": 0.65,
+            "buffer_pct": 0.08,
+            "checkpoint_mode": "conditional_return",
+            "checkpoint_seconds": 0,
+            "comparison_id": "G3MCTL",
+            "cooldown_seconds": 0,
+            "end_minute": 840,
+            "equity": 5000.0,
+            "hypothesis": "Pre-flash return >= 1.5%",
+            "lookback": 30,
+            "max_entry_spread_pct": "unbounded",
+            "max_position_fraction": 0.2,
+            "max_price": "unbounded",
+            "max_units": 8.0,
+            "min_executable_upside_pct": 0.2,
+            "min_flash_drop": 1.0,
+            "min_pre_r2": 0.5,
+            "min_pre_return": 1.5,
+            "min_price": 0.0,
+            "min_return": 0.6,
+            "min_return_pct": 0.0,
+            "min_target_spread_multiple": 0.0,
+            "min_units": 4.25,
+            "notional": 1000.0,
+            "one_position_per_symbol": false,
+            "portfolio_risk_fraction": null,
+            "range_pct": 1.5,
+            "rebound_fraction": 0.001,
+            "required_gain_pct": 0.25,
+            "ret5": 0.25,
+            "risk_fraction": null,
+            "secondary_return": 0.1,
+            "source": "PMID",
+            "start_minute": 720,
+            "stop": 0.05,
+            "strategy_id": "G3MPR150",
+            "target_pct": 0.9,
+            "target_scale": 1.0,
+            "universe": [
+              "SPY",
+              "QQQ",
+              "IWM",
+              "DIA",
+              "XLK",
+              "XLF",
+              "XLE",
+              "XLV",
+              "XLY",
+              "XLP",
+              "XLI",
+              "XLU",
+              "SMH",
+              "IYT",
+              "GLD",
+              "SLV",
+              "USO",
+              "TLT",
+              "NVDA",
+              "AMD",
+              "AVGO",
+              "MSFT",
+              "AAPL",
+              "GOOGL",
+              "META",
+              "AMZN",
+              "TSLA",
+              "NFLX",
+              "ORCL",
+              "CRM",
+              "MU",
+              "INTC"
+            ],
+            "up_fraction": 0.58,
+            "votes": 1
+          },
+          "prospective_start_policy": "durable first activation; no historical backfill",
+          "source_commit": "4c66d144f2de28bef8b80b46208186f66455e045",
+          "source_strategy_ids": [
+            "PMID"
+          ],
+          "strategy_id": "G3MPR150"
+        },
+        "return_pct": 0.0,
+        "signals": 3,
+        "skipped": 3,
+        "starting_cash": 5000.0,
+        "status": "no_entries",
+        "taken": 0
+      },
+      "median_hold_seconds": 1168.808067,
+      "missing_execution_evidence": 11,
+      "missing_observations": 0,
+      "oct14_recorded_closed_pnl": 4.4500000000000455,
+      "pnl_excluding_best_close_day": 63.50580000000002,
+      "positive_observations": 2,
+      "reference_observations": [
+        0.0,
+        0.3846,
+        0.22,
+        0.0,
+        0.0
+      ],
+      "rejections": {
+        "insufficient_executable_remaining_upside": 3,
+        "invalid_executable_geometry": 2,
+        "outside_prospective_signal_window": 61,
+        "stale_or_future_quote": 14
+      },
+      "selected_sample_return_correlations": [
+        {
+          "correlation": -0.5305056496572613,
+          "other": "G3CGLB30BA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.8733537933767722,
+          "other": "G3MT50BA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.45689077223821,
+          "other": "G6R05CTLBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.4945146056522303,
+          "other": "G6R05ROOMBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.5081978828241314,
+          "other": "G6R05TARGETBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.717201357759412,
+          "other": "G6R06PATIENTBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.06272324709165025,
+          "other": "G6R07CTLBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.2394389395352336,
+          "other": "G7ROTPROTECTBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.6572750343702501,
+          "other": "G9LONG15",
+          "paired_observations": 3
+        },
+        {
+          "correlation": -0.6572750343702501,
+          "other": "G9LONG16",
+          "paired_observations": 3
+        },
+        {
+          "correlation": -0.6572750343702501,
+          "other": "G9LONG17",
+          "paired_observations": 3
+        }
+      ]
+    },
+    "G3MT50BA": {
+      "by_day": {
+        "2026-10-07": 84.0,
+        "2026-10-09": -1.5,
+        "2026-10-12": 22.399999999999864,
+        "2026-10-14": 16.64999999999975,
+        "2026-10-15": 12.580000000000155,
+        "2026-10-16": 7.149999999999977,
+        "2026-10-19": 6.279999999999973
+      },
+      "captured_observations": [
+        0.0,
+        0.2516000000000031,
+        0.14299999999999954,
+        0.12559999999999946,
+        0.0
+      ],
+      "closed_pnl": 147.55999999999972,
+      "closes": 10,
+      "entries": 10,
+      "entry_fingerprints": [
+        {
+          "legs": null,
+          "quantity": 200,
+          "symbol": "BIYA",
+          "time": "2026-10-07T17:06:01.549255+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 200,
+          "symbol": "BIYA",
+          "time": "2026-10-07T17:21:56.055117+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 75,
+          "symbol": "PCG",
+          "time": "2026-10-09T16:24:01.790663+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 160,
+          "symbol": "GRML",
+          "time": "2026-10-12T16:58:42.745650+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 101,
+          "symbol": "IBRX",
+          "time": "2026-10-14T16:22:17.055017+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 29,
+          "symbol": "LQDA",
+          "time": "2026-10-14T16:47:10.430183+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 284,
+          "symbol": "PRME",
+          "time": "2026-10-15T17:25:30.595624+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 115,
+          "symbol": "CWVX",
+          "time": "2026-10-15T17:45:56.346283+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 55,
+          "symbol": "UVXY",
+          "time": "2026-10-16T17:33:57.128448+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 157,
+          "symbol": "OCUL",
+          "time": "2026-10-19T17:43:58.503055+00:00"
+        }
+      ],
+      "entry_notional": 8856.68,
+      "entry_overlap": [
+        {
+          "jaccard": 0.0,
+          "other": "G3CGLB30BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G3MPR150BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05CTLBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05ROOMBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05TARGETBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R06PATIENTBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R07CTLBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G7ROTPROTECTBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G9LONG15"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G9LONG16"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G9LONG17"
+        }
+      ],
+      "extra_2bps_and_commission_closed_pnl": 129.95261599999972,
+      "hold_seconds": [
+        110.0015,
+        249.564072,
+        12673.269231,
+        730.156733,
+        730.736548,
+        2023.286712,
+        158.319087,
+        6501.438544,
+        361.654146,
+        391.264208
+      ],
+      "latest_report": {
+        "actual_fill_quantities": true,
+        "closed_taken": 0,
+        "end_equity": 5000.0,
+        "engine": "generation_three_bidask_independent",
+        "open_taken": 0,
+        "pnl": 0.0,
+        "portfolio_combinable": false,
+        "prospective_start_utc": "2026-10-06T21:18:53.810149+00:00",
+        "research_metadata": {
+          "comparison_id": "G3MCTL",
+          "config": {
+            "flash_drop_pct": 1.0,
+            "live_order_placement": false,
+            "min_remaining_upside_pct": 0.2,
+            "pending_rebound_timeout_seconds": 600,
+            "rebound_confirmation_pct": 0.001,
+            "stop_loss_fraction": 0.05
+          },
+          "created_utc": "2026-10-06T20:40:00+00:00",
+          "description": "50% remaining recovery target",
+          "execution_anchor": "actual ASK; progress clock begins at actual fill",
+          "family": "GENERATION_THREE",
+          "generation": 3,
+          "paper_only": true,
+          "parameters": {
+            "architecture": "MIDDAY",
+            "breadth": 0.65,
+            "buffer_pct": 0.08,
+            "checkpoint_mode": "conditional_return",
+            "checkpoint_seconds": 0,
+            "comparison_id": "G3MCTL",
+            "cooldown_seconds": 0,
+            "end_minute": 840,
+            "equity": 5000.0,
+            "hypothesis": "50% remaining recovery target",
+            "lookback": 30,
+            "max_entry_spread_pct": "unbounded",
+            "max_position_fraction": 0.2,
+            "max_price": "unbounded",
+            "max_units": 8.0,
+            "min_executable_upside_pct": 0.2,
+            "min_flash_drop": 1.0,
+            "min_pre_r2": 0.5,
+            "min_pre_return": 0.75,
+            "min_price": 0.0,
+            "min_return": 0.6,
+            "min_return_pct": 0.0,
+            "min_target_spread_multiple": 0.0,
+            "min_units": 4.25,
+            "notional": 1000.0,
+            "one_position_per_symbol": false,
+            "portfolio_risk_fraction": null,
+            "range_pct": 1.5,
+            "rebound_fraction": 0.001,
+            "required_gain_pct": 0.25,
+            "ret5": 0.25,
+            "risk_fraction": null,
+            "secondary_return": 0.1,
+            "source": "PMID",
+            "start_minute": 720,
+            "stop": 0.05,
+            "strategy_id": "G3MT50",
+            "target_pct": 0.9,
+            "target_scale": 0.5,
+            "universe": [
+              "SPY",
+              "QQQ",
+              "IWM",
+              "DIA",
+              "XLK",
+              "XLF",
+              "XLE",
+              "XLV",
+              "XLY",
+              "XLP",
+              "XLI",
+              "XLU",
+              "SMH",
+              "IYT",
+              "GLD",
+              "SLV",
+              "USO",
+              "TLT",
+              "NVDA",
+              "AMD",
+              "AVGO",
+              "MSFT",
+              "AAPL",
+              "GOOGL",
+              "META",
+              "AMZN",
+              "TSLA",
+              "NFLX",
+              "ORCL",
+              "CRM",
+              "MU",
+              "INTC"
+            ],
+            "up_fraction": 0.58,
+            "votes": 1
+          },
+          "prospective_start_policy": "durable first activation; no historical backfill",
+          "source_commit": "4c66d144f2de28bef8b80b46208186f66455e045",
+          "source_strategy_ids": [
+            "PMID"
+          ],
+          "strategy_id": "G3MT50"
+        },
+        "return_pct": 0.0,
+        "signals": 2,
+        "skipped": 2,
+        "starting_cash": 5000.0,
+        "status": "no_entries",
+        "taken": 0
+      },
+      "median_hold_seconds": 560.7104705,
+      "missing_execution_evidence": 10,
+      "missing_observations": 0,
+      "oct14_recorded_closed_pnl": 16.64999999999975,
+      "pnl_excluding_best_close_day": 63.55999999999972,
+      "positive_observations": 3,
+      "reference_observations": [
+        0.0,
+        0.2516,
+        0.143,
+        0.1256,
+        0.0
+      ],
+      "rejections": {
+        "insufficient_executable_remaining_upside": 12,
+        "invalid_executable_geometry": 1,
+        "outside_prospective_signal_window": 55,
+        "stale_or_future_quote": 11
+      },
+      "selected_sample_return_correlations": [
+        {
+          "correlation": -0.6493323610963467,
+          "other": "G3CGLB30BA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.8733537933767722,
+          "other": "G3MPR150BA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.5917774503881498,
+          "other": "G6R05CTLBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.634808877014573,
+          "other": "G6R05ROOMBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.6478586684133157,
+          "other": "G6R05TARGETBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.5932547701304529,
+          "other": "G6R06PATIENTBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.020709549827140013,
+          "other": "G6R07CTLBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.5421079267267059,
+          "other": "G7ROTPROTECTBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.21653581380590864,
+          "other": "G9LONG15",
+          "paired_observations": 3
+        },
+        {
+          "correlation": 0.21653581380590864,
+          "other": "G9LONG16",
+          "paired_observations": 3
+        },
+        {
+          "correlation": 0.21653581380590864,
+          "other": "G9LONG17",
+          "paired_observations": 3
+        }
+      ]
+    },
+    "G6R05CTLBA": {
+      "by_day": {
+        "2026-10-13": 16.61999999999989,
+        "2026-10-14": -5.059999999999718,
+        "2026-10-15": -3.1200000000001182,
+        "2026-10-16": 10.929999999999836,
+        "2026-10-19": 3.519999999999982,
+        "2026-10-20": 2.4999999999998863
+      },
+      "captured_observations": [
+        0.3323999999999978,
+        -0.06240000000000236,
+        0.2185999999999967,
+        0.07039999999999964,
+        0.04999999999999773
+      ],
+      "closed_pnl": 25.38999999999976,
+      "closes": 17,
+      "entries": 17,
+      "entry_fingerprints": [
+        {
+          "legs": null,
+          "quantity": 4,
+          "symbol": "CRM",
+          "time": "2026-10-13T15:15:08.372951+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 9,
+          "symbol": "INTC",
+          "time": "2026-10-13T16:03:51.543847+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 7,
+          "symbol": "ORCL",
+          "time": "2026-10-13T16:33:30.310587+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 7,
+          "symbol": "ORCL",
+          "time": "2026-10-13T17:38:13.321129+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 9,
+          "symbol": "INTC",
+          "time": "2026-10-14T14:47:10.857286+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 7,
+          "symbol": "ORCL",
+          "time": "2026-10-14T16:42:31.938633+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 1,
+          "symbol": "MU",
+          "time": "2026-10-15T15:05:07.268850+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 7,
+          "symbol": "ORCL",
+          "time": "2026-10-15T15:15:14.113974+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 10,
+          "symbol": "INTC",
+          "time": "2026-10-15T15:59:26.346824+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 1,
+          "symbol": "AMD",
+          "time": "2026-10-16T14:36:07.191523+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 6,
+          "symbol": "USO",
+          "time": "2026-10-16T15:50:25.319610+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 6,
+          "symbol": "USO",
+          "time": "2026-10-16T16:31:09.861507+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 3,
+          "symbol": "AMZN",
+          "time": "2026-10-19T14:53:45.735796+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 10,
+          "symbol": "INTC",
+          "time": "2026-10-19T15:22:28.698629+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 7,
+          "symbol": "ORCL",
+          "time": "2026-10-20T14:31:09.180574+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 10,
+          "symbol": "INTC",
+          "time": "2026-10-20T14:59:40.812873+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 6,
+          "symbol": "USO",
+          "time": "2026-10-20T15:13:27.970673+00:00"
+        }
+      ],
+      "entry_notional": 15513.590000000002,
+      "entry_overlap": [
+        {
+          "jaccard": 0.0,
+          "other": "G3CGLB30BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G3MPR150BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G3MT50BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05ROOMBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05TARGETBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R06PATIENTBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R07CTLBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G7ROTPROTECTBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G9LONG15"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G9LONG16"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G9LONG17"
+        }
+      ],
+      "extra_2bps_and_commission_closed_pnl": 18.03748599999976,
+      "hold_seconds": [
+        1064.531387,
+        939.697193,
+        827.183151,
+        912.629713,
+        923.183285,
+        936.074058,
+        631.142481,
+        1006.66522,
+        1177.056289,
+        911.617579,
+        1426.553646,
+        1285.612376,
+        908.121192,
+        1085.63486,
+        900.548482,
+        1157.099835,
+        1018.883016
+      ],
+      "latest_report": {
+        "accounting": "actual quantities; daily equal-start $5k; no strategy aggregation",
+        "actual_fill_quantities": true,
+        "closed_taken": 3,
+        "end_equity": 5002.5,
+        "engine": "generation_six_bidask_independent",
+        "open_taken": 0,
+        "pnl": 2.4999999999998863,
+        "portfolio_combinable": false,
+        "prospective_start_utc": "2026-10-09T22:08:26.504306+00:00",
+        "research_metadata": {
+          "cohort": "G6R05",
+          "comparison_id": "G6R05CTL",
+          "config": {
+            "flash_drop_pct": 1.0,
+            "live_order_placement": false,
+            "min_remaining_upside_pct": 0.2,
+            "pending_rebound_timeout_seconds": 300,
+            "rebound_confirmation_pct": 0.001,
+            "stop_loss_fraction": 0.02
+          },
+          "created_utc": "2026-10-09T21:45:00+00:00",
+          "description": "Fifteen-minute relative trend; Conservative cash, one-symbol and executable-book control",
+          "evidence_sha256": "0c2ecaff2bfebb9af1789f69f009e67317e99e5135d41563a4a629f166ea1c9a",
+          "family": "GENERATION_SIX",
+          "generation": 6,
+          "independent_discovery": false,
+          "paper_only": true,
+          "parameters": {
+            "architecture": "RELATIVE",
+            "breadth": 0.65,
+            "buffer_pct": 0.08,
+            "checkpoint_mode": "conditional_return",
+            "checkpoint_seconds": 0,
+            "cohort": "G6R05",
+            "comparison_id": "G6R05CTL",
+            "contrast": "CTL",
+            "cooldown_seconds": 600,
+            "displayed_participation": 0.25,
+            "end_minute": 900,
+            "equity": 5000.0,
+            "flash_max_age_seconds": 300,
+            "hypothesis": "Fifteen-minute relative trend; Conservative cash, one-symbol and executable-book control",
+            "lookback": 15,
+            "market_floor": -0.5,
+            "max_entry_spread_pct": 0.15,
+            "max_hold_seconds": 900,
+            "max_position_fraction": 0.2,
+            "max_price": 100000.0,
+            "max_quote_age_ms": 3000.0,
+            "max_rebound_fraction": 0.75,
+            "max_units": 8.0,
+            "min_excess": 0.75,
+            "min_executable_upside_pct": 0.2,
+            "min_flash_drop": 1.0,
+            "min_pre_r2": 0.5,
+            "min_pre_return": 0.75,
+            "min_price": 1.0,
+            "min_r2": 0.5,
+            "min_return": 0.75,
+            "min_return_pct": 0.0,
+            "min_short_return": 0.1,
+            "min_target_spread_multiple": 0.0,
+            "min_units": 4.25,
+            "notional": 1000.0,
+            "one_position_per_symbol": true,
+            "portfolio_risk_fraction": 0.02,
+            "range_pct": 1.5,
+            "rebound_fraction": 0.001,
+            "required_gain_pct": 0.25,
+            "ret5": 0.25,
+            "risk_fraction": 0.01,
+            "secondary_return": 0.1,
+            "source": "RS1+RS2",
+            "start_minute": 630,
+            "stop": 0.02,
+            "strategy_id": "G6R05CTL",
+            "target_max": 100000.0,
+            "target_min": 0.0,
+            "target_pct": 0.9,
+            "target_scale": 1.0,
+            "universe": [
+              "SPY",
+              "QQQ",
+              "IWM",
+              "DIA",
+              "XLK",
+              "XLF",
+              "XLE",
+              "XLV",
+              "XLY",
+              "XLP",
+              "XLI",
+              "XLU",
+              "SMH",
+              "IYT",
+              "GLD",
+              "SLV",
+              "USO",
+              "TLT",
+              "NVDA",
+              "AMD",
+              "AVGO",
+              "MSFT",
+              "AAPL",
+              "GOOGL",
+              "META",
+              "AMZN",
+              "TSLA",
+              "NFLX",
+              "ORCL",
+              "CRM",
+              "MU",
+              "INTC"
+            ],
+            "up_fraction": 0.58,
+            "votes": 1
+          },
+          "population_hash": "5a78d6b09053fb8b31c14a11a296c3e03fd4c082804fe982a476ad192ab5482a",
+          "prospective_start_policy": "durable first activation; never backfilled",
+          "rule_source_sha256": "632d1514e8e587427aa1f9ef70cb910bbf6d4f7600fd48c0d35d17ac6e6ac603",
+          "rule_version": "generation_six_frozen_v1",
+          "source_commit": "cf7b7f77da8325b1647a9d7e9c2776e8e6683a0f",
+          "source_strategy_ids": [
+            "RS1",
+            "RS2"
+          ],
+          "strategy_id": "G6R05CTL",
+          "universe_definition": [
+            "SPY",
+            "QQQ",
+            "IWM",
+            "DIA",
+            "XLK",
+            "XLF",
+            "XLE",
+            "XLV",
+            "XLY",
+            "XLP",
+            "XLI",
+            "XLU",
+            "SMH",
+            "IYT",
+            "GLD",
+            "SLV",
+            "USO",
+            "TLT",
+            "NVDA",
+            "AMD",
+            "AVGO",
+            "MSFT",
+            "AAPL",
+            "GOOGL",
+            "META",
+            "AMZN",
+            "TSLA",
+            "NFLX",
+            "ORCL",
+            "CRM",
+            "MU",
+            "INTC"
+          ]
+        },
+        "return_pct": 0.04999999999999773,
+        "signals": 8,
+        "skipped": 5,
+        "starting_cash": 5000.0,
+        "status": "prospective",
+        "taken": 3
+      },
+      "median_hold_seconds": 939.697193,
+      "missing_execution_evidence": 0,
+      "missing_observations": 0,
+      "oct14_recorded_closed_pnl": -5.059999999999718,
+      "pnl_excluding_best_close_day": 8.769999999999868,
+      "positive_observations": 4,
+      "reference_observations": [
+        0.3324,
+        -0.0624,
+        0.2186,
+        0.0704,
+        0.05
+      ],
+      "rejections": {
+        "g6_admitted_fill_cooldown": 12,
+        "outside_prospective_signal_window": 18,
+        "stale_or_future_quote": 14
+      },
+      "selected_sample_return_correlations": [
+        {
+          "correlation": 0.7454809618003242,
+          "other": "G3CGLB30BA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.45689077223821,
+          "other": "G3MPR150BA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.5917774503881498,
+          "other": "G3MT50BA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.9667728971275116,
+          "other": "G6R05ROOMBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.9630090858119282,
+          "other": "G6R05TARGETBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.7924362994666018,
+          "other": "G6R06PATIENTBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.5039473843917651,
+          "other": "G6R07CTLBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.10785017040029883,
+          "other": "G7ROTPROTECTBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.5696852504025564,
+          "other": "G9LONG15",
+          "paired_observations": 3
+        },
+        {
+          "correlation": -0.5696852504025564,
+          "other": "G9LONG16",
+          "paired_observations": 3
+        },
+        {
+          "correlation": -0.5696852504025564,
+          "other": "G9LONG17",
+          "paired_observations": 3
+        }
+      ]
+    },
+    "G6R05ROOMBA": {
+      "by_day": {
+        "2026-10-13": 16.61999999999989,
+        "2026-10-14": -5.059999999999718,
+        "2026-10-15": -1.0200000000002092,
+        "2026-10-16": 7.219999999999914,
+        "2026-10-19": 3.519999999999982,
+        "2026-10-20": 2.799999999999727
+      },
+      "captured_observations": [
+        0.3323999999999978,
+        -0.020400000000004186,
+        0.14439999999999825,
+        0.07039999999999964,
+        0.05599999999999454
+      ],
+      "closed_pnl": 24.079999999999586,
+      "closes": 17,
+      "entries": 17,
+      "entry_fingerprints": [
+        {
+          "legs": null,
+          "quantity": 4,
+          "symbol": "CRM",
+          "time": "2026-10-13T15:15:08.471665+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 9,
+          "symbol": "INTC",
+          "time": "2026-10-13T16:03:52.176817+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 7,
+          "symbol": "ORCL",
+          "time": "2026-10-13T16:33:30.418214+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 7,
+          "symbol": "ORCL",
+          "time": "2026-10-13T17:38:13.774115+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 9,
+          "symbol": "INTC",
+          "time": "2026-10-14T14:47:10.953976+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 7,
+          "symbol": "ORCL",
+          "time": "2026-10-14T16:42:32.585663+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 1,
+          "symbol": "MU",
+          "time": "2026-10-15T15:05:07.375544+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 7,
+          "symbol": "ORCL",
+          "time": "2026-10-15T15:15:14.193063+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 10,
+          "symbol": "INTC",
+          "time": "2026-10-15T16:00:27.240913+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 1,
+          "symbol": "AMD",
+          "time": "2026-10-16T14:37:09.992595+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 6,
+          "symbol": "USO",
+          "time": "2026-10-16T15:51:30.984015+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 6,
+          "symbol": "USO",
+          "time": "2026-10-16T16:30:29.632695+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 3,
+          "symbol": "AMZN",
+          "time": "2026-10-19T14:53:45.887568+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 10,
+          "symbol": "INTC",
+          "time": "2026-10-19T15:22:28.967694+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 7,
+          "symbol": "ORCL",
+          "time": "2026-10-20T14:31:09.293573+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 10,
+          "symbol": "INTC",
+          "time": "2026-10-20T14:59:40.946976+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 6,
+          "symbol": "USO",
+          "time": "2026-10-20T15:13:28.103380+00:00"
+        }
+      ],
+      "entry_notional": 15512.53,
+      "entry_overlap": [
+        {
+          "jaccard": 0.0,
+          "other": "G3CGLB30BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G3MPR150BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G3MT50BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05CTLBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05TARGETBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R06PATIENTBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R07CTLBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G7ROTPROTECTBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G9LONG15"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G9LONG16"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G9LONG17"
+        }
+      ],
+      "extra_2bps_and_commission_closed_pnl": 16.728171999999585,
+      "hold_seconds": [
+        1064.432673,
+        939.064223,
+        827.075524,
+        912.176727,
+        923.086595,
+        935.427028,
+        631.035787,
+        1006.586131,
+        1116.1622,
+        943.594664,
+        1360.889241,
+        1325.841188,
+        907.96942,
+        1085.365795,
+        900.435483,
+        1156.965732,
+        1018.750309
+      ],
+      "latest_report": {
+        "accounting": "actual quantities; daily equal-start $5k; no strategy aggregation",
+        "actual_fill_quantities": true,
+        "closed_taken": 3,
+        "end_equity": 5002.799999999999,
+        "engine": "generation_six_bidask_independent",
+        "open_taken": 0,
+        "pnl": 2.799999999999727,
+        "portfolio_combinable": false,
+        "prospective_start_utc": "2026-10-09T22:08:26.504306+00:00",
+        "research_metadata": {
+          "cohort": "G6R05",
+          "comparison_id": "G6R05CTL",
+          "config": {
+            "flash_drop_pct": 1.0,
+            "live_order_placement": false,
+            "min_remaining_upside_pct": 0.2,
+            "pending_rebound_timeout_seconds": 300,
+            "rebound_confirmation_pct": 0.001,
+            "stop_loss_fraction": 0.02
+          },
+          "created_utc": "2026-10-09T21:45:00+00:00",
+          "description": "Fifteen-minute relative trend; Reject shallow recovery relative to spread",
+          "evidence_sha256": "0c2ecaff2bfebb9af1789f69f009e67317e99e5135d41563a4a629f166ea1c9a",
+          "family": "GENERATION_SIX",
+          "generation": 6,
+          "independent_discovery": false,
+          "paper_only": true,
+          "parameters": {
+            "architecture": "RELATIVE",
+            "breadth": 0.65,
+            "buffer_pct": 0.08,
+            "checkpoint_mode": "conditional_return",
+            "checkpoint_seconds": 0,
+            "cohort": "G6R05",
+            "comparison_id": "G6R05CTL",
+            "contrast": "ROOM",
+            "cooldown_seconds": 600,
+            "displayed_participation": 0.25,
+            "end_minute": 900,
+            "equity": 5000.0,
+            "flash_max_age_seconds": 300,
+            "hypothesis": "Fifteen-minute relative trend; Reject shallow recovery relative to spread",
+            "lookback": 15,
+            "market_floor": -0.5,
+            "max_entry_spread_pct": 0.15,
+            "max_hold_seconds": 900,
+            "max_position_fraction": 0.2,
+            "max_price": 100000.0,
+            "max_quote_age_ms": 3000.0,
+            "max_rebound_fraction": 0.75,
+            "max_units": 8.0,
+            "min_excess": 0.75,
+            "min_executable_upside_pct": 0.75,
+            "min_flash_drop": 1.0,
+            "min_pre_r2": 0.5,
+            "min_pre_return": 0.75,
+            "min_price": 1.0,
+            "min_r2": 0.5,
+            "min_return": 0.75,
+            "min_return_pct": 0.0,
+            "min_short_return": 0.1,
+            "min_target_spread_multiple": 8.0,
+            "min_units": 4.25,
+            "notional": 1000.0,
+            "one_position_per_symbol": true,
+            "portfolio_risk_fraction": 0.02,
+            "range_pct": 1.5,
+            "rebound_fraction": 0.001,
+            "required_gain_pct": 0.25,
+            "ret5": 0.25,
+            "risk_fraction": 0.01,
+            "secondary_return": 0.1,
+            "source": "RS1+RS2",
+            "start_minute": 630,
+            "stop": 0.02,
+            "strategy_id": "G6R05ROOM",
+            "target_max": 100000.0,
+            "target_min": 0.0,
+            "target_pct": 0.9,
+            "target_scale": 1.0,
+            "universe": [
+              "SPY",
+              "QQQ",
+              "IWM",
+              "DIA",
+              "XLK",
+              "XLF",
+              "XLE",
+              "XLV",
+              "XLY",
+              "XLP",
+              "XLI",
+              "XLU",
+              "SMH",
+              "IYT",
+              "GLD",
+              "SLV",
+              "USO",
+              "TLT",
+              "NVDA",
+              "AMD",
+              "AVGO",
+              "MSFT",
+              "AAPL",
+              "GOOGL",
+              "META",
+              "AMZN",
+              "TSLA",
+              "NFLX",
+              "ORCL",
+              "CRM",
+              "MU",
+              "INTC"
+            ],
+            "up_fraction": 0.58,
+            "votes": 1
+          },
+          "population_hash": "5a78d6b09053fb8b31c14a11a296c3e03fd4c082804fe982a476ad192ab5482a",
+          "prospective_start_policy": "durable first activation; never backfilled",
+          "rule_source_sha256": "632d1514e8e587427aa1f9ef70cb910bbf6d4f7600fd48c0d35d17ac6e6ac603",
+          "rule_version": "generation_six_frozen_v1",
+          "source_commit": "cf7b7f77da8325b1647a9d7e9c2776e8e6683a0f",
+          "source_strategy_ids": [
+            "RS1",
+            "RS2"
+          ],
+          "strategy_id": "G6R05ROOM",
+          "universe_definition": [
+            "SPY",
+            "QQQ",
+            "IWM",
+            "DIA",
+            "XLK",
+            "XLF",
+            "XLE",
+            "XLV",
+            "XLY",
+            "XLP",
+            "XLI",
+            "XLU",
+            "SMH",
+            "IYT",
+            "GLD",
+            "SLV",
+            "USO",
+            "TLT",
+            "NVDA",
+            "AMD",
+            "AVGO",
+            "MSFT",
+            "AAPL",
+            "GOOGL",
+            "META",
+            "AMZN",
+            "TSLA",
+            "NFLX",
+            "ORCL",
+            "CRM",
+            "MU",
+            "INTC"
+          ]
+        },
+        "return_pct": 0.05599999999999454,
+        "signals": 8,
+        "skipped": 5,
+        "starting_cash": 5000.0,
+        "status": "prospective",
+        "taken": 3
+      },
+      "median_hold_seconds": 943.594664,
+      "missing_execution_evidence": 0,
+      "missing_observations": 0,
+      "oct14_recorded_closed_pnl": -5.059999999999718,
+      "pnl_excluding_best_close_day": 7.459999999999695,
+      "positive_observations": 4,
+      "reference_observations": [
+        0.3324,
+        -0.0204,
+        0.1444,
+        0.0704,
+        0.056
+      ],
+      "rejections": {
+        "g6_admitted_fill_cooldown": 12,
+        "outside_prospective_signal_window": 18,
+        "stale_or_future_quote": 16
+      },
+      "selected_sample_return_correlations": [
+        {
+          "correlation": 0.8903388411501824,
+          "other": "G3CGLB30BA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.4945146056522303,
+          "other": "G3MPR150BA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.634808877014573,
+          "other": "G3MT50BA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.9667728971275116,
+          "other": "G6R05CTLBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.9997772766548974,
+          "other": "G6R05TARGETBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.849513514595147,
+          "other": "G6R06PATIENTBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.6531171556127012,
+          "other": "G6R07CTLBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.11654631611364262,
+          "other": "G7ROTPROTECTBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.5352529600085213,
+          "other": "G9LONG15",
+          "paired_observations": 3
+        },
+        {
+          "correlation": -0.5352529600085213,
+          "other": "G9LONG16",
+          "paired_observations": 3
+        },
+        {
+          "correlation": -0.5352529600085213,
+          "other": "G9LONG17",
+          "paired_observations": 3
+        }
+      ]
+    },
+    "G6R05TARGETBA": {
+      "by_day": {
+        "2026-10-13": 19.629999999999995,
+        "2026-10-14": -4.989999999999782,
+        "2026-10-15": -2.1600000000001955,
+        "2026-10-16": 7.759999999999991,
+        "2026-10-19": 3.519999999999982,
+        "2026-10-20": 2.799999999999727
+      },
+      "captured_observations": [
+        0.3925999999999999,
+        -0.043200000000003916,
+        0.15519999999999984,
+        0.07039999999999964,
+        0.05599999999999454
+      ],
+      "closed_pnl": 26.559999999999718,
+      "closes": 17,
+      "entries": 17,
+      "entry_fingerprints": [
+        {
+          "legs": null,
+          "quantity": 4,
+          "symbol": "CRM",
+          "time": "2026-10-13T15:15:08.505322+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 9,
+          "symbol": "INTC",
+          "time": "2026-10-13T16:03:52.269346+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 7,
+          "symbol": "ORCL",
+          "time": "2026-10-13T16:33:30.439827+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 7,
+          "symbol": "ORCL",
+          "time": "2026-10-13T17:38:13.858979+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 9,
+          "symbol": "INTC",
+          "time": "2026-10-14T14:47:11.059367+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 7,
+          "symbol": "ORCL",
+          "time": "2026-10-14T16:38:53.626579+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 1,
+          "symbol": "MU",
+          "time": "2026-10-15T15:05:07.396312+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 7,
+          "symbol": "ORCL",
+          "time": "2026-10-15T15:15:14.213617+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 10,
+          "symbol": "INTC",
+          "time": "2026-10-15T16:00:27.335498+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 1,
+          "symbol": "AMD",
+          "time": "2026-10-16T14:37:10.013470+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 6,
+          "symbol": "USO",
+          "time": "2026-10-16T15:51:31.061675+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 6,
+          "symbol": "USO",
+          "time": "2026-10-16T16:30:29.695618+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 3,
+          "symbol": "AMZN",
+          "time": "2026-10-19T14:53:45.923177+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 10,
+          "symbol": "INTC",
+          "time": "2026-10-19T15:22:28.992739+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 7,
+          "symbol": "ORCL",
+          "time": "2026-10-20T14:31:09.316464+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 10,
+          "symbol": "INTC",
+          "time": "2026-10-20T14:59:40.969701+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 6,
+          "symbol": "USO",
+          "time": "2026-10-20T15:13:28.126236+00:00"
+        }
+      ],
+      "entry_notional": 15512.460000000001,
+      "entry_overlap": [
+        {
+          "jaccard": 0.0,
+          "other": "G3CGLB30BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G3MPR150BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G3MT50BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05CTLBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05ROOMBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R06PATIENTBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R07CTLBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G7ROTPROTECTBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G9LONG15"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G9LONG16"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G9LONG17"
+        }
+      ],
+      "extra_2bps_and_commission_closed_pnl": 19.20770399999972,
+      "hold_seconds": [
+        1064.399016,
+        938.971694,
+        827.053911,
+        190.421205,
+        922.981204,
+        1154.386112,
+        618.449252,
+        1006.565577,
+        1116.067615,
+        943.573789,
+        1360.811581,
+        342.633557,
+        907.933811,
+        1085.34075,
+        900.412592,
+        1156.943007,
+        1018.727453
+      ],
+      "latest_report": {
+        "accounting": "actual quantities; daily equal-start $5k; no strategy aggregation",
+        "actual_fill_quantities": true,
+        "closed_taken": 3,
+        "end_equity": 5002.799999999999,
+        "engine": "generation_six_bidask_independent",
+        "open_taken": 0,
+        "pnl": 2.799999999999727,
+        "portfolio_combinable": false,
+        "prospective_start_utc": "2026-10-09T22:08:26.504306+00:00",
+        "research_metadata": {
+          "cohort": "G6R05",
+          "comparison_id": "G6R05CTL",
+          "config": {
+            "flash_drop_pct": 1.0,
+            "live_order_placement": false,
+            "min_remaining_upside_pct": 0.2,
+            "pending_rebound_timeout_seconds": 300,
+            "rebound_confirmation_pct": 0.001,
+            "stop_loss_fraction": 0.02
+          },
+          "created_utc": "2026-10-09T21:45:00+00:00",
+          "description": "Fifteen-minute relative trend; Take a smaller recovery distance / fixed target",
+          "evidence_sha256": "0c2ecaff2bfebb9af1789f69f009e67317e99e5135d41563a4a629f166ea1c9a",
+          "family": "GENERATION_SIX",
+          "generation": 6,
+          "independent_discovery": false,
+          "paper_only": true,
+          "parameters": {
+            "architecture": "RELATIVE",
+            "breadth": 0.65,
+            "buffer_pct": 0.08,
+            "checkpoint_mode": "conditional_return",
+            "checkpoint_seconds": 0,
+            "cohort": "G6R05",
+            "comparison_id": "G6R05CTL",
+            "contrast": "TARGET",
+            "cooldown_seconds": 600,
+            "displayed_participation": 0.25,
+            "end_minute": 900,
+            "equity": 5000.0,
+            "flash_max_age_seconds": 300,
+            "hypothesis": "Fifteen-minute relative trend; Take a smaller recovery distance / fixed target",
+            "lookback": 15,
+            "market_floor": -0.5,
+            "max_entry_spread_pct": 0.15,
+            "max_hold_seconds": 900,
+            "max_position_fraction": 0.2,
+            "max_price": 100000.0,
+            "max_quote_age_ms": 3000.0,
+            "max_rebound_fraction": 0.75,
+            "max_units": 8.0,
+            "min_excess": 0.75,
+            "min_executable_upside_pct": 0.2,
+            "min_flash_drop": 1.0,
+            "min_pre_r2": 0.5,
+            "min_pre_return": 0.75,
+            "min_price": 1.0,
+            "min_r2": 0.5,
+            "min_return": 0.75,
+            "min_return_pct": 0.0,
+            "min_short_return": 0.1,
+            "min_target_spread_multiple": 0.0,
+            "min_units": 4.25,
+            "notional": 1000.0,
+            "one_position_per_symbol": true,
+            "portfolio_risk_fraction": 0.02,
+            "range_pct": 1.5,
+            "rebound_fraction": 0.001,
+            "required_gain_pct": 0.25,
+            "ret5": 0.25,
+            "risk_fraction": 0.01,
+            "secondary_return": 0.1,
+            "source": "RS1+RS2",
+            "start_minute": 630,
+            "stop": 0.02,
+            "strategy_id": "G6R05TARGET",
+            "target_max": 100000.0,
+            "target_min": 0.0,
+            "target_pct": 0.6,
+            "target_scale": 0.65,
+            "universe": [
+              "SPY",
+              "QQQ",
+              "IWM",
+              "DIA",
+              "XLK",
+              "XLF",
+              "XLE",
+              "XLV",
+              "XLY",
+              "XLP",
+              "XLI",
+              "XLU",
+              "SMH",
+              "IYT",
+              "GLD",
+              "SLV",
+              "USO",
+              "TLT",
+              "NVDA",
+              "AMD",
+              "AVGO",
+              "MSFT",
+              "AAPL",
+              "GOOGL",
+              "META",
+              "AMZN",
+              "TSLA",
+              "NFLX",
+              "ORCL",
+              "CRM",
+              "MU",
+              "INTC"
+            ],
+            "up_fraction": 0.58,
+            "votes": 1
+          },
+          "population_hash": "5a78d6b09053fb8b31c14a11a296c3e03fd4c082804fe982a476ad192ab5482a",
+          "prospective_start_policy": "durable first activation; never backfilled",
+          "rule_source_sha256": "632d1514e8e587427aa1f9ef70cb910bbf6d4f7600fd48c0d35d17ac6e6ac603",
+          "rule_version": "generation_six_frozen_v1",
+          "source_commit": "cf7b7f77da8325b1647a9d7e9c2776e8e6683a0f",
+          "source_strategy_ids": [
+            "RS1",
+            "RS2"
+          ],
+          "strategy_id": "G6R05TARGET",
+          "universe_definition": [
+            "SPY",
+            "QQQ",
+            "IWM",
+            "DIA",
+            "XLK",
+            "XLF",
+            "XLE",
+            "XLV",
+            "XLY",
+            "XLP",
+            "XLI",
+            "XLU",
+            "SMH",
+            "IYT",
+            "GLD",
+            "SLV",
+            "USO",
+            "TLT",
+            "NVDA",
+            "AMD",
+            "AVGO",
+            "MSFT",
+            "AAPL",
+            "GOOGL",
+            "META",
+            "AMZN",
+            "TSLA",
+            "NFLX",
+            "ORCL",
+            "CRM",
+            "MU",
+            "INTC"
+          ]
+        },
+        "return_pct": 0.05599999999999454,
+        "signals": 8,
+        "skipped": 5,
+        "starting_cash": 5000.0,
+        "status": "prospective",
+        "taken": 3
+      },
+      "median_hold_seconds": 943.573789,
+      "missing_execution_evidence": 0,
+      "missing_observations": 0,
+      "oct14_recorded_closed_pnl": -4.989999999999782,
+      "pnl_excluding_best_close_day": 6.929999999999723,
+      "positive_observations": 4,
+      "reference_observations": [
+        0.3926,
+        -0.0432,
+        0.1552,
+        0.0704,
+        0.056
+      ],
+      "rejections": {
+        "g6_admitted_fill_cooldown": 12,
+        "outside_prospective_signal_window": 17,
+        "stale_or_future_quote": 15
+      },
+      "selected_sample_return_correlations": [
+        {
+          "correlation": 0.897386946685367,
+          "other": "G3CGLB30BA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.5081978828241314,
+          "other": "G3MPR150BA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.6478586684133157,
+          "other": "G3MT50BA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.9630090858119282,
+          "other": "G6R05CTLBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.9997772766548974,
+          "other": "G6R05ROOMBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.853285917012185,
+          "other": "G6R06PATIENTBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.6508970639594919,
+          "other": "G6R07CTLBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.10590943124908576,
+          "other": "G7ROTPROTECTBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.5500855973296052,
+          "other": "G9LONG15",
+          "paired_observations": 3
+        },
+        {
+          "correlation": -0.5500855973296052,
+          "other": "G9LONG16",
+          "paired_observations": 3
+        },
+        {
+          "correlation": -0.5500855973296052,
+          "other": "G9LONG17",
+          "paired_observations": 3
+        }
+      ]
+    },
+    "G6R06PATIENTBA": {
+      "by_day": {
+        "2026-10-12": -5.340000000000032,
+        "2026-10-13": 16.08000000000004,
+        "2026-10-14": -9.000000000000227,
+        "2026-10-15": -3.990000000000123,
+        "2026-10-16": 3.269999999999982,
+        "2026-10-19": 10.029999999999973,
+        "2026-10-20": 0.7599999999996498
+      },
+      "captured_observations": [
+        0.32160000000000083,
+        -0.07980000000000247,
+        0.06539999999999964,
+        0.20059999999999945,
+        0.015199999999992997
+      ],
+      "closed_pnl": 11.809999999999263,
+      "closes": 24,
+      "entries": 24,
+      "entry_fingerprints": [
+        {
+          "legs": null,
+          "quantity": 1,
+          "symbol": "META",
+          "time": "2026-10-12T15:21:26.395125+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 1,
+          "symbol": "AMD",
+          "time": "2026-10-12T16:04:19.420854+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 2,
+          "symbol": "AAPL",
+          "time": "2026-10-13T14:32:26.184015+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 24,
+          "symbol": "XLU",
+          "time": "2026-10-13T14:46:15.743930+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 2,
+          "symbol": "GOOGL",
+          "time": "2026-10-13T15:03:22.920948+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 9,
+          "symbol": "INTC",
+          "time": "2026-10-13T16:04:12.898468+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 7,
+          "symbol": "ORCL",
+          "time": "2026-10-13T16:33:30.524525+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 6,
+          "symbol": "ORCL",
+          "time": "2026-10-13T18:11:11.946688+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 2,
+          "symbol": "TSLA",
+          "time": "2026-10-14T14:43:29.935976+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 7,
+          "symbol": "ORCL",
+          "time": "2026-10-14T15:00:22.948215+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 8,
+          "symbol": "XLY",
+          "time": "2026-10-15T14:31:55.578346+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 7,
+          "symbol": "ORCL",
+          "time": "2026-10-15T15:22:07.422896+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 1,
+          "symbol": "META",
+          "time": "2026-10-15T17:33:18.418794+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 4,
+          "symbol": "NVDA",
+          "time": "2026-10-16T14:34:11.684071+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 1,
+          "symbol": "MU",
+          "time": "2026-10-16T14:48:23.871146+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 6,
+          "symbol": "USO",
+          "time": "2026-10-16T15:51:31.466731+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 6,
+          "symbol": "USO",
+          "time": "2026-10-16T16:29:43.398678+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 3,
+          "symbol": "AMZN",
+          "time": "2026-10-19T14:42:39.718151+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 1,
+          "symbol": "META",
+          "time": "2026-10-19T15:04:21.640091+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 1,
+          "symbol": "MU",
+          "time": "2026-10-19T15:18:34.265226+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 6,
+          "symbol": "USO",
+          "time": "2026-10-19T16:04:56.259617+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 10,
+          "symbol": "INTC",
+          "time": "2026-10-20T14:31:09.404469+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 10,
+          "symbol": "INTC",
+          "time": "2026-10-20T15:02:07.097517+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 6,
+          "symbol": "USO",
+          "time": "2026-10-20T15:23:59.135667+00:00"
+        }
+      ],
+      "entry_notional": 20647.079999999998,
+      "entry_overlap": [
+        {
+          "jaccard": 0.0,
+          "other": "G3CGLB30BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G3MPR150BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G3MT50BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05CTLBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05ROOMBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05TARGETBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R07CTLBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G7ROTPROTECTBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G9LONG15"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G9LONG16"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G9LONG17"
+        }
+      ],
+      "extra_2bps_and_commission_closed_pnl": 2.152605999999264,
+      "hold_seconds": [
+        1829.493811,
+        1833.385669,
+        1806.773162,
+        1804.192781,
+        1821.074092,
+        1752.17498,
+        826.969213,
+        1998.632527,
+        1808.699697,
+        1803.714152,
+        1803.281699,
+        1836.530565,
+        2977.29234,
+        1975.128579,
+        1831.207683,
+        2063.211175,
+        1846.181937,
+        1466.262703,
+        2172.693398,
+        1802.534403,
+        1945.447815,
+        1825.131362,
+        1804.491303,
+        1848.222284
+      ],
+      "latest_report": {
+        "accounting": "actual quantities; daily equal-start $5k; no strategy aggregation",
+        "actual_fill_quantities": true,
+        "closed_taken": 3,
+        "end_equity": 5000.759999999999,
+        "engine": "generation_six_bidask_independent",
+        "open_taken": 0,
+        "pnl": 0.7599999999996498,
+        "portfolio_combinable": false,
+        "prospective_start_utc": "2026-10-09T22:08:26.504306+00:00",
+        "research_metadata": {
+          "cohort": "G6R06",
+          "comparison_id": "G6R06CTL",
+          "config": {
+            "flash_drop_pct": 1.0,
+            "live_order_placement": false,
+            "min_remaining_upside_pct": 0.2,
+            "pending_rebound_timeout_seconds": 300,
+            "rebound_confirmation_pct": 0.001,
+            "stop_loss_fraction": 0.02
+          },
+          "created_utc": "2026-10-09T21:45:00+00:00",
+          "description": "Forty-five-minute relative trend; Allow thirty-minute continuation instead of fifteen",
+          "evidence_sha256": "0c2ecaff2bfebb9af1789f69f009e67317e99e5135d41563a4a629f166ea1c9a",
+          "family": "GENERATION_SIX",
+          "generation": 6,
+          "independent_discovery": false,
+          "paper_only": true,
+          "parameters": {
+            "architecture": "RELATIVE",
+            "breadth": 0.65,
+            "buffer_pct": 0.08,
+            "checkpoint_mode": "conditional_return",
+            "checkpoint_seconds": 0,
+            "cohort": "G6R06",
+            "comparison_id": "G6R06CTL",
+            "contrast": "PATIENT",
+            "cooldown_seconds": 600,
+            "displayed_participation": 0.25,
+            "end_minute": 900,
+            "equity": 5000.0,
+            "flash_max_age_seconds": 300,
+            "hypothesis": "Forty-five-minute relative trend; Allow thirty-minute continuation instead of fifteen",
+            "lookback": 45,
+            "market_floor": -0.5,
+            "max_entry_spread_pct": 0.15,
+            "max_hold_seconds": 1800,
+            "max_position_fraction": 0.2,
+            "max_price": 100000.0,
+            "max_quote_age_ms": 3000.0,
+            "max_rebound_fraction": 0.75,
+            "max_units": 8.0,
+            "min_excess": 0.75,
+            "min_executable_upside_pct": 0.2,
+            "min_flash_drop": 1.0,
+            "min_pre_r2": 0.5,
+            "min_pre_return": 0.75,
+            "min_price": 1.0,
+            "min_r2": 0.5,
+            "min_return": 0.75,
+            "min_return_pct": 0.0,
+            "min_short_return": 0.1,
+            "min_target_spread_multiple": 0.0,
+            "min_units": 4.25,
+            "notional": 1000.0,
+            "one_position_per_symbol": true,
+            "portfolio_risk_fraction": 0.02,
+            "range_pct": 1.5,
+            "rebound_fraction": 0.001,
+            "required_gain_pct": 0.25,
+            "ret5": 0.25,
+            "risk_fraction": 0.01,
+            "secondary_return": 0.1,
+            "source": "RS1+RS2",
+            "start_minute": 630,
+            "stop": 0.02,
+            "strategy_id": "G6R06PATIENT",
+            "target_max": 100000.0,
+            "target_min": 0.0,
+            "target_pct": 0.9,
+            "target_scale": 1.0,
+            "universe": [
+              "SPY",
+              "QQQ",
+              "IWM",
+              "DIA",
+              "XLK",
+              "XLF",
+              "XLE",
+              "XLV",
+              "XLY",
+              "XLP",
+              "XLI",
+              "XLU",
+              "SMH",
+              "IYT",
+              "GLD",
+              "SLV",
+              "USO",
+              "TLT",
+              "NVDA",
+              "AMD",
+              "AVGO",
+              "MSFT",
+              "AAPL",
+              "GOOGL",
+              "META",
+              "AMZN",
+              "TSLA",
+              "NFLX",
+              "ORCL",
+              "CRM",
+              "MU",
+              "INTC"
+            ],
+            "up_fraction": 0.58,
+            "votes": 1
+          },
+          "population_hash": "5a78d6b09053fb8b31c14a11a296c3e03fd4c082804fe982a476ad192ab5482a",
+          "prospective_start_policy": "durable first activation; never backfilled",
+          "rule_source_sha256": "632d1514e8e587427aa1f9ef70cb910bbf6d4f7600fd48c0d35d17ac6e6ac603",
+          "rule_version": "generation_six_frozen_v1",
+          "source_commit": "cf7b7f77da8325b1647a9d7e9c2776e8e6683a0f",
+          "source_strategy_ids": [
+            "RS1",
+            "RS2"
+          ],
+          "strategy_id": "G6R06PATIENT",
+          "universe_definition": [
+            "SPY",
+            "QQQ",
+            "IWM",
+            "DIA",
+            "XLK",
+            "XLF",
+            "XLE",
+            "XLV",
+            "XLY",
+            "XLP",
+            "XLI",
+            "XLU",
+            "SMH",
+            "IYT",
+            "GLD",
+            "SLV",
+            "USO",
+            "TLT",
+            "NVDA",
+            "AMD",
+            "AVGO",
+            "MSFT",
+            "AAPL",
+            "GOOGL",
+            "META",
+            "AMZN",
+            "TSLA",
+            "NFLX",
+            "ORCL",
+            "CRM",
+            "MU",
+            "INTC"
+          ]
+        },
+        "return_pct": 0.015199999999992997,
+        "signals": 12,
+        "skipped": 9,
+        "starting_cash": 5000.0,
+        "status": "prospective",
+        "taken": 3
+      },
+      "median_hold_seconds": 1827.3125865000002,
+      "missing_execution_evidence": 0,
+      "missing_observations": 0,
+      "oct14_recorded_closed_pnl": -9.000000000000227,
+      "pnl_excluding_best_close_day": -4.270000000000778,
+      "positive_observations": 4,
+      "reference_observations": [
+        0.3216,
+        -0.0798,
+        0.0654,
+        0.2006,
+        0.0152
+      ],
+      "rejections": {
+        "g6_admitted_fill_cooldown": 13,
+        "g6_outside_execution_window": 1,
+        "insufficient_cash_or_risk_budget": 1,
+        "outside_prospective_signal_window": 36,
+        "stale_or_future_quote": 25
+      },
+      "selected_sample_return_correlations": [
+        {
+          "correlation": 0.8216019795868804,
+          "other": "G3CGLB30BA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.717201357759412,
+          "other": "G3MPR150BA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.5932547701304529,
+          "other": "G3MT50BA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.7924362994666018,
+          "other": "G6R05CTLBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.849513514595147,
+          "other": "G6R05ROOMBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.853285917012185,
+          "other": "G6R05TARGETBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.5591359944906604,
+          "other": "G6R07CTLBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.3528920599767889,
+          "other": "G7ROTPROTECTBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.896746173259277,
+          "other": "G9LONG15",
+          "paired_observations": 3
+        },
+        {
+          "correlation": 0.896746173259277,
+          "other": "G9LONG16",
+          "paired_observations": 3
+        },
+        {
+          "correlation": 0.896746173259277,
+          "other": "G9LONG17",
+          "paired_observations": 3
+        }
+      ]
+    },
+    "G6R07CTLBA": {
+      "by_day": {
+        "2026-10-12": -0.2300000000000182,
+        "2026-10-13": 12.540000000000077,
+        "2026-10-14": -2.5900000000001455,
+        "2026-10-15": 7.069999999999936,
+        "2026-10-16": 3.4400000000000546,
+        "2026-10-19": 3.980000000000018,
+        "2026-10-20": -1.1368683772161603e-13
+      },
+      "captured_observations": [
+        0.2508000000000015,
+        0.14139999999999872,
+        0.06880000000000108,
+        0.07960000000000036,
+        -2.2737367544323206e-15
+      ],
+      "closed_pnl": 24.20999999999981,
+      "closes": 19,
+      "entries": 19,
+      "entry_fingerprints": [
+        {
+          "legs": null,
+          "quantity": 1,
+          "symbol": "META",
+          "time": "2026-10-12T15:22:40.870471+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 1,
+          "symbol": "MU",
+          "time": "2026-10-12T15:44:20.101484+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 1,
+          "symbol": "AMD",
+          "time": "2026-10-12T16:04:19.718308+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 1,
+          "symbol": "META",
+          "time": "2026-10-13T14:42:15.975047+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 9,
+          "symbol": "INTC",
+          "time": "2026-10-13T16:03:53.304532+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 7,
+          "symbol": "ORCL",
+          "time": "2026-10-13T16:33:30.754785+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 6,
+          "symbol": "ORCL",
+          "time": "2026-10-13T17:45:21.245765+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 7,
+          "symbol": "ORCL",
+          "time": "2026-10-14T16:45:28.984640+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 6,
+          "symbol": "USO",
+          "time": "2026-10-15T14:31:55.717097+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 1,
+          "symbol": "MU",
+          "time": "2026-10-15T15:06:20.770980+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 7,
+          "symbol": "ORCL",
+          "time": "2026-10-15T15:17:18.411543+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 1,
+          "symbol": "META",
+          "time": "2026-10-15T17:22:23.002576+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 1,
+          "symbol": "MU",
+          "time": "2026-10-16T14:37:10.217365+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 6,
+          "symbol": "USO",
+          "time": "2026-10-16T16:30:30.174434+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 1,
+          "symbol": "AMD",
+          "time": "2026-10-19T14:37:39.599518+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 1,
+          "symbol": "META",
+          "time": "2026-10-19T15:04:21.804309+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 10,
+          "symbol": "INTC",
+          "time": "2026-10-19T15:21:13.269294+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 1,
+          "symbol": "AMD",
+          "time": "2026-10-20T14:31:09.539715+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 7,
+          "symbol": "ORCL",
+          "time": "2026-10-20T14:45:33.330413+00:00"
+        }
+      ],
+      "entry_notional": 15876.509999999998,
+      "entry_overlap": [
+        {
+          "jaccard": 0.0,
+          "other": "G3CGLB30BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G3MPR150BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G3MT50BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05CTLBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05ROOMBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05TARGETBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R06PATIENTBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G7ROTPROTECTBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G9LONG15"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G9LONG16"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G9LONG17"
+        }
+      ],
+      "extra_2bps_and_commission_closed_pnl": 16.989553999999806,
+      "hold_seconds": [
+        931.825044,
+        955.139512,
+        1400.099542,
+        973.559116,
+        937.936508,
+        826.738953,
+        1483.743415,
+        931.284403,
+        917.091641,
+        557.640351,
+        902.643454,
+        907.720426,
+        929.48938,
+        1325.299449,
+        961.672426,
+        921.700375,
+        1161.064195,
+        900.189341,
+        961.205418
+      ],
+      "latest_report": {
+        "accounting": "actual quantities; daily equal-start $5k; no strategy aggregation",
+        "actual_fill_quantities": true,
+        "closed_taken": 2,
+        "end_equity": 5000.0,
+        "engine": "generation_six_bidask_independent",
+        "open_taken": 0,
+        "pnl": -1.1368683772161603e-13,
+        "portfolio_combinable": false,
+        "prospective_start_utc": "2026-10-09T22:08:26.504306+00:00",
+        "research_metadata": {
+          "cohort": "G6R07",
+          "comparison_id": "G6R07CTL",
+          "config": {
+            "flash_drop_pct": 1.0,
+            "live_order_placement": false,
+            "min_remaining_upside_pct": 0.2,
+            "pending_rebound_timeout_seconds": 300,
+            "rebound_confirmation_pct": 0.001,
+            "stop_loss_fraction": 0.02
+          },
+          "created_utc": "2026-10-09T21:45:00+00:00",
+          "description": "Strict positive-market cohort; Conservative cash, one-symbol and executable-book control",
+          "evidence_sha256": "0c2ecaff2bfebb9af1789f69f009e67317e99e5135d41563a4a629f166ea1c9a",
+          "family": "GENERATION_SIX",
+          "generation": 6,
+          "independent_discovery": false,
+          "paper_only": true,
+          "parameters": {
+            "architecture": "RELATIVE",
+            "breadth": 0.65,
+            "buffer_pct": 0.08,
+            "checkpoint_mode": "conditional_return",
+            "checkpoint_seconds": 0,
+            "cohort": "G6R07",
+            "comparison_id": "G6R07CTL",
+            "contrast": "CTL",
+            "cooldown_seconds": 600,
+            "displayed_participation": 0.25,
+            "end_minute": 900,
+            "equity": 5000.0,
+            "flash_max_age_seconds": 300,
+            "hypothesis": "Strict positive-market cohort; Conservative cash, one-symbol and executable-book control",
+            "lookback": 30,
+            "market_floor": 0.0,
+            "max_entry_spread_pct": 0.15,
+            "max_hold_seconds": 900,
+            "max_position_fraction": 0.2,
+            "max_price": 100000.0,
+            "max_quote_age_ms": 3000.0,
+            "max_rebound_fraction": 0.75,
+            "max_units": 8.0,
+            "min_excess": 0.75,
+            "min_executable_upside_pct": 0.2,
+            "min_flash_drop": 1.0,
+            "min_pre_r2": 0.5,
+            "min_pre_return": 0.75,
+            "min_price": 1.0,
+            "min_r2": 0.5,
+            "min_return": 0.75,
+            "min_return_pct": 0.0,
+            "min_short_return": 0.1,
+            "min_target_spread_multiple": 0.0,
+            "min_units": 4.25,
+            "notional": 1000.0,
+            "one_position_per_symbol": true,
+            "portfolio_risk_fraction": 0.02,
+            "range_pct": 1.5,
+            "rebound_fraction": 0.001,
+            "required_gain_pct": 0.25,
+            "ret5": 0.25,
+            "risk_fraction": 0.01,
+            "secondary_return": 0.1,
+            "source": "RS1+RS2",
+            "start_minute": 630,
+            "stop": 0.02,
+            "strategy_id": "G6R07CTL",
+            "target_max": 100000.0,
+            "target_min": 0.0,
+            "target_pct": 0.9,
+            "target_scale": 1.0,
+            "universe": [
+              "SPY",
+              "QQQ",
+              "IWM",
+              "DIA",
+              "XLK",
+              "XLF",
+              "XLE",
+              "XLV",
+              "XLY",
+              "XLP",
+              "XLI",
+              "XLU",
+              "SMH",
+              "IYT",
+              "GLD",
+              "SLV",
+              "USO",
+              "TLT",
+              "NVDA",
+              "AMD",
+              "AVGO",
+              "MSFT",
+              "AAPL",
+              "GOOGL",
+              "META",
+              "AMZN",
+              "TSLA",
+              "NFLX",
+              "ORCL",
+              "CRM",
+              "MU",
+              "INTC"
+            ],
+            "up_fraction": 0.58,
+            "votes": 1
+          },
+          "population_hash": "5a78d6b09053fb8b31c14a11a296c3e03fd4c082804fe982a476ad192ab5482a",
+          "prospective_start_policy": "durable first activation; never backfilled",
+          "rule_source_sha256": "632d1514e8e587427aa1f9ef70cb910bbf6d4f7600fd48c0d35d17ac6e6ac603",
+          "rule_version": "generation_six_frozen_v1",
+          "source_commit": "cf7b7f77da8325b1647a9d7e9c2776e8e6683a0f",
+          "source_strategy_ids": [
+            "RS1",
+            "RS2"
+          ],
+          "strategy_id": "G6R07CTL",
+          "universe_definition": [
+            "SPY",
+            "QQQ",
+            "IWM",
+            "DIA",
+            "XLK",
+            "XLF",
+            "XLE",
+            "XLV",
+            "XLY",
+            "XLP",
+            "XLI",
+            "XLU",
+            "SMH",
+            "IYT",
+            "GLD",
+            "SLV",
+            "USO",
+            "TLT",
+            "NVDA",
+            "AMD",
+            "AVGO",
+            "MSFT",
+            "AAPL",
+            "GOOGL",
+            "META",
+            "AMZN",
+            "TSLA",
+            "NFLX",
+            "ORCL",
+            "CRM",
+            "MU",
+            "INTC"
+          ]
+        },
+        "return_pct": -2.2737367544323206e-15,
+        "signals": 14,
+        "skipped": 12,
+        "starting_cash": 5000.0,
+        "status": "prospective",
+        "taken": 2
+      },
+      "median_hold_seconds": 931.825044,
+      "missing_execution_evidence": 0,
+      "missing_observations": 0,
+      "oct14_recorded_closed_pnl": -2.5900000000001455,
+      "pnl_excluding_best_close_day": 11.669999999999732,
+      "positive_observations": 4,
+      "reference_observations": [
+        0.2508,
+        0.1414,
+        0.0688,
+        0.0796,
+        -0.0
+      ],
+      "rejections": {
+        "g6_admitted_fill_cooldown": 12,
+        "outside_prospective_signal_window": 16,
+        "stale_or_future_quote": 16
+      },
+      "selected_sample_return_correlations": [
+        {
+          "correlation": 0.7718928273793065,
+          "other": "G3CGLB30BA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.06272324709165025,
+          "other": "G3MPR150BA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.020709549827140013,
+          "other": "G3MT50BA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.5039473843917651,
+          "other": "G6R05CTLBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.6531171556127012,
+          "other": "G6R05ROOMBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.6508970639594919,
+          "other": "G6R05TARGETBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.5591359944906604,
+          "other": "G6R06PATIENTBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.5212025569557002,
+          "other": "G7ROTPROTECTBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": 0.4398135824619727,
+          "other": "G9LONG15",
+          "paired_observations": 3
+        },
+        {
+          "correlation": 0.4398135824619727,
+          "other": "G9LONG16",
+          "paired_observations": 3
+        },
+        {
+          "correlation": 0.4398135824619727,
+          "other": "G9LONG17",
+          "paired_observations": 3
+        }
+      ]
+    },
+    "G7ROTPROTECTBA": {
+      "by_day": {
+        "2026-10-13": 11.2800000000002,
+        "2026-10-14": -19.699999999999932,
+        "2026-10-15": 9.729999999999905,
+        "2026-10-16": 12.620000000000232,
+        "2026-10-19": 2.5,
+        "2026-10-20": 34.54000000000008
+      },
+      "captured_observations": [
+        0.22560000000000402,
+        0.1945999999999981,
+        0.2524000000000046,
+        0.05,
+        0.6908000000000015
+      ],
+      "closed_pnl": 50.97000000000048,
+      "closes": 24,
+      "entries": 24,
+      "entry_fingerprints": [
+        {
+          "legs": null,
+          "quantity": 90,
+          "symbol": "UNG",
+          "time": "2026-10-13T13:46:11.637738+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 89,
+          "symbol": "UNG",
+          "time": "2026-10-13T14:26:17.972322+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 6,
+          "symbol": "USO",
+          "time": "2026-10-13T17:01:16.582809+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 88,
+          "symbol": "UNG",
+          "time": "2026-10-13T17:46:14.026690+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 11,
+          "symbol": "GDX",
+          "time": "2026-10-13T18:26:37.705469+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 87,
+          "symbol": "UNG",
+          "time": "2026-10-13T18:46:14.413736+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 89,
+          "symbol": "UNG",
+          "time": "2026-10-14T13:31:11.287177+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 12,
+          "symbol": "COPX",
+          "time": "2026-10-14T14:36:14.644632+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 6,
+          "symbol": "USO",
+          "time": "2026-10-14T16:08:39.795460+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 89,
+          "symbol": "UNG",
+          "time": "2026-10-15T14:02:10.979396+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 9,
+          "symbol": "XME",
+          "time": "2026-10-15T15:04:10.912282+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 6,
+          "symbol": "USO",
+          "time": "2026-10-15T16:16:37.055276+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 90,
+          "symbol": "UNG",
+          "time": "2026-10-15T17:43:59.791325+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 9,
+          "symbol": "XME",
+          "time": "2026-10-16T13:49:12.916039+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 11,
+          "symbol": "GDX",
+          "time": "2026-10-16T14:09:43.547094+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 9,
+          "symbol": "XME",
+          "time": "2026-10-16T14:50:34.236686+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 93,
+          "symbol": "UNG",
+          "time": "2026-10-16T15:46:38.498804+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 6,
+          "symbol": "USO",
+          "time": "2026-10-16T16:26:56.511775+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 14,
+          "symbol": "XLE",
+          "time": "2026-10-19T13:31:07.934981+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 12,
+          "symbol": "COPX",
+          "time": "2026-10-19T15:19:32.159630+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 11,
+          "symbol": "GDX",
+          "time": "2026-10-20T13:40:12.068156+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 12,
+          "symbol": "COPX",
+          "time": "2026-10-20T14:21:32.411166+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 6,
+          "symbol": "USO",
+          "time": "2026-10-20T15:01:37.032155+00:00"
+        },
+        {
+          "legs": null,
+          "quantity": 6,
+          "symbol": "USO",
+          "time": "2026-10-20T15:41:50.809454+00:00"
+        }
+      ],
+      "entry_notional": 23106.489999999998,
+      "entry_overlap": [
+        {
+          "jaccard": 0.0,
+          "other": "G3CGLB30BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G3MPR150BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G3MT50BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05CTLBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05ROOMBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05TARGETBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R06PATIENTBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R07CTLBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G9LONG15"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G9LONG16"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G9LONG17"
+        }
+      ],
+      "extra_2bps_and_commission_closed_pnl": 32.93501000000048,
+      "hold_seconds": [
+        2382.602671,
+        3145.010192,
+        5302.619698,
+        10423.742358,
+        7743.348465,
+        4142.961419,
+        305.798878,
+        3751.555889,
+        13584.231687,
+        683.537137,
+        15464.437105,
+        13103.024274,
+        7903.715521,
+        907.884418,
+        2341.270105,
+        1116.127678,
+        555.863038,
+        9481.595291,
+        2373.645671,
+        16535.829397,
+        2362.627796,
+        504.317277,
+        743.273709,
+        6678.788892
+      ],
+      "latest_report": {
+        "accounting": "actual quantities; daily equal-start $5k; no strategy aggregation",
+        "actual_fill_quantities": true,
+        "closed_taken": 4,
+        "end_equity": 5034.54,
+        "engine": "generation_seven_bidask_independent",
+        "open_taken": 0,
+        "pnl": 34.54000000000008,
+        "portfolio_combinable": false,
+        "prospective_start_utc": "2026-10-12T20:13:22.727978+00:00",
+        "research_metadata": {
+          "config": {
+            "live_order_placement": false
+          },
+          "created_utc": "2026-10-12T17:00:00+00:00",
+          "evidence_policy": "minute-archive development; future prospective sessions are independent test",
+          "family": "GENERATION_SEVEN",
+          "generation": 7,
+          "hypothesis": "After 0.5% bid gain, protect with a 0.35% trailing exit",
+          "independent_discovery": false,
+          "mechanism": "PROTECT",
+          "paper_only": true,
+          "parameters": {
+            "equity": 5000.0,
+            "max_entry_spread_pct": "unbounded",
+            "max_position_fraction": 0.2,
+            "min_executable_upside_pct": 0.0,
+            "min_target_spread_multiple": 0.0,
+            "notional": 1000.0,
+            "one_position_per_symbol": false,
+            "portfolio_risk_fraction": null,
+            "risk_fraction": 0.01,
+            "strategy_id": "G7ROTPROTECT",
+            "votes": 1
+          },
+          "parent_source_hashes": {
+            "strategy_cmdbrd1": "f4eeaa440a275c81224cdde9456bbba61a8735c9df56cac7abf5391e11705a53",
+            "strategy_cmdrot1": "cd51b2e14768a3b9edde9a196402a08ddf3e5ce7bd4eb46d7a2e06669aa44357"
+          },
+          "population_hash": "3de9feb31a11d70f7855fc69398c45be10e0edf428a612193079b975cbb2354b",
+          "prospective_start_policy": "durable first activation; never backfilled",
+          "research_track": "B",
+          "rule_source_sha256": "8c9b228d2ebfcf7a942ae80ea483ec328be13a9dcddea1c8b572167c7b024db1",
+          "rule_version": "generation_seven_frozen_v1",
+          "source_commit": "01ad5a62cc2d026a362b490ef30d6f5a982be580",
+          "source_strategy_ids": [
+            "CMDROT1"
+          ],
+          "strategy_id": "G7ROTPROTECT",
+          "universe": [
+            "GLD",
+            "SLV",
+            "GDX",
+            "USO",
+            "UNG",
+            "XLE",
+            "XME",
+            "COPX",
+            "DBA"
+          ]
+        },
+        "return_pct": 0.6908000000000015,
+        "signals": 4,
+        "skipped": 0,
+        "starting_cash": 5000.0,
+        "status": "prospective",
+        "taken": 4
+      },
+      "median_hold_seconds": 3448.2830405000004,
+      "missing_execution_evidence": 0,
+      "missing_observations": 0,
+      "oct14_recorded_closed_pnl": -19.699999999999932,
+      "pnl_excluding_best_close_day": 16.430000000000405,
+      "positive_observations": 5,
+      "reference_observations": [
+        0.2256,
+        0.1946,
+        0.2524,
+        0.05,
+        0.6908
+      ],
+      "rejections": {
+        "g7_nonexecutable_quote": 7,
+        "outside_entry_window": 3
+      },
+      "selected_sample_return_correlations": [
+        {
+          "correlation": -0.07711437301731057,
+          "other": "G3CGLB30BA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.2394389395352336,
+          "other": "G3MPR150BA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.5421079267267059,
+          "other": "G3MT50BA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.10785017040029883,
+          "other": "G6R05CTLBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.11654631611364262,
+          "other": "G6R05ROOMBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.10590943124908576,
+          "other": "G6R05TARGETBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.3528920599767889,
+          "other": "G6R06PATIENTBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.5212025569557002,
+          "other": "G6R07CTLBA",
+          "paired_observations": 5
+        },
+        {
+          "correlation": -0.6004687515720771,
+          "other": "G9LONG15",
+          "paired_observations": 3
+        },
+        {
+          "correlation": -0.6004687515720771,
+          "other": "G9LONG16",
+          "paired_observations": 3
+        },
+        {
+          "correlation": -0.6004687515720771,
+          "other": "G9LONG17",
+          "paired_observations": 3
+        }
+      ]
+    },
+    "G9LONG15": {
+      "by_day": {
+        "2026-10-19": 23.48183042771422,
+        "2026-10-20": 4.464201925482796
+      },
+      "captured_observations": [
+        null,
+        null,
+        0.0,
+        0.46963660855428435,
+        0.08928403850965592
+      ],
+      "closed_pnl": 27.946032353197015,
+      "closes": 3,
+      "entries": 3,
+      "entry_fingerprints": [
+        {
+          "legs": [
+            {
+              "entry_price": 219.27,
+              "shares": 8,
+              "side": "SHORT",
+              "symbol": "NVDA"
+            },
+            {
+              "entry_price": 768.31,
+              "shares": 4,
+              "side": "LONG",
+              "symbol": "SPY"
+            }
+          ],
+          "quantity": null,
+          "symbol": null,
+          "time": "2026-10-19T16:10:25.210846+00:00"
+        },
+        {
+          "legs": [
+            {
+              "entry_price": 51.83,
+              "shares": 52,
+              "side": "SHORT",
+              "symbol": "SLV"
+            },
+            {
+              "entry_price": 767.68,
+              "shares": 3,
+              "side": "LONG",
+              "symbol": "SPY"
+            }
+          ],
+          "quantity": null,
+          "symbol": null,
+          "time": "2026-10-19T18:10:26.330244+00:00"
+        },
+        {
+          "legs": [
+            {
+              "entry_price": 115.2,
+              "shares": 23,
+              "side": "LONG",
+              "symbol": "XLY"
+            },
+            {
+              "entry_price": 768.72,
+              "shares": 3,
+              "side": "SHORT",
+              "symbol": "SPY"
+            }
+          ],
+          "quantity": null,
+          "symbol": null,
+          "time": "2026-10-20T16:25:30.010122+00:00"
+        }
+      ],
+      "entry_notional": 14781.359999999999,
+      "entry_overlap": [
+        {
+          "jaccard": 0.0,
+          "other": "G3CGLB30BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G3MPR150BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G3MT50BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05CTLBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05ROOMBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05TARGETBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R06PATIENTBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R07CTLBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G7ROTPROTECTBA"
+        },
+        {
+          "jaccard": 1.0,
+          "other": "G9LONG16"
+        },
+        {
+          "jaccard": 1.0,
+          "other": "G9LONG17"
+        }
+      ],
+      "extra_2bps_and_commission_closed_pnl": 27.946032353197015,
+      "hold_seconds": [
+        7201.119398,
+        6300.159836,
+        7201.120448
+      ],
+      "latest_report": {
+        "accounting": "hypothetical paired fills, commissions and estimated borrow; daily P&L / $5k reference; sizing uses cumulative equity",
+        "actual_fill_quantities": true,
+        "borrow_fees": "estimated, not verified",
+        "broker_buying_power_verified": false,
+        "broker_execution_enabled": false,
+        "broker_margin_verified": false,
+        "closed_taken": 1,
+        "end_equity": 5004.4642019254825,
+        "engine": "generation_nine_sthedge2",
+        "execution_feasibility": "hypothetical research; broker constraints unverified",
+        "execution_versions": [
+          "G9_WHOLE_SHARE_V2"
+        ],
+        "family": "LONG",
+        "open_taken": 0,
+        "pnl": 4.464201925482796,
+        "portfolio_combinable": false,
+        "prospective_start_utc": "2026-10-15T21:29:38.905814+00:00",
+        "return_pct": 0.08928403850965592,
+        "short_locate_verified": false,
+        "signals": 1,
+        "skipped": 0,
+        "starting_cash": 5000.0,
+        "status": "prospective",
+        "taken": 1
+      },
+      "median_hold_seconds": 7201.119398,
+      "missing_execution_evidence": 0,
+      "missing_observations": 2,
+      "oct14_recorded_closed_pnl": null,
+      "pnl_excluding_best_close_day": 4.464201925482797,
+      "positive_observations": 2,
+      "reference_observations": [
+        null,
+        null,
+        0.0,
+        0.4696,
+        0.0955
+      ],
+      "rejections": {
+        "whole_share_or_liquidity": 69
+      },
+      "selected_sample_return_correlations": [
+        {
+          "correlation": 0.6572750343702501,
+          "other": "G3CGLB30BA",
+          "paired_observations": 3
+        },
+        {
+          "correlation": -0.6572750343702501,
+          "other": "G3MPR150BA",
+          "paired_observations": 3
+        },
+        {
+          "correlation": 0.21653581380590864,
+          "other": "G3MT50BA",
+          "paired_observations": 3
+        },
+        {
+          "correlation": -0.5696852504025564,
+          "other": "G6R05CTLBA",
+          "paired_observations": 3
+        },
+        {
+          "correlation": -0.5352529600085213,
+          "other": "G6R05ROOMBA",
+          "paired_observations": 3
+        },
+        {
+          "correlation": -0.5500855973296052,
+          "other": "G6R05TARGETBA",
+          "paired_observations": 3
+        },
+        {
+          "correlation": 0.896746173259277,
+          "other": "G6R06PATIENTBA",
+          "paired_observations": 3
+        },
+        {
+          "correlation": 0.4398135824619727,
+          "other": "G6R07CTLBA",
+          "paired_observations": 3
+        },
+        {
+          "correlation": -0.6004687515720771,
+          "other": "G7ROTPROTECTBA",
+          "paired_observations": 3
+        },
+        {
+          "correlation": 1.0,
+          "other": "G9LONG16",
+          "paired_observations": 3
+        },
+        {
+          "correlation": 1.0,
+          "other": "G9LONG17",
+          "paired_observations": 3
+        }
+      ]
+    },
+    "G9LONG16": {
+      "by_day": {
+        "2026-10-19": 23.48183042771422,
+        "2026-10-20": 4.464201925482796
+      },
+      "captured_observations": [
+        null,
+        null,
+        0.0,
+        0.46963660855428435,
+        0.08928403850965592
+      ],
+      "closed_pnl": 27.946032353197015,
+      "closes": 3,
+      "entries": 3,
+      "entry_fingerprints": [
+        {
+          "legs": [
+            {
+              "entry_price": 219.27,
+              "shares": 8,
+              "side": "SHORT",
+              "symbol": "NVDA"
+            },
+            {
+              "entry_price": 768.31,
+              "shares": 4,
+              "side": "LONG",
+              "symbol": "SPY"
+            }
+          ],
+          "quantity": null,
+          "symbol": null,
+          "time": "2026-10-19T16:10:25.210846+00:00"
+        },
+        {
+          "legs": [
+            {
+              "entry_price": 51.83,
+              "shares": 52,
+              "side": "SHORT",
+              "symbol": "SLV"
+            },
+            {
+              "entry_price": 767.68,
+              "shares": 3,
+              "side": "LONG",
+              "symbol": "SPY"
+            }
+          ],
+          "quantity": null,
+          "symbol": null,
+          "time": "2026-10-19T18:10:26.330244+00:00"
+        },
+        {
+          "legs": [
+            {
+              "entry_price": 115.2,
+              "shares": 23,
+              "side": "LONG",
+              "symbol": "XLY"
+            },
+            {
+              "entry_price": 768.72,
+              "shares": 3,
+              "side": "SHORT",
+              "symbol": "SPY"
+            }
+          ],
+          "quantity": null,
+          "symbol": null,
+          "time": "2026-10-20T16:25:30.010122+00:00"
+        }
+      ],
+      "entry_notional": 14781.359999999999,
+      "entry_overlap": [
+        {
+          "jaccard": 0.0,
+          "other": "G3CGLB30BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G3MPR150BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G3MT50BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05CTLBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05ROOMBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05TARGETBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R06PATIENTBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R07CTLBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G7ROTPROTECTBA"
+        },
+        {
+          "jaccard": 1.0,
+          "other": "G9LONG15"
+        },
+        {
+          "jaccard": 1.0,
+          "other": "G9LONG17"
+        }
+      ],
+      "extra_2bps_and_commission_closed_pnl": 27.946032353197015,
+      "hold_seconds": [
+        7201.119398,
+        6300.159836,
+        7201.120448
+      ],
+      "latest_report": {
+        "accounting": "hypothetical paired fills, commissions and estimated borrow; daily P&L / $5k reference; sizing uses cumulative equity",
+        "actual_fill_quantities": true,
+        "borrow_fees": "estimated, not verified",
+        "broker_buying_power_verified": false,
+        "broker_execution_enabled": false,
+        "broker_margin_verified": false,
+        "closed_taken": 1,
+        "end_equity": 5004.4642019254825,
+        "engine": "generation_nine_sthedge2",
+        "execution_feasibility": "hypothetical research; broker constraints unverified",
+        "execution_versions": [
+          "G9_WHOLE_SHARE_V2"
+        ],
+        "family": "LONG",
+        "open_taken": 0,
+        "pnl": 4.464201925482796,
+        "portfolio_combinable": false,
+        "prospective_start_utc": "2026-10-15T21:29:38.905816+00:00",
+        "return_pct": 0.08928403850965592,
+        "short_locate_verified": false,
+        "signals": 1,
+        "skipped": 0,
+        "starting_cash": 5000.0,
+        "status": "prospective",
+        "taken": 1
+      },
+      "median_hold_seconds": 7201.119398,
+      "missing_execution_evidence": 0,
+      "missing_observations": 2,
+      "oct14_recorded_closed_pnl": null,
+      "pnl_excluding_best_close_day": 4.464201925482797,
+      "positive_observations": 2,
+      "reference_observations": [
+        null,
+        null,
+        0.0,
+        0.4696,
+        0.0955
+      ],
+      "rejections": {
+        "whole_share_or_liquidity": 70
+      },
+      "selected_sample_return_correlations": [
+        {
+          "correlation": 0.6572750343702501,
+          "other": "G3CGLB30BA",
+          "paired_observations": 3
+        },
+        {
+          "correlation": -0.6572750343702501,
+          "other": "G3MPR150BA",
+          "paired_observations": 3
+        },
+        {
+          "correlation": 0.21653581380590864,
+          "other": "G3MT50BA",
+          "paired_observations": 3
+        },
+        {
+          "correlation": -0.5696852504025564,
+          "other": "G6R05CTLBA",
+          "paired_observations": 3
+        },
+        {
+          "correlation": -0.5352529600085213,
+          "other": "G6R05ROOMBA",
+          "paired_observations": 3
+        },
+        {
+          "correlation": -0.5500855973296052,
+          "other": "G6R05TARGETBA",
+          "paired_observations": 3
+        },
+        {
+          "correlation": 0.896746173259277,
+          "other": "G6R06PATIENTBA",
+          "paired_observations": 3
+        },
+        {
+          "correlation": 0.4398135824619727,
+          "other": "G6R07CTLBA",
+          "paired_observations": 3
+        },
+        {
+          "correlation": -0.6004687515720771,
+          "other": "G7ROTPROTECTBA",
+          "paired_observations": 3
+        },
+        {
+          "correlation": 1.0,
+          "other": "G9LONG15",
+          "paired_observations": 3
+        },
+        {
+          "correlation": 1.0,
+          "other": "G9LONG17",
+          "paired_observations": 3
+        }
+      ]
+    },
+    "G9LONG17": {
+      "by_day": {
+        "2026-10-19": 23.48183042771422,
+        "2026-10-20": 4.464201925482796
+      },
+      "captured_observations": [
+        null,
+        null,
+        0.0,
+        0.46963660855428435,
+        0.08928403850965592
+      ],
+      "closed_pnl": 27.946032353197015,
+      "closes": 3,
+      "entries": 3,
+      "entry_fingerprints": [
+        {
+          "legs": [
+            {
+              "entry_price": 219.27,
+              "shares": 8,
+              "side": "SHORT",
+              "symbol": "NVDA"
+            },
+            {
+              "entry_price": 768.31,
+              "shares": 4,
+              "side": "LONG",
+              "symbol": "SPY"
+            }
+          ],
+          "quantity": null,
+          "symbol": null,
+          "time": "2026-10-19T16:10:25.210846+00:00"
+        },
+        {
+          "legs": [
+            {
+              "entry_price": 51.83,
+              "shares": 52,
+              "side": "SHORT",
+              "symbol": "SLV"
+            },
+            {
+              "entry_price": 767.68,
+              "shares": 3,
+              "side": "LONG",
+              "symbol": "SPY"
+            }
+          ],
+          "quantity": null,
+          "symbol": null,
+          "time": "2026-10-19T18:10:26.330244+00:00"
+        },
+        {
+          "legs": [
+            {
+              "entry_price": 115.2,
+              "shares": 23,
+              "side": "LONG",
+              "symbol": "XLY"
+            },
+            {
+              "entry_price": 768.72,
+              "shares": 3,
+              "side": "SHORT",
+              "symbol": "SPY"
+            }
+          ],
+          "quantity": null,
+          "symbol": null,
+          "time": "2026-10-20T16:25:30.010122+00:00"
+        }
+      ],
+      "entry_notional": 14781.359999999999,
+      "entry_overlap": [
+        {
+          "jaccard": 0.0,
+          "other": "G3CGLB30BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G3MPR150BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G3MT50BA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05CTLBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05ROOMBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R05TARGETBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R06PATIENTBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G6R07CTLBA"
+        },
+        {
+          "jaccard": 0.0,
+          "other": "G7ROTPROTECTBA"
+        },
+        {
+          "jaccard": 1.0,
+          "other": "G9LONG15"
+        },
+        {
+          "jaccard": 1.0,
+          "other": "G9LONG16"
+        }
+      ],
+      "extra_2bps_and_commission_closed_pnl": 27.946032353197015,
+      "hold_seconds": [
+        7201.119398,
+        6300.159836,
+        7201.120448
+      ],
+      "latest_report": {
+        "accounting": "hypothetical paired fills, commissions and estimated borrow; daily P&L / $5k reference; sizing uses cumulative equity",
+        "actual_fill_quantities": true,
+        "borrow_fees": "estimated, not verified",
+        "broker_buying_power_verified": false,
+        "broker_execution_enabled": false,
+        "broker_margin_verified": false,
+        "closed_taken": 1,
+        "end_equity": 5004.4642019254825,
+        "engine": "generation_nine_sthedge2",
+        "execution_feasibility": "hypothetical research; broker constraints unverified",
+        "execution_versions": [
+          "G9_WHOLE_SHARE_V2"
+        ],
+        "family": "LONG",
+        "open_taken": 0,
+        "pnl": 4.464201925482796,
+        "portfolio_combinable": false,
+        "prospective_start_utc": "2026-10-15T21:29:38.905817+00:00",
+        "return_pct": 0.08928403850965592,
+        "short_locate_verified": false,
+        "signals": 1,
+        "skipped": 0,
+        "starting_cash": 5000.0,
+        "status": "prospective",
+        "taken": 1
+      },
+      "median_hold_seconds": 7201.119398,
+      "missing_execution_evidence": 0,
+      "missing_observations": 2,
+      "oct14_recorded_closed_pnl": null,
+      "pnl_excluding_best_close_day": 4.464201925482797,
+      "positive_observations": 2,
+      "reference_observations": [
+        null,
+        null,
+        0.0,
+        0.4696,
+        0.0955
+      ],
+      "rejections": {
+        "whole_share_or_liquidity": 66
+      },
+      "selected_sample_return_correlations": [
+        {
+          "correlation": 0.6572750343702501,
+          "other": "G3CGLB30BA",
+          "paired_observations": 3
+        },
+        {
+          "correlation": -0.6572750343702501,
+          "other": "G3MPR150BA",
+          "paired_observations": 3
+        },
+        {
+          "correlation": 0.21653581380590864,
+          "other": "G3MT50BA",
+          "paired_observations": 3
+        },
+        {
+          "correlation": -0.5696852504025564,
+          "other": "G6R05CTLBA",
+          "paired_observations": 3
+        },
+        {
+          "correlation": -0.5352529600085213,
+          "other": "G6R05ROOMBA",
+          "paired_observations": 3
+        },
+        {
+          "correlation": -0.5500855973296052,
+          "other": "G6R05TARGETBA",
+          "paired_observations": 3
+        },
+        {
+          "correlation": 0.896746173259277,
+          "other": "G6R06PATIENTBA",
+          "paired_observations": 3
+        },
+        {
+          "correlation": 0.4398135824619727,
+          "other": "G6R07CTLBA",
+          "paired_observations": 3
+        },
+        {
+          "correlation": -0.6004687515720771,
+          "other": "G7ROTPROTECTBA",
+          "paired_observations": 3
+        },
+        {
+          "correlation": 1.0,
+          "other": "G9LONG15",
+          "paired_observations": 3
+        },
+        {
+          "correlation": 1.0,
+          "other": "G9LONG16",
+          "paired_observations": 3
+        }
+      ]
+    }
+  }
+}

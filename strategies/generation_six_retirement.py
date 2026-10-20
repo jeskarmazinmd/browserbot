@@ -28,7 +28,8 @@ def entry_retired(sid):
  sid=str(sid or '').upper()
  from .generation_eight_retirement import entry_retired as g8_retired
  from .generation_nine_retirement import entry_retired as g9_retired
- return sid in report_retired_ids() or sid in entry_retired_ids() or g8_retired(sid) or g9_retired(sid)
+ from .generation_eleven_retirement import entry_retired as g11_retired
+ return sid in report_retired_ids() or sid in entry_retired_ids() or g8_retired(sid) or g9_retired(sid) or g11_retired(sid)
 def evaluation_retired_ids():
  from .pruning import DEPENDENCY_PROTECTED_STRATEGY_IDS
  return entry_retired_ids()-DEPENDENCY_PROTECTED_STRATEGY_IDS-{'PMID'}

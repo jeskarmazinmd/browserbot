@@ -16,6 +16,7 @@ from strategies.output_switches import output_enabled
 from strategies.independent_flash_filters import IDS as INDEPENDENT_FLASH_FILTER_IDS, Filters as IndependentFlashFilters
 from generation_one_paper_tracker import GenerationOneBidAskTracker, IDS as GENERATION_ONE_IDS
 from generation_two_paper_tracker import GenerationTwoBidAskTracker, IDS as GENERATION_TWO_IDS
+from generation_eleven_paper_tracker import start_tracker as start_g11_tracker, safe_call as g11_call, IDS as GENERATION_ELEVEN_IDS
 from generation_ten_paper_tracker import start_tracker as start_g10_tracker, safe_call as g10_call, IDS as GENERATION_TEN_IDS
 from strategies.registry import G10_ENABLED
 from generation_three_paper_tracker import GenerationThreeBidAskTracker, IDS as GENERATION_THREE_IDS
@@ -2463,8 +2464,16 @@ def main():
         DATA_ROOT, now_provider=quote_source.now,
     ) if RUN_MODE == 'LIVE' and (G10_ENABLED or (Path(DATA_ROOT) / 'paper_generation_ten_bidask_independent_births.json').exists()) else None
 
+    G11_ENABLED = os.environ.get('ENABLE_G11_PAPER', '0') == '1'
+    generation_eleven_outcomes = start_g11_tracker(DATA_ROOT, now_provider=quote_source.now) if RUN_MODE == 'LIVE' and (G11_ENABLED or (Path(DATA_ROOT) / 'paper_generation_eleven_bidask_independent_births.json').exists()) else None
+
     def register_single_leg_paper(signal):
         """Admit an executable BA trade directly from the strategy signal."""
+        if str(signal.get('strategy_id') or '').startswith('G11'):
+            if signal.get('strategy_id') not in GENERATION_ELEVEN_IDS or RUN_MODE != 'LIVE' or not G11_ENABLED or generation_eleven_outcomes is None:return False
+            symbol = str(signal.get('symbol') or '').upper()
+            quotes = independent_l1.quotes({symbol} | generation_eleven_outcomes.symbols())
+            return g11_call(generation_eleven_outcomes, 'register_signal', signal, quotes.get(symbol), quote_source.now(), quotes)
         if str(signal.get('strategy_id') or '').startswith('G8'):
             if signal.get('strategy_id') not in GENERATION_EIGHT_IDS or RUN_MODE != 'LIVE' or not G8_ENABLED or generation_eight_outcomes is None:
                 return False
@@ -2842,6 +2851,8 @@ def main():
                     independent_ba_symbols |= generation_eight_outcomes.symbols()
                 if generation_ten_outcomes is not None:
                     independent_ba_symbols |= generation_ten_outcomes.symbols()
+                if generation_eleven_outcomes is not None:
+                    independent_ba_symbols |= generation_eleven_outcomes.symbols()
                 independent_multi_leg_symbols = independent_multi_leg_outcomes.symbols()
                 execution_symbols = (
                     set(positions)
@@ -2946,6 +2957,8 @@ def main():
 
                 if generation_ten_outcomes is not None:
                     g10_call(generation_ten_outcomes, 'update_quotes', independent_quotes, quote_source.now())
+                if generation_eleven_outcomes is not None:
+                    g11_call(generation_eleven_outcomes, 'update_quotes', independent_quotes, quote_source.now())
                 if generation_three_outcomes is not None:
                     for outcome in generation_three_outcomes.update_quotes(independent_quotes, quote_source.now()):
                         print('GENERATION_THREE_BA_OUTCOME '
@@ -3248,6 +3261,12 @@ def main():
                         cadence="minute",
                     )
 
+                g11_observations = [e for e in minute_signals if e.signal_type == 'G11_OBSERVATION']
+                minute_signals = [e for e in minute_signals if e.signal_type != 'G11_OBSERVATION']
+                if generation_eleven_outcomes is not None and G11_ENABLED and minute_signal_is_current and not warming_minute_pipeline and not any(sid == 'G11HUB' for sid, exc in minute_errors):
+                    for observation in g11_observations:
+                        g11_call(generation_eleven_outcomes, 'observe_minute', quote_source.now(), observation.data['ready_ids'], observation.data['completed_minute'])
+
                 if warming_minute_pipeline:
                     continue
 
@@ -3294,10 +3313,11 @@ def main():
                             },
                         )
 
-                minute_payloads = apply_capacity_filters(
+                g11_payloads = [snapshot_signal_payload(signal) for signal in single_leg_signals if signal.strategy_id in GENERATION_ELEVEN_IDS]
+                minute_payloads = g11_payloads + apply_capacity_filters(
                     [
                         snapshot_signal_payload(signal)
-                        for signal in single_leg_signals
+                        for signal in single_leg_signals if signal.strategy_id not in GENERATION_ELEVEN_IDS
                     ],
                     regime=latest_regime(),
                 )
@@ -3309,10 +3329,10 @@ def main():
                         independent.get("entry_price", 0.0) or 0.0
                     )
 
-                    if symbol in positions:
+                    if strategy_id not in GENERATION_ELEVEN_IDS and symbol in positions:
                         continue
 
-                    if not (
+                    if strategy_id not in GENERATION_ELEVEN_IDS and not (
                         INDEPENDENT_MIN_PRICE
                         <= entry_price
                         <= INDEPENDENT_MAX_PRICE
@@ -3343,7 +3363,7 @@ def main():
                         dedupe_key
                     )
 
-                    if prior_ts is not None:
+                    if prior_ts is not None and strategy_id not in GENERATION_ELEVEN_IDS:
                         age_minutes = (
                             emitted_ts - prior_ts
                         ).total_seconds() / 60.0
@@ -3484,7 +3504,7 @@ def main():
 
                     # G2 rules use the already-frozen flash data and L1 book.
                     # Avoid one redundant candle request per child confirmation.
-                    if strategy_id != "LT65" and strategy_id not in GENERATION_TWO_IDS and strategy_id not in GENERATION_THREE_IDS and not strategy_id.startswith("G10"):
+                    if strategy_id != "LT65" and strategy_id not in GENERATION_TWO_IDS and strategy_id not in GENERATION_THREE_IDS and not strategy_id.startswith(("G10", "G11")):
                         confirmed_event.update(fetch_rebound_volume_metrics(
                             sym, pending["created_at"], confirmed_event.get("avg_volume_1m_pre30")
                         ))
@@ -3612,6 +3632,8 @@ def main():
 
             if generation_ten_outcomes is not None and G10_ENABLED and RUN_MODE == 'LIVE':
                 g10_call(generation_ten_outcomes, 'observe_scan', quote_source.now(), scan_stats['symbols_seen'], scan_stats['g10_ready_windows'])
+            if generation_eleven_outcomes is not None and G11_ENABLED and RUN_MODE == 'LIVE':
+                g11_call(generation_eleven_outcomes, 'observe_scan', quote_source.now(), scan_stats['symbols_seen'], scan_stats['g10_ready_windows'])
 
             for error_sample in scan_error_samples:
                 print(f"SCAN_ERROR_SAMPLE {error_sample}", flush=True)
@@ -3753,7 +3775,7 @@ def main():
                     e["market_5m_return_pct"] = spy_5m_return_pct
                     e["market_1m_return_pct"] = spy_1m_return_pct
                     e["market_confirmation_symbol"] = market_confirmation_symbol
-                    if str(e.get("strategy_id", "")).startswith("G10"):
+                    if str(e.get("strategy_id", "")).startswith(("G10", "G11")):
                         e["market_feature_time"] = g10_market_feature_time
 
                     append_strategy_event(
@@ -3997,7 +4019,7 @@ def main():
                         derived_signal_counts[derived["strategy_id"]] += 1
 
                 for e in live_nh015_candidates:
-                    if str(e.get('strategy_id', '')).startswith('G10'):
+                    if str(e.get('strategy_id', '')).startswith(('G10', 'G11')):
                         continue  # G10 can never reach broker allocation or order paths.
                     sym = e["symbol"]
 

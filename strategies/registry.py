@@ -16,6 +16,8 @@ from .research_retirement import retired_ids
 
 G10_ENABLED = os.environ.get('ENABLE_G10_PAPER', '0') == '1'
 from . import generation_ten
+from . import generation_eleven
+G11_ENABLED = os.environ.get('ENABLE_G11_PAPER', '0') == '1'
 
 G3_ENABLED = os.environ.get('ENABLE_G3_PAPER', '0') == '1'
 G4_ENABLED = os.environ.get('ENABLE_G4_PAPER', '0') == '1'
@@ -92,6 +94,8 @@ if G6_ENABLED:
 
 if G10_ENABLED:
     FLASH_STRATEGY_MODULES.update(generation_ten.MODULES)
+if G11_ENABLED:
+    FLASH_STRATEGY_MODULES.update(generation_eleven.MODULES)
 
 
 def flash_strategy_configs():
@@ -268,6 +272,9 @@ LEGACY_FLASH_STRATEGY_IDS = frozenset({
 # Every snapshot strategy now consumes completed-minute observations.
 # No strategy retains duplicated raw-tick history.
 TICK_STRATEGY_IDS = frozenset()
+
+if G11_ENABLED:
+    STRATEGY_CLASSES.append(('generation_eleven', 'MinuteHub'))
 
 REPORTING_STRATEGY_MODULES = {}
 

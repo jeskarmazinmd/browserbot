@@ -1,0 +1,5 @@
+----------------------------------------------------------------------
+Ran 299 tests in 16.575s
+
+OK
+G11 and all relevant legacy suites passed; runtime provenance verified

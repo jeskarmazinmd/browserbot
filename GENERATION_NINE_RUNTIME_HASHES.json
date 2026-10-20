@@ -1,11 +1,11 @@
 {
-  "Dockerfile": "8b06713bececde18b631389c7d1e885fe57df75e3e231f34764d5ed7e193c141",
-  "GENERATION_EIGHT_RUNTIME_HASHES.json": "e54826ef856b62a76f3ca6f5b6b681b974c41dfe33c10f7b53066d260bbffa3f",
+  "Dockerfile": "14ae716ef2c55893b3fe4be46b37bd5b77c45bfd323f9c9659590d2dd63d93ab",
+  "GENERATION_EIGHT_RUNTIME_HASHES.json": "9c9c61ea18b087f7808af9d74ce730b8e00fc9e081cceb5978c2ddcce05c2fbe",
   "GENERATION_NINE_RETIREMENT.json": "7f9570638dd2488e423618a59ef17d5ff513edc579e1bb55ea9431a0cafb87de",
-  "fly.toml": "a0969b17b97eb7e2d391b2fc55f0b4c2b609a509869223754a6e8a99515bb209",
+  "fly.toml": "84bafd4af866109126817c8548843d52e6612ce04d5c1d18ad84e642bf1a44de",
   "generation_nine_paper_tracker.py": "0df48c38dee816db2950fc0aa51e8db40d76146b151ff06139090583f91fe828",
   "options_rv_paper_tracker.py": "4b5e4d99a1ff19ab9d0359516c4fc7bb7e81521f3987ecf22bbbc6e642b6ba67",
-  "reporting/all_engine_performance.py": "20951f7087778527e1edd9c105a3d2554b8d0f508aec92df125345b03c1ee235",
+  "reporting/all_engine_performance.py": "80bc153cf30e48dc7b8efe7ef315dd100fdfc1cbd502fa6ac27ce61ed98d2b27",
   "reporting/generation_nine_performance.py": "c817856c284f68213037edf930aa7db10743997e8605d82a041d5023d2aa049c",
   "research_tools/g9/deploy.sh": "31be62869e4e9c355ed159e8b965bfdaa71c8e4e81959601c99ca780a5877aa4",
   "research_tools/g9/parent_audit.py": "542a69c2f2b9d277daa494ede59c2778ee21d7d871732ce6b63ee61973625656",
@@ -17,5 +17,5 @@
   "statarb_shadow_worker.py": "e0501e1603563a031418d3327b745d71354cf55a13079b8acdaff48610901ec2",
   "strategies/generation_nine.py": "7893767fed2a4ec8a796efdee2e33e749b933f98b1c7f23b1d6637392e2f0788",
   "strategies/generation_nine_retirement.py": "b3c32f47a8492a426dc526a86cb3b33ae9a02090b9a1f3d0008c22c5a196c9b9",
-  "strategies/generation_six_retirement.py": "9e9f047657c2592f8e6de20fe06604c302ee510734d2e9c6e4ad777081066f33"
+  "strategies/generation_six_retirement.py": "5cc248f6c1e592e3e1f2727b49fc9d7328f418216a3b60c2b33cb87769b5d4de"
 }

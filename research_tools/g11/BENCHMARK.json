@@ -1,0 +1,12 @@
+{
+  "synthetic": true,
+  "population": 722,
+  "initialized_seconds": 0.05628317899981994,
+  "admit_722_seconds": 0.6057960080001976,
+  "eleven_full_frames_seconds": 0.3539785060002032,
+  "recovery_seconds": 0.10237450600016018,
+  "bytes_per_account_frame": 15606.0,
+  "account_frame_estimated_mib_per_390_minute_session": 5.804386138916016,
+  "max_rss_host_units": 55508,
+  "caveat": "Frames only; signals/rejections add data. Host RSS units differ on Linux/macOS. Not a production load guarantee."
+}

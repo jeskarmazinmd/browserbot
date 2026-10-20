@@ -32,6 +32,7 @@ from reporting.generation_six_performance import calculate_generation_six
 from reporting.generation_seven_performance import calculate_generation_seven
 from reporting.generation_eight_performance import calculate_generation_eight
 from reporting.generation_ten_performance import calculate_generation_ten
+from reporting.generation_eleven_performance import calculate_generation_eleven
 from reporting.generation_nine_performance import calculate_generation_nine
 from reporting.cutoff_quotes import frozen_books, fresh_bid
 
@@ -718,6 +719,12 @@ def calculate(root="/data", day=None, as_of=None):
         g10_modules = {}
         g10_diagnostics = {'error': type(exc).__name__ + ': ' + str(exc), 'unmarked': 200}
     modules.update(g10_modules)
+    try:
+        g11_modules, g11_diagnostics = calculate_generation_eleven(root, day, cutoff)
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        g11_modules = {}
+        g11_diagnostics = {'error': type(exc).__name__ + ': ' + str(exc), 'unmarked': 722}
+    modules.update(g11_modules)
 
     # Known generation accounts missing a mark are visible as unknown, not
     # silently absent or scored as zero. No account is created by reporting.
@@ -730,6 +737,7 @@ def calculate(root="/data", day=None, as_of=None):
         ('six', __import__('generation_six_paper_tracker').IDS, 'generation_six_bidask_independent'),
         ('seven', __import__('generation_seven_paper_tracker').IDS, 'generation_seven_bidask_independent'),
         ('ten', __import__('generation_ten_paper_tracker').IDS, 'generation_ten_bidask_independent'),
+        ('eleven', __import__('generation_eleven_paper_tracker').IDS, 'generation_eleven_bidask_independent'),
     ):
         birth_path = root / ('paper_generation_' + number + '_bidask_independent_births.json')
         try:
@@ -776,6 +784,7 @@ def calculate(root="/data", day=None, as_of=None):
             "generation_eight": g8_diagnostics,
             "generation_nine": g9_diagnostics,
             "generation_ten": g10_diagnostics,
+            "generation_eleven": g11_diagnostics,
         },
     }
 
